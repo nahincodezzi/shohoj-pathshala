@@ -19,6 +19,7 @@ import {
   Users, 
   Plus, 
   Search, 
+  Globe,
   ExternalLink, 
   Eye, 
   Key, 
@@ -364,21 +365,29 @@ export default function OwnerPanel() {
                 {
                   key: 'actions',
                   label: t.col_actions,
-                  width: '240px',
+                  width: '320px',
                   align: 'right',
+                  noTruncate: true,
                   render: (_, row) => (
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Link to={`/${row.slug}`} target="_blank">
-                        <Button variant="secondary" size="sm" icon={ExternalLink}>
-                          {t.btn_site}
-                        </Button>
-                      </Link>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button 
+                        href={`/${row.slug}`}
+                        target="_blank"
+                        variant="secondary" 
+                        size="sm" 
+                        icon={Globe}
+                        className="text-primary border-primary/35 hover:bg-primary-soft hover:border-primary/60 shrink-0 font-medium"
+                        title={lang === 'bn' ? `${row.name_bn}-এর ওয়েবসাইট দেখুন (নতুন ট্যাবে)` : `Visit ${row.name_en || row.slug} Website (new tab)`}
+                      >
+                        {t.btn_site}
+                      </Button>
                       <Button 
                         variant="secondary" 
                         size="sm" 
                         icon={Eye}
-                        className="text-indigo border-indigo/30 hover:bg-indigo-soft"
+                        className="text-indigo border-indigo/35 hover:bg-indigo-soft hover:border-indigo shrink-0 font-medium"
                         onClick={() => handleEnterSupport(row)}
+                        title={lang === 'bn' ? 'সাপোর্ট মোডে ড্যাশবোর্ড দেখুন' : 'Enter Support Mode'}
                       >
                         {t.btn_support}
                       </Button>
@@ -388,13 +397,14 @@ export default function OwnerPanel() {
                         icon={Key}
                         onClick={() => handleAdminPasswordReset(row)}
                         title={t.btn_reset_pass}
+                        className="text-muted hover:text-text hover:bg-surface-2 shrink-0"
                       />
                     </div>
                   )
                 }
               ]}
               data={filteredSchools}
-              minWidth="840px"
+              minWidth="960px"
             />
           </div>
         )}

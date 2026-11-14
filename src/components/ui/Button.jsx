@@ -16,6 +16,9 @@ export default function Button({
   iconRight: IconRight,
   className = '',
   type = 'button',
+  href,
+  target,
+  rel,
   onClick,
   ...props
 }) {
@@ -36,6 +39,37 @@ export default function Button({
     glass: "glass-panel border border-border text-text hover:bg-surface-2/80"
   }[variant] || "bg-primary text-on-primary";
 
+  const innerContent = (
+    <>
+      {loading ? (
+        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+      ) : Icon ? (
+        <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+      ) : null}
+      
+      {children && <span>{children}</span>}
+
+      {!loading && IconRight && (
+        <IconRight className="w-4 h-4 shrink-0" aria-hidden="true" />
+      )}
+    </>
+  );
+
+  if (href && !disabled) {
+    return (
+      <a
+        href={href}
+        target={target}
+        rel={target === '_blank' ? (rel || 'noopener noreferrer') : rel}
+        onClick={onClick}
+        className={`${baseClasses} ${sizeClasses} ${variantClasses} ${className}`}
+        {...props}
+      >
+        {innerContent}
+      </a>
+    );
+  }
+
   return (
     <button
       type={type}
@@ -44,17 +78,7 @@ export default function Button({
       className={`${baseClasses} ${sizeClasses} ${variantClasses} ${className}`}
       {...props}
     >
-      {loading ? (
-        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-      ) : Icon ? (
-        <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-      ) : null}
-      
-      <span>{children}</span>
-
-      {!loading && IconRight && (
-        <IconRight className="w-4 h-4 shrink-0" aria-hidden="true" />
-      )}
+      {innerContent}
     </button>
   );
 }

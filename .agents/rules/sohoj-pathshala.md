@@ -26,3 +26,4 @@
    - Mobile Sticky 4-tab bottom navigation bar (`হোম`, `নোটিশ`, `ভর্তি`, `রেজাল্ট`).
    - Accessible touch targets (≥ 44×44px).
    - Print engine (`@media print`): black text on pure white paper with official watermarks and signatures.
+

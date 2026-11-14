@@ -39,7 +39,7 @@ export default function GridTable({
             <div 
               key={idx} 
               role="columnheader"
-              className={`truncate ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
+              className={`${col.noTruncate ? '' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
             >
               {col.label}
             </div>
@@ -74,7 +74,7 @@ export default function GridTable({
                       <div
                         key={colIdx}
                         role="cell"
-                        className={`truncate ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
+                        className={`${col.noTruncate ? '' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                       >
                         {col.render ? (
                           col.render(val, row, rowIdx)
