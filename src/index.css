@@ -1,0 +1,684 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+@theme inline {
+  --color-deep: var(--c-deep);
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-soft: var(--c-soft);
+  --color-soft-border: var(--c-soft-border);
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-line: var(--c-line);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-success: var(--c-success);
+  --color-success-soft: var(--c-success-soft);
+  --color-warning: var(--c-warning);
+  --color-warning-soft: var(--c-warning-soft);
+}
+
+@theme {
+  --font-ui: 'Noto Sans Bengali', 'Anek Bangla', 'Kalpurush', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ==========================================================================
+   GLOBAL TYPOGRAPHY & BODY DEFAULTS
+   ========================================================================== */
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--c-bg);
+  color: var(--c-ink);
+  font-size: 15px;
+  line-height: 1.5;
+  caret-color: var(--c-primary);
+}
+
+.font-bangla {
+  font-family: var(--font-ui);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ::selection */
+::selection {
+  background-color: var(--c-soft);
+  color: var(--c-ink);
+}
+
+/* Focus ring on all interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* Smooth transition only when theme-transition class is present */
+body.theme-transition,
+body.theme-transition *,
+body.theme-transition *::before,
+body.theme-transition *::after {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, fill 200ms ease, stroke 200ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.theme-transition,
+  body.theme-transition * {
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   THEMED UTILITIES & COMPONENTS
+   ========================================================================== */
+
+.card-base {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--c-ink);
+}
+
+.btn-primary {
+  background-color: var(--c-primary);
+  color: #FFFFFF;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary:hover {
+  background-color: var(--c-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--c-surface);
+  color: var(--c-primary);
+  border: 1px solid var(--c-primary);
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background-color: var(--c-soft);
+}
+
+.btn-accent {
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+  border-radius: var(--radius-btn);
+  font-weight: 700;
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+  border: none;
+}
+.btn-accent:hover {
+  background-color: var(--c-accent-hover);
+}
+
+.btn-danger {
+  background-color: transparent;
+  color: var(--c-danger);
+  border: 1px solid var(--c-danger);
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background-color: var(--c-danger-soft);
+}
+
+.input-base {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-input);
+  color: var(--c-ink);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.input-base::placeholder {
+  color: var(--c-muted);
+}
+.input-base:focus {
+  border-color: var(--c-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--c-soft-border);
+}
+
+.badge-neutral {
+  background-color: var(--c-soft);
+  border: 1px solid var(--c-soft-border);
+  color: var(--c-ink);
+  border-radius: var(--radius-badge);
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-status-active {
+  background-color: var(--c-success-soft);
+  color: var(--c-success);
+  border-radius: var(--radius-badge);
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.badge-status-active::before {
+  content: '';
+  display: inline-block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: var(--c-success);
+}
+
+.badge-status-inactive {
+  background-color: var(--c-danger-soft);
+  color: var(--c-danger);
+  border-radius: var(--radius-badge);
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.badge-status-inactive::before {
+  content: '';
+  display: inline-block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: var(--c-danger);
+}
+
+.badge-warning {
+  background-color: var(--c-warning-soft);
+  color: var(--c-warning);
+  border-radius: var(--radius-badge);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.section-tag {
+  background-color: var(--c-soft);
+  color: var(--c-primary);
+  border: 1px solid var(--c-soft-border);
+  border-radius: var(--radius-badge);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.glass-capsule {
+  background-color: var(--c-deep);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--c-ink);
+}
+
+.glass-card-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.glass-card-hover:hover {
+  border-color: var(--c-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.glass-pill {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-badge);
+  color: var(--c-ink);
+}
+
+.glass-input {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-input);
+  color: var(--c-ink);
+}
+.glass-input:focus {
+  border-color: var(--c-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--c-soft-border);
+}
+
+.btn-gold {
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+  font-weight: 700;
+  border-radius: var(--radius-btn);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-gold:hover {
+  background-color: var(--c-accent-hover);
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--c-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-soft-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-muted);
+}
+
+section, [id] {
+  scroll-margin-top: 96px;
+}
+
+.floating-glass-pill {
+  transition: max-width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              height 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              top 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              padding 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@supports not (backdrop-filter: blur(14px)) {
+  .floating-glass-scrolled {
+    background: var(--c-deep) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-glass-pill,
+  .floating-glass-pill * {
+    transition: opacity 150ms ease !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 5mm 8mm 5mm 8mm;
+  }
+
+  /* Reset layout, remove scrollbars and screen margins */
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide all non-printable interactive elements during print */
+  .no-print,
+  [class*="no-print"],
+  nav,
+  header.no-print,
+  aside.no-print,
+  footer.no-print,
+  button,
+  .btn,
+  .btn-accent,
+  .btn-secondary,
+  .btn-primary,
+  .btn-danger,
+  input,
+  select,
+  textarea,
+  a[download],
+  .floating-glass-pill {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Remove outer paddings and min-heights that cause vertical overflow and blank page 1 */
+  #root,
+  #root > div,
+  #main-content,
+  main,
+  section,
+  article {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-width: 100% !important;
+  }
+
+  /* When printing any modal, marksheet, notice, receipt, or ID card:
+     Hide the entire #root so there is ZERO ghost height and Page 1 is NEVER BLANK! */
+  body.printing-modal #root,
+  body.printing-marksheet #root,
+  body.printing-notice #root,
+  body.printing-receipt #root,
+  body.printing-idcard #root,
+  body:has(#official-notice-modal) #root,
+  body:has(#official-money-receipt) #root {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset modal overlay container so it starts at the top of Page 1 */
+  body.printing-modal div[role="dialog"],
+  body.printing-notice div[role="dialog"],
+  body.printing-receipt div[role="dialog"],
+  body.printing-idcard div[role="dialog"],
+  body:has(#official-notice-modal) div[role="dialog"],
+  body:has(#official-money-receipt) div[role="dialog"] {
+    position: static !important;
+    inset: auto !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    box-shadow: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  body.printing-modal div[role="dialog"] > div[aria-hidden="true"],
+  body.printing-notice div[role="dialog"] > div[aria-hidden="true"],
+  body.printing-receipt div[role="dialog"] > div[aria-hidden="true"],
+  body.printing-idcard div[role="dialog"] > div[aria-hidden="true"] {
+    display: none !important;
+  }
+
+  body.printing-modal div[role="dialog"] > div,
+  body.printing-notice div[role="dialog"] > div,
+  body.printing-receipt div[role="dialog"] > div,
+  body.printing-idcard div[role="dialog"] > div {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  /* Dedicated Printable Marksheet Container (Portaled directly to document.body) */
+  #printable-marksheet-root {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  #printable-marksheet-root table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-marksheet-root th,
+  #printable-marksheet-root td {
+    padding: 1.5px 4px !important;
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+  }
+
+  #printable-marksheet-root tfoot td {
+    padding: 2px 4px !important;
+    font-size: 7.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  #printable-marksheet-root tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Inline Marksheet Single Page Enforcement (fallback) */
+  #official-marksheet-screen,
+  #official-marksheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 2mm 4mm !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    background: #ffffff !important;
+  }
+
+  #official-marksheet-screen table,
+  #official-marksheet table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #official-marksheet-screen th,
+  #official-marksheet-screen td,
+  #official-marksheet th,
+  #official-marksheet td {
+    padding: 1.5px 4px !important;
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+  }
+
+  #official-marksheet-screen tfoot td,
+  #official-marksheet tfoot td {
+    padding: 2px 4px !important;
+    font-size: 7.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  #official-marksheet-screen tr,
+  #official-marksheet tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Admission Slip Single Page Enforcement */
+  #admission-slip {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    background: #ffffff !important;
+  }
+
+  /* Money Receipt Modal Print Styles */
+  #official-money-receipt {
+    width: 100% !important;
+    max-width: 480px !important;
+    margin: 0 auto !important;
+    padding: 10px 14px !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    background: #ffffff !important;
+  }
+
+  /* Notice Modal Print Styles */
+  #official-notice-modal {
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  #official-notice-modal > div {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #official-notice-modal .screen-only,
+  #official-notice-modal .modal-footer,
+  #official-notice-modal button,
+  #official-notice-modal .no-print,
+  body.printing-notice .modal-footer,
+  body.printing-notice button,
+  body:has(#official-notice-modal) .modal-footer,
+  body:has(#official-notice-modal) button {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+  }
+
+  #official-notice-modal .print-only-letterhead {
+    display: block !important;
+  }
+
+  /* Student ID Card Print Styles */
+  #student-id-card {
+    max-width: 320px !important;
+    margin: 15px auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+}
+
+@media screen {
+  #printable-marksheet-root {
+    display: none !important;
+  }
+}
+
+/* Enhance secondary text contrast and legibility across website & portal */
+.text-muted {
+  color: var(--c-muted);
+  font-weight: 500;
+}

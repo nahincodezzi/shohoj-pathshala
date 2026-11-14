@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="School Management & Digital Portal" />
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bondua-high-school-website.vercel.app/" />
+    <meta property="og:title" content="School Portal" />
+    <meta property="og:description" content="School Management & Digital Portal" />
+    <meta property="og:image" content="/brand/logo-emerald.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://bondua-high-school-website.vercel.app/" />
+    <meta name="twitter:title" content="School Portal" />
+    <meta name="twitter:description" content="School Management & Digital Portal" />
+    <meta name="twitter:image" content="/brand/logo-emerald.png" />
+    <meta name="theme-color" content="#0B3D2E" id="meta-theme-color" />
+    <title>School Portal</title>
+    <!-- Prevent theme flicker on load -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('site_theme') || localStorage.getItem('bdhs_theme');
+          if (t === 'indigo') {
+            document.documentElement.setAttribute('data-theme', 'indigo');
+            var m = document.getElementById('meta-theme-color');
+            if (m) m.setAttribute('content', '#1E1B4B');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Google Fonts: Anek Bangla (Modern & Trendy), Noto Sans Bengali & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Anek+Bangla:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-bg text-ink antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

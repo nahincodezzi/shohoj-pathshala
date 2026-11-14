@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>হ্যান্ডওভার ও ব্যবহারকারী সহায়িকা | বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #064e3b;
+      --primary-light: #047857;
+      --accent: #d97706;
+      --dark: #0f172a;
+      --slate: #334155;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Noto Sans Bengali', 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.7;
+      padding: 40px 20px;
+    }
+    .wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 50px;
+      border-radius: 24px;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+    .print-btn {
+      background: var(--primary);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(6,78,59,0.2);
+      transition: background 0.2s;
+    }
+    .print-btn:hover {
+      background: var(--primary-light);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .pill {
+      display: inline-block;
+      background: #ecfdf5;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      border: 1px solid #a7f3d0;
+    }
+    h1 {
+      font-size: 28px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+    .lead {
+      font-size: 15px;
+      color: var(--slate);
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    h2 {
+      font-size: 19px;
+      color: var(--primary);
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      margin: 40px 0 16px 0;
+      font-weight: 800;
+    }
+    h3 {
+      font-size: 16px;
+      color: var(--dark);
+      margin: 22px 0 10px 0;
+      font-weight: 700;
+    }
+    p, li {
+      font-size: 14px;
+      color: var(--slate);
+    }
+    ol, ul {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .step-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 16px 0 24px 0;
+    }
+    .tip {
+      background: #fffbeb;
+      border-left: 4px solid var(--accent);
+      padding: 14px 20px;
+      border-radius: 8px;
+      margin: 14px 0;
+      font-size: 14px;
+      color: #92400e;
+    }
+    .success-box {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 14px 20px;
+      border-radius: 8px;
+      margin: 14px 0;
+      font-size: 14px;
+      color: #166534;
+    }
+    .key-badge {
+      font-family: monospace;
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .role-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .role-table th, .role-table td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .role-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .role-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    .footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 12.5px;
+      color: #94a3b8;
+    }
+    @media print {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+      .wrapper {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="top-bar no-print">
+      <div>
+        <strong style="color: var(--primary); font-size: 16px;">বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়</strong>
+        <p style="font-size: 12px; color: var(--slate);">স্কুল পরিচালনা কমিটি ও শিক্ষকদের জন্য পূর্ণাঙ্গ হ্যান্ডওভার ও ইউজার নির্দেশিকা</p>
+      </div>
+      <button onclick="window.print()" class="print-btn">
+        🖨️ নির্দেশিকাটি PDF হিসেবে ডাউনলোড / প্রিন্ট করুন
+      </button>
+    </div>
+
+    <div class="header">
+      <span class="pill">OFFICIAL HANDOVER & USER OPERATING GUIDELINE</span>
+      <h1>বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়</h1>
+      <p class="lead">স্কুল পরিচালনা কমিটি, সম্মানিত ভারপ্রাপ্ত প্রধান শিক্ষক, শিক্ষকবৃন্দ ও অফিস কর্মচারীদের কাছে আনুষ্ঠানিকভাবে সফটওয়্যার বুঝিয়ে দেওয়ার সম্পূর্ণ নথিপত্র ও দৈনন্দিন পরিচালনা সহায়িকা।</p>
+    </div>
+
+    <div class="success-box">
+      ✨ <strong>সিস্টেম স্ট্যাটাস: ১০০% প্রস্তুত ও ত্রুটিমুক্ত (Production Ready)।</strong> কুমিল্লা বোর্ডের অধীনে EIIN: ১০৬৬৪৪, MPO: ১০৫৪৭৬৩০১ সহ ভারপ্রাপ্ত প্রধান শিক্ষক জনাব বাহার উদ্দিন ভূঁইয়া ও ১৬ জন শিক্ষক-কর্মচারীর তালিকা, ড্রেস কোড, অনলাইন ভর্তি, ফলাফল, নোটিশ বোর্ড এবং ফটো ও ভিডিও গ্যালারি আপলোড সফলভাবে লাইভ সক্রিয় রয়েছে।
+    </div>
+
+    <h2>১. স্কুল পরিচালনা কমিটি ও প্রধান শিক্ষককে হ্যান্ডওভার করার পূর্ণাঙ্গ ধাপসমূহ</h2>
+    <div class="step-box">
+      <p>বিদ্যালয় পরিচালনা পর্ষদের সভায় সফটওয়্যারটি হস্তান্তরের সময় নিচের ৫টি ধারাবাহিক ধাপ অনুসরণ করবেন:</p>
+
+      <h3>ধাপ ১: লাইভ ডেমো ও কার্যকারিতা প্রদর্শন (Live Demonstration)</h3>
+      <ul>
+        <li>প্রজেক্টরের মাধ্যমে অথবা প্রধান শিক্ষকের ল্যাপটপে সরাসরি লাইভ ওয়েবসাইট লিংক ওপেন করুন: <span class="key-badge">https://bondua-high-school-website.vercel.app</span></li>
+        <li>প্রথমেই স্বয়ংক্রিয় প্রমিত বাংলা সংস্করণ এবং ১-ক্লিকে ইংরেজি সুইচ করে দেখান।</li>
+        <li>ছাত্র ও ছাত্রীদের নির্ধারিত ড্রেস কোড ও কালার সোয়াচ প্রদর্শন করুন।</li>
+        <li>অনলাইন ভর্তি ফরম পূরণ করে তৎক্ষণাৎ রঙিন প্রবেশপত্র (Admit Slip) প্রিন্ট প্রিভিউ দেখান।</li>
+        <li>রোল দিয়ে কুমিল্লা বোর্ডের গ্রেডিং স্কেলে জিপিএ মার্কশিট অনুসন্ধান প্রদর্শন করুন।</li>
+      </ul>
+
+      <h3>ধাপ ২: প্রশাসনিক ক্রেডেনশিয়াল ও অ্যাক্সেস হস্তান্তর (Credentials Handover)</h3>
+      <p>ওয়েবসাইটের ওপরের ডানদিকের কোণে <strong>"পোর্টাল লগইন"</strong> বাটনে ক্লিক করে নিচের দায়িত্বভিত্তিক ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করে দেখান:</p>
+      
+      <table class="role-table">
+        <thead>
+          <tr>
+            <th>ভূমিকা (Role)</th>
+            <th>ইউজারনেম (Username)</th>
+            <th>পাসওয়ার্ড (Password)</th>
+            <th>দায়িত্ব ও ক্ষমতা</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>👑 <strong>সুপার অ্যাডমিন</strong></td>
+            <td><span class="key-badge">superadmin</span></td>
+            <td><span class="key-badge">admin123</span></td>
+            <td>সফটওয়্যারের সর্বোচ্চ নিয়ন্ত্রণ, নতুন আইডি তৈরি ও মডিউল পারমিশন নির্ধারণ।</td>
+          </tr>
+          <tr>
+            <td>👨‍💼 <strong>ভারপ্রাপ্ত প্রধান শিক্ষক</strong></td>
+            <td><span class="key-badge">headmaster</span></td>
+            <td><span class="key-badge">headmaster123</span></td>
+            <td>ভর্তি অনুমোদন, নোটিশ প্রকাশ, রেজাল্ট যাচাই ও প্রতিষ্ঠান পরিচালনা।</td>
+          </tr>
+          <tr>
+            <td>👨‍🏫 <strong>সহকারী শিক্ষক</strong></td>
+            <td><span class="key-badge">teacher</span></td>
+            <td><span class="key-badge">teacher123</span></td>
+            <td>নিজ বিষয়ের পরীক্ষার নম্বর ইনপুট প্রদান ও ফলাফল তৈরি।</td>
+          </tr>
+          <tr>
+            <td>💰 <strong>হিসাবরক্ষক ও ক্যাশিয়ার</strong></td>
+            <td><span class="key-badge">accountant</span></td>
+            <td><span class="key-badge">acc123</span></td>
+            <td>শিক্ষার্থীদের বেতন ও পরীক্ষার ফি গ্রহণ এবং সিলযুক্ত মানি রসিদ প্রিন্ট।</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>ধাপ ৩: প্রথম দিনের নিরাপত্তা প্রটোকল (Security Protocol)</h3>
+      <ol>
+        <li>হ্যান্ডওভার সম্পন্ন হওয়ার সাথে সাথে সুপার অ্যাডমিন আইডিতে লগইন করে পাসওয়ার্ড পরিবর্তন করার পরামর্শ দিন।</li>
+        <li><strong>"ইউজার ও এক্সেস কন্ট্রোল"</strong> মডিউলে গিয়ে বিদ্যালয়ের সম্মানিত শিক্ষকদের নিজস্ব নাম ও ইউজার আইডি তৈরি করে দিন যাতে প্রত্যেকে যার যার দায়িত্ব অনুযায়ী মডিউল ব্যবহার করতে পারেন।</li>
+      </ol>
+
+      <h3>ধাপ ৪: গিটহাব ও ভার্সেল ক্লাউড মালিকানা হস্তান্তর (Ownership Transfer)</h3>
+      <ol>
+        <li><strong>গিটহাব রিপোজিটরি:</strong> <span class="key-badge">https://github.com/nahincodezzi/bondua-high-school-website.git</span> রিপোজিটরির <em>Settings > Danger Zone > Transfer Ownership</em> এ গিয়ে বিদ্যালয়ের অফিসিয়াল গিটহাব আইডির কাছে রিপোজিটরি ট্রান্সফার করে দিন।</li>
+        <li><strong>ভার্সেল হোস্টিং:</strong> ভার্সেল প্রজেক্ট মেম্বার্স থেকে স্কুলের জিমেইল (<span class="key-badge">bonduas106644@gmail.com</span>) কে অ্যাডমিন হিসেবে ইনভাইট করে পূর্ণ মালিকানা হস্তান্তর করুন।</li>
+      </ol>
+
+      <h3>ধাপ ৫: মুদ্রিত নির্দেশিকা বই হস্তান্তর</h3>
+      <p>এই নির্দেশিকা ফাইলটি (<span class="key-badge">USER_OPERATING_MANUAL.html</span>) এবং কারিগরি ফাইলটি (<span class="key-badge">DOCUMENTATION_AND_ARCHITECTURE.html</span>) ব্রাউজারের প্রিন্ট বাটনে চাপ দিয়ে এ-ফোর সাইজে প্রিন্ট করে প্রধান শিক্ষকের কার্যালয়ে সংরক্ষণ করতে দিন।</p>
+    </div>
+
+    <h2>২. সিএমএস পোর্টালে ফটো, নোটিশ ও রেজাল্ট আপলোড করার বিস্তারিত নিয়ম</h2>
+
+    <div class="step-box">
+      <h3>ক. নোটিশ বোর্ড ও সার্কুলার ফাইল আপলোড (Notice Upload)</h3>
+      <ol>
+        <li>সিএমএস সাইডবার থেকে <strong>"নোটিশ ও বিজ্ঞপ্তি প্রকাশ"</strong> মেনুতে যান।</li>
+        <li>নোটিশের শিরোনাম (বাংলা ও ইংরেজি), ক্যাটাগরি (পরীক্ষা/ভর্তি/ছুটি/অ্যাকাডেমিক) এবং বিস্তারিত বিবরণ লিখুন।</li>
+        <li><strong>অফিসিয়াল ডকুমেন্ট আপলোড:</strong> <em>"মোবাইল বা পিসি থেকে পিডিএফ বা ছবি নির্বাচন করুন"</em> বাটনে চাপ দিয়ে যেকোনো স্ক্যান করা নোটিশ বা পিডিএফ সংযুক্ত করে দিন।</li>
+        <li><strong>"নোটিশ প্রকাশ করুন"</strong> এ ক্লিক করার সাথে সাথে নোটিশটি পাবলিক ওয়েবসাইটে প্রদর্শিত হবে এবং শিক্ষার্থীরা <strong>"📎 ডকুমেন্ট দেখুন / ডাউনলোড"</strong> বাটনে ক্লিক করে ফাইলটি দেখতে পারবে।</li>
+        <li>জরুরি নোটিশ হিসেবে টিক দিলে তা হোমপেজের শীর্ষ ব্রেকিং স্ক্রলারে ঘুরবে।</li>
+      </ol>
+
+      <h3>খ. ফটো ও ভিডিও গ্যালারি আপলোড (Gallery Upload)</h3>
+      <ol>
+        <li>সিএমএস সাইডবার থেকে <strong>"কনটেন্ট ও গ্যালারি (CMS)"</strong> এ গিয়ে <strong>"ফটো ও ভিডিও গ্যালারি আপলোড"</strong> ট্যাবে যান।</li>
+        <li><strong>ছবি আপলোড:</strong> শিরোনাম লিখুন, ক্যাটাগরি নির্বাচন করুন (ক্যাম্পাস, ক্রীড়া, ল্যাব, সাংস্কৃতিক) এবং <em>"ছবি আপলোড করতে ক্লিক করুন"</em> বোতামে চাপ দিয়ে মোবাইল বা পিসি থেকে ছবি সিলেক্ট করুন। সিস্টেম স্বয়ংক্রিয়ভাবে ছবিটিকে অপটিমাইজ করে নিবে। এরপর <strong>"গ্যালারিতে ছবি যোগ করুন"</strong> চাপুন।</li>
+        <li><strong>ভিডিও আপলোড:</strong> ভিডিওর শিরোনাম, ইউটিউব লিংক ও ব্যপ্তিকাল (যেমন: 08:30) লিখে <strong>"ভিডিওটি প্রকাশ করুন"</strong> চাপলেই তা সরাসরি ভিডিও প্লেয়ারে প্রদর্শিত হবে।</li>
+        <li>যেকোনো পুরোনো ছবি বা ভিডিও নিচে থাকা লাল ট্র্যাশ (Trash) আইকনে চাপ দিয়ে এক ক্লিকে ডিলিট করা যাবে।</li>
+      </ol>
+
+      <h3>গ. পরীক্ষার ফলাফল ও গ্রেড প্রদান (Result & Marks Entry)</h3>
+      <ol>
+        <li>সিএমএস সাইডবার থেকে <strong>"ফলাফল ও গ্রেড প্রদান"</strong> এ প্রবেশ করুন।</li>
+        <li>শিক্ষার্থীর শ্রেণি, রোল এবং বিষয়ের প্রাপ্ত নম্বর (বাংলা, ইংরেজি, গণিত, পদার্থ, রসায়ন, জীববিজ্ঞান, আইসিটি, ধর্ম) ইনপুট দিন।</li>
+        <li>সিস্টেম স্বয়ংক্রিয়ভাবে কুমিল্লা বোর্ডের স্কেলে পয়েন্ট, লেটার গ্রেড এবং জিপিএ (যেমন: 5.00) হিসাব করে নিবে।</li>
+        <li><strong>"ফলাফল সংরক্ষণ ও প্রকাশ করুন"</strong> এ চাপ দেওয়ার সাথে সাথে পাবলিক রেজাল্ট সার্চ পেজে তা পাওয়া যাবে এবং শিক্ষার্থীরা অফিসিয়াল গ্রেডশিট প্রিন্ট করতে পারবে।</li>
+      </ol>
+
+      <h3>ঘ. শিক্ষক ও কর্মচারী পরিষদের ছবি ও তথ্য পরিচালনা</h3>
+      <ol>
+        <li>সাইডবার থেকে <strong>"শিক্ষক পরিষদ (Faculty CMS)"</strong> এ যান।</li>
+        <li>যে শিক্ষকের ছবি পরিবর্তন করতে চান তার কার্ডের নিচে থাকা <strong>✏️ এডিট</strong> বাটনে চাপ দিন।</li>
+        <li><strong>"ছবি আপলোড (Upload Photo)"</strong> অপশনে চাপ দিয়ে শিক্ষকের পাসপোর্ট ছবি আপলোড করুন।</li>
+        <li><strong>"সংরক্ষণ করুন"</strong> এ ক্লিক করলেই ওয়েবসাইটে আসল ছবি লাইভ হয়ে যাবে।</li>
+      </ol>
+    </div>
+
+    <h2>৩. বিদ্যালয়ের ১৬ জন শিক্ষক ও কর্মচারী পরিষদের পূর্ণ তালিকা</h2>
+    <div class="step-box">
+      <table class="role-table">
+        <thead>
+          <tr>
+            <th>নং</th>
+            <th>নাম (বাংলা ও ইংরেজি)</th>
+            <th>পদবী</th>
+            <th>বিষয় / দায়িত্ব</th>
+            <th>শিক্ষাগত যোগ্যতা</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>১</td>
+            <td>জনাব বাহার উদ্দিন ভূঁইয়া<br><em>Mr. Bahar Uddin Bhuiyan</em></td>
+            <td>ভারপ্রাপ্ত প্রধান শিক্ষক</td>
+            <td>ইংরেজি</td>
+            <td>বি.এ, ইংরেজি (B.A., English)</td>
+          </tr>
+          <tr>
+            <td>২</td>
+            <td>জনাব সলিম উদ্দিন মজুমদার<br><em>Mr. Solim Uddin Majumder</em></td>
+            <td>ভারপ্রাপ্ত সহ প্রধান শিক্ষক</td>
+            <td>ইংরেজি</td>
+            <td>ইংরেজি, বি.এ, বি.এড</td>
+          </tr>
+          <tr>
+            <td>৩</td>
+            <td>জনাব জাহাঙ্গীর আলম<br><em>Mr. Jahangir Alam</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>হিসাব বিজ্ঞান</td>
+            <td>বি.কম, বি.এড, হিসাব বিজ্ঞান</td>
+          </tr>
+          <tr>
+            <td>৪</td>
+            <td>মো: জাফর উল্লাহ চৌধুরী<br><em>Md. Jafor Ullah Chowdhury</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>ইসলাম শিক্ষা</td>
+            <td>এম.এ, ইসলাম শিক্ষা</td>
+          </tr>
+          <tr>
+            <td>৫</td>
+            <td>হানিফ ভূঁইয়া<br><em>Hanif Bhuiyan</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>ইংরেজি, হিসাব বিজ্ঞান, বাণিজ্য</td>
+            <td>বি.কম, বি.এড, বি.পি.এড</td>
+          </tr>
+          <tr>
+            <td>৬</td>
+            <td>আনোয়ার হোসেন<br><em>Anwar Hossain</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>তথ্য ও যোগাযোগ প্রযুক্তি (ICT)</td>
+            <td>বি.কম, বি.এড</td>
+          </tr>
+          <tr>
+            <td>৭</td>
+            <td>আয়েশা ছিদ্দিকা<br><em>Ayesha Siddiqa</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>সমাজ বিজ্ঞান</td>
+            <td>বি.এ, বি.এড</td>
+          </tr>
+          <tr>
+            <td>৮</td>
+            <td>রাশিদা আক্তার ফেরদৌস<br><em>Rashida Akter Ferdous</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>সমাজ বিজ্ঞান</td>
+            <td>সমাজ বিজ্ঞান (Social Science)</td>
+          </tr>
+          <tr>
+            <td>৯</td>
+            <td>রাবেয়া আক্তার<br><em>Rabeya Akter</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>ভৌত বিজ্ঞান</td>
+            <td>এম.এসসি, বি.এড</td>
+          </tr>
+          <tr>
+            <td>১০</td>
+            <td>রেদোয়ান উল্লাহ<br><em>Redowan Ullah</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>গণিত</td>
+            <td>এম.এসসি, বি.এড</td>
+          </tr>
+          <tr>
+            <td>১১</td>
+            <td>চন্দন সরকার<br><em>Chandan Sarkar</em></td>
+            <td>সহকারী শিক্ষক</td>
+            <td>বিজ্ঞান</td>
+            <td>বি.এস.সি (B.Sc., Science)</td>
+          </tr>
+          <tr>
+            <td>১২</td>
+            <td>নুরুল কবির ভূঁইয়া<br><em>Nurul Kabir Bhuiyan</em></td>
+            <td>অফিস সহকারী</td>
+            <td>প্রশাসনিক কার্যক্রম ও হিসাব</td>
+            <td>বি.এ (B.A.)</td>
+          </tr>
+          <tr>
+            <td>১৩</td>
+            <td>নুরুল আফসার<br><em>Nurul Afsar</em></td>
+            <td>পিয়ন</td>
+            <td>সাধারণ সেবা ও সহায়তা</td>
+            <td>স্টাফ</td>
+          </tr>
+          <tr>
+            <td>১৪</td>
+            <td>আবদুল জলিল চৌধুরী<br><em>Abdul Jalil Chowdhury</em></td>
+            <td>নিরাপত্তা কর্মী</td>
+            <td>ক্যাম্পাস ও গেট নিরাপত্তা</td>
+            <td>স্টাফ</td>
+          </tr>
+          <tr>
+            <td>১৫</td>
+            <td>সুমি আক্তার<br><em>Sumi Akter</em></td>
+            <td>আয়া</td>
+            <td>ক্যাম্পাস পরিচ্ছন্নতা ও সেবা</td>
+            <td>স্টাফ</td>
+          </tr>
+          <tr>
+            <td>১৬</td>
+            <td>বিবি হাজেরা<br><em>Bibi Hajera</em></td>
+            <td>পিয়ন</td>
+            <td>সাধারণ সেবা ও সহায়তা</td>
+            <td>স্টাফ</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>৪. ভবিষ্যতে স্কুলের নিজস্ব ডোমেইন (.edu.bd) কেনার জন্য কমিটির করণীয়</h2>
+    <div class="step-box">
+      <p>স্কুল পরিচালনা কমিটি তাদের পরবর্তী সাধারণ সভায় নিচের রেজুলেশনটি পাস করে নিজস্ব ডোমেইন নিতে পারবেন:</p>
+      <div class="tip">
+        <strong>কমিটি রেজুলেশনের খসড়া:</strong><br>
+        "সর্বসম্মতিক্রমে সিদ্ধান্ত গৃহীত হইল যে, বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়ের অফিশিয়াল ওয়েবসাইটের জন্য বাংলাদেশ টেলিযোগাযোগ কোম্পানি লিমিটেড (BTCL) হইতে <span class="key-badge">bdhs.edu.bd</span> অথবা <span class="key-badge">bonduadaulatpurhighschool.edu.bd</span> ডোমেইন নিবন্ধনের আবেদন করা হইবে। এই সংক্রান্ত যাবতীয় প্রত্যয়নপত্র ও নথিতে স্বাক্ষরের জন্য ভারপ্রাপ্ত প্রধান শিক্ষককে দায়িত্ব প্রদান করা হইল।"
+      </div>
+      <p>ডোমেইন পাওয়ার পর ভার্সেল প্রজেক্টে DNS রেকর্ড A: <span class="key-badge">76.76.21.21</span> এবং CNAME: <span class="key-badge">cname.vercel-dns.com</span> সেট করে দিলেই সম্পূর্ণ নিজস্ব নামে ওয়েবসাইট চালু হয়ে যাবে।</p>
+    </div>
+
+    <div class="footer">
+      <p><strong>বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়</strong> • আনন্দপুর, ফুলগাজী, ফেনী (EIIN: ১০৬৬৪৪, MPO: ১০৫৪৭৬৩০১)</p>
+      <p>ফোন: +৮৮০ ১৮১৯-২৮৪৫৬১ • ইমেইল: bonduas106644@gmail.com</p>
+      <p>© ২০২৬ সর্বস্বত্ব সংরক্ষিত।</p>
+    </div>
+  </div>
+
+</body>
+</html>
