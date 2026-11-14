@@ -75,3 +75,4 @@
 - `refactor(...)`: কোড ক্লিনআপ বা রিফ্যাক্টরিং (e.g. `refactor(fees): extract receipt layout to print registry`)
 - `docs(...)`: ডকুমেন্টেশন আপডেট (e.g. `docs(architecture): complete change guide table`)
 - `test(...)`: টেস্ট কেস ও স্ক্রিনশট যোগ (e.g. `test(e2e): add admissions flow playwright suite`)
+

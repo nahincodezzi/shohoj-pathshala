@@ -136,8 +136,12 @@ export default function OwnerPanel() {
 
   // Handle Support Mode
   const handleEnterSupport = (school) => {
-    enterSupportMode(school);
-    navigate(`/${school.slug}/admin`);
+    try {
+      enterSupportMode(school);
+      navigate(`/${school.slug}/admin`);
+    } catch (err) {
+      showToast(err.message || 'সাপোর্ট মোডে প্রবেশে সমস্যা হয়েছে', 'error');
+    }
   };
 
   // Handle Admin Password Reset
@@ -373,19 +377,17 @@ export default function OwnerPanel() {
                       <Button 
                         href={`/${row.slug}`}
                         target="_blank"
-                        variant="secondary" 
+                        variant="outline" 
                         size="sm" 
                         icon={Globe}
-                        className="text-primary border-primary/35 hover:bg-primary-soft hover:border-primary/60 shrink-0 font-medium"
                         title={lang === 'bn' ? `${row.name_bn}-এর ওয়েবসাইট দেখুন (নতুন ট্যাবে)` : `Visit ${row.name_en || row.slug} Website (new tab)`}
                       >
                         {t.btn_site}
                       </Button>
                       <Button 
-                        variant="secondary" 
+                        variant="outlineIndigo" 
                         size="sm" 
                         icon={Eye}
-                        className="text-indigo border-indigo/35 hover:bg-indigo-soft hover:border-indigo shrink-0 font-medium"
                         onClick={() => handleEnterSupport(row)}
                         title={lang === 'bn' ? 'সাপোর্ট মোডে ড্যাশবোর্ড দেখুন' : 'Enter Support Mode'}
                       >

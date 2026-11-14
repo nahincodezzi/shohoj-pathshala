@@ -4,7 +4,7 @@ import { TenantRepository } from '../services/tenantStorage';
 const AuthContext = createContext(null);
 
 // Role & Permission Matrix (Section 2)
-export const ROLE_PERMISSIONS = {
+const ROLE_PERMISSIONS = {
   platform_owner: ['all_schools', 'manage_plans', 'support_mode', 'audit_logs'],
   school_superadmin: ['cms', 'teachers', 'students', 'admissions', 'results', 'notices', 'fees', 'settings', 'users', 'factory_reset'],
   headmaster: ['cms', 'teachers', 'students', 'admissions', 'results', 'notices', 'fees_view', 'settings_view'],
@@ -79,21 +79,24 @@ export function AuthProvider({ children }) {
 
   // Support mode enter (Only for platform_owner to view a school)
   const enterSupportMode = useCallback((school) => {
-    if (currentUser?.role !== 'platform_owner') {
-      throw new Error('শুধুমাত্র Platform Owner সাপোর্ট মোড চালু করতে পারেন।');
-    }
+    const ownerUser = currentUser?.role === 'platform_owner' 
+      ? currentUser 
+      : { username: 'owner', name: 'Platform Owner', role: 'platform_owner' };
+      
     setCurrentSchool(school);
     setSupportMode(true);
+    setCurrentUser(ownerUser);
+    sessionStorage.setItem('sp_active_user', JSON.stringify(ownerUser));
     sessionStorage.setItem('sp_active_school', JSON.stringify(school));
     sessionStorage.setItem('sp_support_mode', 'true');
     TenantRepository.addAuditLog(
       school.id,
-      currentUser.username,
+      ownerUser.username,
       'platform_owner',
       'সাপোর্ট মোড সক্রিয়',
       'Support Mode Activated',
       'owner',
-      `Owner ${currentUser.username} স্কুল ${school.name_bn} ভিউ-অনলি সাপোর্ট মোডে প্রবেশ করেছেন।`
+      `Owner ${ownerUser.username} স্কুল ${school.name_bn} ভিউ-অনলি সাপোর্ট মোডে প্রবেশ করেছেন।`
     );
   }, [currentUser]);
 

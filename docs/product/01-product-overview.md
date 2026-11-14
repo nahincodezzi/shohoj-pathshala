@@ -65,3 +65,4 @@ graph TD
 2. **Branded SMS Bundles:** স্কুলের নোটিশ, রেজাল্ট ও ফি অ্যালার্টের জন্য বাল্ক এসএমএস প্যাক বিক্রি।
 3. **Custom Domain Add-on:** স্কুলের নিজস্ব ডোমেন (e.g. `www.bonduahs.edu.bd`) ম্যাপিং ফি।
 4. **Onboarding & Digitization Service:** স্কুলের বিগত বছরের শিক্ষার্থী ডেটা মাইগ্রেশন এবং কাস্টমাইজেশন কনসাল্টিং ফি।
+

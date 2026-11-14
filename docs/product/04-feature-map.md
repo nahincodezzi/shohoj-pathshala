@@ -35,3 +35,4 @@
 | `audit.log` | অ্যাক্টিভিটি হিস্ট্রি | Premium | `audit.view` | Admin, Owner | `AuditLog` | আর্থিক লেনদেন, নম্বর পরিবর্তন ও রিসেটের টাইমস্ট্যাম্পড অডিট রেকর্ড |
 | `owner.tenants` | টেন্যান্ট ব্যবস্থাপনা | Enterprise | `owner.access` | Owner | `School`, `Subscription` | স্কুলের স্ট্যাটাস নিয়ন্ত্রণ (Active/Grace/Suspended) ও মেয়াদ বৃদ্ধি |
 | `owner.support_mode` | সাপোর্ট মোড | Enterprise | `owner.access` | Owner, Admin | `TenantContext` | রিড-অনলি মোডে যেকোনো স্কুলের পোর্টালে ঢুকে ট্রাবলশুটিং |
+

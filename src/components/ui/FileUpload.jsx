@@ -163,6 +163,7 @@ export default function FileUpload({
         ref={fileInputRef}
         type="file"
         accept={accept}
+        aria-label={label || 'ফাইল আপলোড'}
         onChange={(e) => handleFileSelect(e.target.files?.[0])}
         className="hidden"
         disabled={disabled || loading}

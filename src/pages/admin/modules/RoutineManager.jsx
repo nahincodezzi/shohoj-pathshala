@@ -8,8 +8,9 @@ import Select from '../../../components/ui/Select';
 import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
+import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
-import { FileText, Plus, Download, Trash2, Calendar, BookOpen } from 'lucide-react';
+import { FileText, Plus, Download, Trash2, Calendar, BookOpen, Paperclip } from 'lucide-react';
 
 export default function RoutineManager() {
   const { school, supportMode } = useOutletContext();
@@ -24,7 +25,8 @@ export default function RoutineManager() {
     title: '',
     category: 'class_routine',
     effective_date: new Date().toISOString().slice(0, 10),
-    file_size: '১.২ MB'
+    file_size: '১.২ MB',
+    file_url: ''
   });
 
   const handleAddSubmit = (e) => {
@@ -37,7 +39,8 @@ export default function RoutineManager() {
         title: '',
         category: 'class_routine',
         effective_date: new Date().toISOString().slice(0, 10),
-        file_size: '১.২ MB'
+        file_size: '১.২ MB',
+        file_url: ''
       });
     } catch (err) {
       showToast(err.message || 'রুটিন সংরক্ষণে ত্রুটি হয়েছে', 'error');
@@ -150,6 +153,19 @@ export default function RoutineManager() {
                 onChange={(e) => setForm({ ...form, file_size: e.target.value })}
               />
             </div>
+
+            <FileUpload
+              label="রুটিন বা সিলেবাস ফাইল আপলোড করুন (PDF/DOC/Image)"
+              helperText="অফিশিয়াল রুটিন ফাইল সংযুক্ত করুন (সর্বোচ্চ ১০ মেগাবাইট)"
+              type="file"
+              accept=".pdf,image/*,.doc,.docx"
+              value={form.file_url}
+              onChange={(val, meta) => setForm({
+                ...form,
+                file_url: val,
+                file_size: meta?.size ? (meta.size / (1024 * 1024)).toFixed(1) + ' MB' : form.file_size
+              })}
+            />
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setAddModalOpen(false)}>

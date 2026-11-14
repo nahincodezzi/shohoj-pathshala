@@ -108,3 +108,4 @@ graph TD
 | `/{slug}/admin/cms` | সিএমএস কনফিগারেশন | superadmin | সকল প্ল্যান |
 | `/{slug}/admin/settings` | স্কুল সেটিংস | superadmin | সকল প্ল্যান |
 | `/{slug}/admin/users` | ইউজার ও পারমিশন | superadmin | Standard (৮ জন), Premium (১৫ জন) |
+

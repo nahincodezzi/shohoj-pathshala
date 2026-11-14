@@ -1584,7 +1584,17 @@ export default function SchoolPublicPage() {
                     variant="secondary"
                     size="sm"
                     icon={Download}
-                    onClick={() => showToast(`ডাউনলোড শুরু হয়েছে: ${rt.title} (${rt.file_size})`, 'success')}
+                    onClick={() => {
+                      if (rt.file_url) {
+                        const a = document.createElement('a');
+                        a.href = rt.file_url;
+                        a.download = `${rt.title}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                      }
+                      showToast(`ডাউনলোড শুরু হয়েছে: ${rt.title} (${rt.file_size})`, 'success');
+                    }}
                   >
                     ডাউনলোড (PDF)
                   </Button>

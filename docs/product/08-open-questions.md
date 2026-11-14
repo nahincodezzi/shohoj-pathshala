@@ -51,3 +51,4 @@
 | Q2 | ডিজাইন সিস্টেম | থ্রি-টিয়ার সিএসএস টোকেন (Primitive ➔ Semantic ➔ Utility) | [অনুমোদিত] |
 | Q3 | ফ্রন্টএন্ড স্টেট | TanStack Query (Server State) + Zustand (UI State) | [অনুমোদিত] |
 | Q4 | API কন্ট্রাক্ট | Pydantic v2 OpenAPI ➔ TypeScript Types অটো-জেনারেশন | [অনুমোদিত] |
+

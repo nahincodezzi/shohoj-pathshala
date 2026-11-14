@@ -190,3 +190,4 @@ graph LR
 ## ৭. অডিট ও লগিং আর্কিটেকচার (Audit & Security Trail)
 - আর্থিক লেনদেন (ফি আদায়, রসিদ বাতিল), ফলাফল পরিবর্তন, ইউজার পারমিশন পরিবর্তন এবং ফ্যাক্টরি রিসেট স্বয়ংক্রিয়ভাবে অডিট টেবিলে রেকর্ড হয়।
 - প্রতিটি অডিট লগে সংরক্ষিত হয়: `timestamp`, `school_id`, `actor_user_id`, `actor_role`, `action_type`, `entity_id`, `old_value`, `new_value`, এবং `client_ip`।
+

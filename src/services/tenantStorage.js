@@ -1502,6 +1502,13 @@ export const TenantRepository = {
   deleteTeacher(id, schoolId) {
     let teachers = getTable('teachers', SEED_TEACHERS);
     teachers = teachers.filter(t => !(t.id === id && t.school_id === schoolId));
+    // Re-index remaining teachers of this school to maintain clean sequence
+    let currentOrder = 1;
+    teachers.forEach(t => {
+      if (t.school_id === schoolId) {
+        t.order = currentOrder++;
+      }
+    });
     saveTable('teachers', teachers);
     return true;
   },

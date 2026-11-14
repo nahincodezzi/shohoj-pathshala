@@ -175,9 +175,17 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
           <div>
             {/* School Profile in Sidebar */}
             <div className="p-4 border-b border-border flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary font-heading font-bold text-base flex items-center justify-center shrink-0 border border-primary/25">
-                সপ
-              </div>
+              {school.logo ? (
+                <img
+                  src={school.logo}
+                  alt={school.name_bn}
+                  className="w-10 h-10 rounded-xl object-contain bg-surface-2 p-0.5 border border-border shrink-0 shadow-xs"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary font-heading font-bold text-base flex items-center justify-center shrink-0 border border-primary/25">
+                  {school.name_bn[0] || 'সপ'}
+                </div>
+              )}
               <div className="min-w-0">
                 <h2 className="text-xs font-bold text-text truncate leading-tight">
                   {school.name_bn}
