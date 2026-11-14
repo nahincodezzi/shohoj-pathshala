@@ -209,8 +209,8 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
   const visibleMenuItems = menuItems.filter(canShowItem);
 
   const roleNameMap = {
-    platform_owner: 'প্ল্যাটফর্ম Owner',
-    school_superadmin: 'সুপার অ্যাডমিন',
+    platform_owner: 'প্ল্যাটফর্ম সুপার অ্যাডমিন (Super Admin)',
+    school_superadmin: 'স্কুল অ্যাডমিন (Admin)',
     headmaster: 'প্রধান শিক্ষক',
     asst_headmaster: 'সহ-প্রধান শিক্ষক',
     teacher: 'সহকারী শিক্ষক',

@@ -31,7 +31,14 @@ import {
   Clock,
   Layers,
   Sparkles,
-  LogOut
+  LogOut,
+  Save,
+  Trash2,
+  HelpCircle,
+  Phone,
+  Mail,
+  Quote,
+  LayoutTemplate
 } from 'lucide-react';
 
 export default function OwnerPanel() {
@@ -48,9 +55,14 @@ export default function OwnerPanel() {
   const [ownerPassword, setOwnerPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState('schools'); // 'schools', 'audit', 'plans'
+  const [activeTab, setActiveTab] = useState('schools'); // 'schools', 'audit', 'plans', 'cms'
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Landing Page CMS State
+  const [landingForm, setLandingForm] = useState(() => TenantRepository.getLandingSettings());
+  const [cmsSaved, setCmsSaved] = useState(false);
+  const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
   // Onboarding Modal State
   const [onboardModalOpen, setOnboardModalOpen] = useState(false);
@@ -100,10 +112,34 @@ export default function OwnerPanel() {
     setLoginError('');
     try {
       login(ownerUsername, ownerPassword, null);
-      showToast(lang === 'bn' ? 'Platform Owner হিসেবে সফলভাবে লগইন হয়েছে' : 'Successfully logged in as Platform Owner');
+      showToast(lang === 'bn' ? 'সুপার অ্যাডমিন হিসেবে সফলভাবে লগইন হয়েছে' : 'Successfully logged in as Super Admin');
     } catch (err) {
       setLoginError(err.message || 'অথেনটিকেশন ব্যর্থ হয়েছে');
     }
+  };
+
+  const handleSaveCms = (e) => {
+    if (e) e.preventDefault();
+    TenantRepository.updateLandingSettings(landingForm);
+    setCmsSaved(true);
+    showToast(lang === 'bn' ? 'ল্যান্ডিং পেজের সকল কনটেন্ট সফলভাবে সংরক্ষিত হয়েছে!' : 'Landing Page content saved successfully!');
+    setTimeout(() => setCmsSaved(false), 3000);
+  };
+
+  const handleAddFaq = () => {
+    if (!newFaq.q.trim() || !newFaq.a.trim()) return;
+    setLandingForm(prev => ({
+      ...prev,
+      faqs: [...(prev.faqs || []), { q: newFaq.q.trim(), a: newFaq.a.trim() }]
+    }));
+    setNewFaq({ q: '', a: '' });
+  };
+
+  const handleRemoveFaq = (index) => {
+    setLandingForm(prev => ({
+      ...prev,
+      faqs: prev.faqs.filter((_, i) => i !== index)
+    }));
   };
 
   const filteredSchools = schools.filter(s => {
@@ -181,7 +217,7 @@ export default function OwnerPanel() {
         setConfirmResetSchool(null);
         showToast(lang === 'bn' ? 'অস্থায়ী পাসওয়ার্ড সফলভাবে তৈরি হয়েছে!' : 'Temporary password generated successfully!');
       } else {
-        showToast(lang === 'bn' ? 'সুপার অ্যাডমিন ইউজার পাওয়া যায়নি।' : 'Super admin user not found.', 'error');
+        showToast(lang === 'bn' ? 'স্কুল অ্যাডমিন ইউজার পাওয়া যায়নি।' : 'School admin user not found.', 'error');
       }
     } catch (err) {
       showToast(err.message || 'পাসওয়ার্ড রিসেট করা যায়নি', 'error');
@@ -291,6 +327,15 @@ export default function OwnerPanel() {
               }`}
             >
               {t.plans_validity}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('cms')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                activeTab === 'cms' ? 'bg-indigo text-white shadow-xs' : 'text-muted hover:text-text'
+              }`}
+            >
+              ল্যান্ডিং পেজ (CMS)
             </button>
             <button
               type="button"
@@ -617,6 +662,423 @@ export default function OwnerPanel() {
             </div>
           </div>
         )}
+
+        {/* ================= 5. LANDING PAGE CMS TAB (SUPER ADMIN ONLY) ================= */}
+        {activeTab === 'cms' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Top Bar for CMS */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-surface border border-border shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-indigo/10 text-indigo flex items-center justify-center">
+                  <LayoutTemplate className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-heading font-bold text-text">
+                    ল্যান্ডিং পেজ কনটেন্ট ম্যানেজমেন্ট (CMS)
+                  </h2>
+                  <p className="text-xs text-muted mt-0.5">
+                    মূল পাবলিক ল্যান্ডিং পেজের টেক্সট, হেডলাইন, মডিউল, প্রাইসিং প্ল্যান ও প্রায়শই জিজ্ঞাসিত প্রশ্ন সরাসরি পরিবর্তন ও সেভ করুন।
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/"
+                  target="_blank"
+                  className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold text-text hover:bg-surface-2 transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-4 h-4 text-muted" />
+                  লাইভ প্রিভিউ দেখুন
+                </Link>
+                <Button
+                  variant="primary"
+                  className="bg-indigo hover:bg-indigo/90 shadow-sm"
+                  icon={Save}
+                  onClick={handleSaveCms}
+                >
+                  {cmsSaved ? 'সংরক্ষিত হয়েছে!' : 'সব পরিবর্তন সেভ করুন'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Section 1: Hero & Contact Settings */}
+            <Card surface="surface" className="p-6 space-y-6 border border-border">
+              <div className="flex items-center gap-2 pb-3 border-b border-border">
+                <Sparkles className="w-5 h-5 text-indigo" />
+                <h3 className="text-base font-heading font-bold text-text">হিরো ব্যানার ও হেডলাইন</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="হিরো ব্যাজ ট্যাগলাইন (Badge Tag)"
+                  value={landingForm.hero_tag || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, hero_tag: e.target.value })}
+                  placeholder="যেমন: মাল্টি-স্কুল প্ল্যাটফর্ম · বাংলা + English"
+                />
+                <Input
+                  label="হেল্পলাইন ফোন নম্বর"
+                  value={landingForm.helpline_phone || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, helpline_phone: e.target.value })}
+                  placeholder="যেমন: ০১৮১২-৩৪৫৬৭৮"
+                />
+                <Input
+                  label="হেল্পলাইন ইমেইল"
+                  value={landingForm.helpline_email || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, helpline_email: e.target.value })}
+                  placeholder="যেমন: onboard@sohojpathshala.app"
+                />
+                <Input
+                  label="অ্যাডমিন বাটন টেক্সট (CTA 1)"
+                  value={landingForm.hero_btn_admin || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, hero_btn_admin: e.target.value })}
+                  placeholder="যেমন: স্কুল অ্যাডমিন প্যানেল"
+                />
+                <Input
+                  label="ফিচার বাটন টেক্সট (CTA 2)"
+                  value={landingForm.hero_btn_features || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, hero_btn_features: e.target.value })}
+                  placeholder="যেমন: প্ল্যাটফর্ম ফিচার দেখুন"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text">মূল শিরোনাম (Hero Title - নতুন লাইনের জন্য সরাসরি Enter দিন)</label>
+                <textarea
+                  rows={2}
+                  value={landingForm.hero_title || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, hero_title: e.target.value })}
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text">উপশিরোনাম (Hero Subtitle)</label>
+                <textarea
+                  rows={3}
+                  value={landingForm.hero_subtitle || ''}
+                  onChange={(e) => setLandingForm({ ...landingForm, hero_subtitle: e.target.value })}
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                />
+              </div>
+            </Card>
+
+            {/* Section 2: Core Modules */}
+            <Card surface="surface" className="p-6 space-y-6 border border-border">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-indigo" />
+                  <h3 className="text-base font-heading font-bold text-text">মূল মডিউলসমূহ (Core Modules)</h3>
+                </div>
+                <Badge variant="secondary">{landingForm.modules?.length || 0} টি মডিউল</Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(landingForm.modules || []).map((mod, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-surface-2 border border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-indigo">মডিউল {mod.num}</span>
+                    </div>
+                    <Input
+                      label="শিরোনাম"
+                      value={mod.title}
+                      onChange={(e) => {
+                        const updated = [...landingForm.modules];
+                        updated[idx].title = e.target.value;
+                        setLandingForm({ ...landingForm, modules: updated });
+                      }}
+                    />
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-text">বিবরণ</label>
+                      <textarea
+                        rows={2}
+                        value={mod.desc}
+                        onChange={(e) => {
+                          const updated = [...landingForm.modules];
+                          updated[idx].desc = e.target.value;
+                          setLandingForm({ ...landingForm, modules: updated });
+                        }}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Section 3: Pricing Plans */}
+            <Card surface="surface" className="p-6 space-y-6 border border-border">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-indigo" />
+                  <h3 className="text-base font-heading font-bold text-text">সাবস্ক্রিপশন প্রাইসিং প্ল্যানসমূহ (3 Tiers)</h3>
+                </div>
+                <Badge variant="indigo">Basic · Standard · Premium</Badge>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {(landingForm.pricing_plans || []).map((plan, idx) => (
+                  <div
+                    key={plan.id || idx}
+                    className={`p-5 rounded-2xl bg-surface-2 border space-y-4 ${
+                      plan.isPopular ? 'border-indigo ring-1 ring-indigo/50' : 'border-border'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono uppercase font-bold text-indigo">{plan.id}</span>
+                      <label className="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!plan.isPopular}
+                          onChange={(e) => {
+                            const updated = [...landingForm.pricing_plans];
+                            updated[idx].isPopular = e.target.checked;
+                            setLandingForm({ ...landingForm, pricing_plans: updated });
+                          }}
+                          className="rounded border-border text-indigo focus:ring-indigo"
+                        />
+                        <span className="text-muted font-medium">পপুলার ব্যাজ</span>
+                      </label>
+                    </div>
+
+                    <Input
+                      label="প্ল্যানের নাম"
+                      value={plan.name}
+                      onChange={(e) => {
+                        const updated = [...landingForm.pricing_plans];
+                        updated[idx].name = e.target.value;
+                        setLandingForm({ ...landingForm, pricing_plans: updated });
+                      }}
+                    />
+
+                    <Input
+                      label="ট্যাগলাইন / লক্ষ্য"
+                      value={plan.tagline}
+                      onChange={(e) => {
+                        const updated = [...landingForm.pricing_plans];
+                        updated[idx].tagline = e.target.value;
+                        setLandingForm({ ...landingForm, pricing_plans: updated });
+                      }}
+                    />
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        label="মূল্য"
+                        value={plan.price}
+                        onChange={(e) => {
+                          const updated = [...landingForm.pricing_plans];
+                          updated[idx].price = e.target.value;
+                          setLandingForm({ ...landingForm, pricing_plans: updated });
+                        }}
+                      />
+                      <Input
+                        label="মেয়াদ / সাবটেক্সট"
+                        value={plan.subtext}
+                        onChange={(e) => {
+                          const updated = [...landingForm.pricing_plans];
+                          updated[idx].subtext = e.target.value;
+                          setLandingForm({ ...landingForm, pricing_plans: updated });
+                        }}
+                      />
+                    </div>
+
+                    <Input
+                      label="বাটন টেক্সট (CTA)"
+                      value={plan.cta || ''}
+                      onChange={(e) => {
+                        const updated = [...landingForm.pricing_plans];
+                        updated[idx].cta = e.target.value;
+                        setLandingForm({ ...landingForm, pricing_plans: updated });
+                      }}
+                    />
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-text">ফিচার তালিকা</label>
+                        <span className="text-[11px] text-muted">প্রতি লাইনে একটি ফিচার</span>
+                      </div>
+                      <textarea
+                        rows={6}
+                        value={(plan.features || []).join('\n')}
+                        onChange={(e) => {
+                          const updated = [...landingForm.pricing_plans];
+                          updated[idx].features = e.target.value.split('\n').filter(Boolean);
+                          setLandingForm({ ...landingForm, pricing_plans: updated });
+                        }}
+                        className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs font-sans text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Section 4: Principal Testimonial */}
+            <Card surface="surface" className="p-6 space-y-6 border border-border">
+              <div className="flex items-center gap-2 pb-3 border-b border-border">
+                <Quote className="w-5 h-5 text-indigo" />
+                <h3 className="text-base font-heading font-bold text-text">প্রধান শিক্ষকের প্রশংসাপত্র (Testimonial)</h3>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text">বাণী / মন্তব্য (Quote)</label>
+                <textarea
+                  rows={3}
+                  value={landingForm.testimonial?.quote || ''}
+                  onChange={(e) => setLandingForm({
+                    ...landingForm,
+                    testimonial: { ...(landingForm.testimonial || {}), quote: e.target.value }
+                  })}
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Input
+                  label="নাম"
+                  value={landingForm.testimonial?.author || ''}
+                  onChange={(e) => setLandingForm({
+                    ...landingForm,
+                    testimonial: { ...(landingForm.testimonial || {}), author: e.target.value }
+                  })}
+                />
+                <Input
+                  label="পদবি ও প্রতিষ্ঠান"
+                  value={landingForm.testimonial?.designation || ''}
+                  onChange={(e) => setLandingForm({
+                    ...landingForm,
+                    testimonial: { ...(landingForm.testimonial || {}), designation: e.target.value }
+                  })}
+                />
+                <Input
+                  label="EIIN ও জেলা"
+                  value={landingForm.testimonial?.meta || ''}
+                  onChange={(e) => setLandingForm({
+                    ...landingForm,
+                    testimonial: { ...(landingForm.testimonial || {}), meta: e.target.value }
+                  })}
+                />
+                <Input
+                  label="প্রোফাইল ইনিশিয়াল"
+                  value={landingForm.testimonial?.avatar || ''}
+                  onChange={(e) => setLandingForm({
+                    ...landingForm,
+                    testimonial: { ...(landingForm.testimonial || {}), avatar: e.target.value }
+                  })}
+                />
+              </div>
+            </Card>
+
+            {/* Section 5: FAQs */}
+            <Card surface="surface" className="p-6 space-y-6 border border-border">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-indigo" />
+                  <h3 className="text-base font-heading font-bold text-text">সচরাচর জিজ্ঞাসিত প্রশ্ন (FAQ Management)</h3>
+                </div>
+                <Badge variant="secondary">{landingForm.faqs?.length || 0} টি প্রশ্ন</Badge>
+              </div>
+
+              <div className="space-y-4">
+                {(landingForm.faqs || []).map((faq, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-surface-2 border border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-indigo">প্রশ্ন #{idx + 1}</span>
+                      <Button
+                        variant="danger"
+                        size="xs"
+                        icon={Trash2}
+                        onClick={() => handleRemoveFaq(idx)}
+                      >
+                        মুছে ফেলুন
+                      </Button>
+                    </div>
+                    <Input
+                      label="প্রশ্ন"
+                      value={faq.q}
+                      onChange={(e) => {
+                        const updated = [...landingForm.faqs];
+                        updated[idx].q = e.target.value;
+                        setLandingForm({ ...landingForm, faqs: updated });
+                      }}
+                    />
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-text">উত্তর</label>
+                      <textarea
+                        rows={2}
+                        value={faq.a}
+                        onChange={(e) => {
+                          const updated = [...landingForm.faqs];
+                          updated[idx].a = e.target.value;
+                          setLandingForm({ ...landingForm, faqs: updated });
+                        }}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add New FAQ Form */}
+                <div className="p-4 rounded-xl border border-dashed border-border bg-surface/50 space-y-3">
+                  <h4 className="text-xs font-heading font-bold text-text flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-indigo" />
+                    নতুন প্রশ্ন ও উত্তর যোগ করুন
+                  </h4>
+                  <Input
+                    placeholder="প্রশ্ন লিখুন..."
+                    value={newFaq.q}
+                    onChange={(e) => setNewFaq({ ...newFaq, q: e.target.value })}
+                  />
+                  <textarea
+                    rows={2}
+                    placeholder="উত্তর লিখুন..."
+                    value={newFaq.a}
+                    onChange={(e) => setNewFaq({ ...newFaq, a: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={Plus}
+                      onClick={handleAddFaq}
+                      disabled={!newFaq.q.trim() || !newFaq.a.trim()}
+                    >
+                      তালিকায় যোগ করুন
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Section 6: Footer & Copyright */}
+            <Card surface="surface" className="p-6 space-y-4 border border-border">
+              <h3 className="text-base font-heading font-bold text-text">ফুটার ও কপিরাইট টেক্সট</h3>
+              <Input
+                label="কপিরাইট লাইন"
+                value={landingForm.footer_copyright || ''}
+                onChange={(e) => setLandingForm({ ...landingForm, footer_copyright: e.target.value })}
+              />
+            </Card>
+
+            {/* Bottom Floating Save Bar */}
+            <div className="p-4 rounded-2xl bg-surface border border-indigo/30 shadow-lg flex items-center justify-between">
+              <div>
+                <span className="text-sm font-bold text-text block">সব পরিবর্তন প্রস্তুত?</span>
+                <span className="text-xs text-muted">সেভ করার সাথে সাথে মূল ল্যান্ডিং পেজে লাইভ আপডেট দেখা যাবে।</span>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                className="bg-indigo hover:bg-indigo/90 shadow-md"
+                icon={Save}
+                onClick={handleSaveCms}
+              >
+                {cmsSaved ? 'সংরক্ষিত হয়েছে!' : 'সব পরিবর্তন সেভ করুন'}
+              </Button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* D14: Admin Password Reset Confirmation Modal */}
@@ -629,7 +1091,7 @@ export default function OwnerPanel() {
         >
           <div className="space-y-4">
             <p className="text-sm text-text leading-relaxed">
-              আপনি কি নিশ্চিত যে <strong>{confirmResetSchool.name_bn}</strong>-এর সুপার অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান?
+              আপনি কি নিশ্চিত যে <strong>{confirmResetSchool.name_bn}</strong>-এর স্কুল অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান?
             </p>
             <p className="text-xs text-muted">
               {t.confirm_reset_msg}
@@ -738,7 +1200,7 @@ export default function OwnerPanel() {
                 ]}
               />
               <Input
-                label="সুপার অ্যাডমিন ইউজারনেম"
+                label="স্কুল অ্যাডমিন ইউজারনেম"
                 value={onboardForm.admin_username}
                 onChange={(e) => setOnboardForm({ ...onboardForm, admin_username: e.target.value })}
                 required
@@ -801,12 +1263,12 @@ export default function OwnerPanel() {
         <Modal
           isOpen={!!resetModalSchool}
           onClose={() => setResetModalSchool(null)}
-          title="সুপার অ্যাডমিন পাসওয়ার্ড রিসেট"
+          title="স্কুল অ্যাডমিন পাসওয়ার্ড রিসেট"
           subtitle={`স্কুল: ${resetModalSchool.name_bn}`}
         >
           <div className="p-4 text-center space-y-4">
             <p className="text-xs text-muted">
-              সুপার অ্যাডমিনের জন্য নতুন একটি অস্থায়ী পাসওয়ার্ড তৈরি করা হয়েছে। পরবর্তী লগইনে পরিবর্তন বাধ্যতামূলক:
+              স্কুল অ্যাডমিনের জন্য নতুন একটি অস্থায়ী পাসওয়ার্ড তৈরি করা হয়েছে। পরবর্তী লগইনে পরিবর্তন বাধ্যতামূলক:
             </p>
 
             <div className="p-4 rounded-xl bg-surface-2 border border-border font-mono text-center max-w-xs mx-auto">

@@ -1,7 +1,7 @@
 export const ownerTranslations = {
   bn: {
     brand_title: 'সহজ পাঠশালা',
-    owner_badge: 'Owner',
+    owner_badge: 'সুপার অ্যাডমিন (Super Admin)',
     dashboard: 'ড্যাশবোর্ড',
     schools: 'স্কুলসমূহ',
     add_school: 'নতুন স্কুল যোগ করুন',
@@ -40,14 +40,14 @@ export const ownerTranslations = {
     support_mode_desc: 'আপনি ভিউ-অনলি মোডে স্কুলের ড্যাশবোর্ড পরিদর্শন করছেন।',
     exit_support: 'বের হন',
     onboarding_title: 'নতুন স্কুল অনবোর্ডিং উইজার্ড',
-    onboarding_subtitle: 'সিস্টেমে সম্পূর্ণ নতুন স্কুল ও সুপার অ্যাডমিন তৈরি করুন',
-    temp_pass_alert: 'সুপার অ্যাডমিনের জন্য একটি অস্থায়ী পাসওয়ার্ড তৈরি হয়েছে। এটি শুধুমাত্র একবারই দেখানো হবে, কপি করে সংরক্ষণ করুন:',
-    confirm_reset_title: 'সুপার অ্যাডমিন পাসওয়ার্ড রিসেট নিশ্চিতকরণ',
-    confirm_reset_msg: 'আপনি কি নিশ্চিত যে এই স্কুলের সুপার অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান? এটি একটি নতুন ওয়ান-টাইম পাসওয়ার্ড জেনারেট করবে।'
+    onboarding_subtitle: 'সিস্টেমে সম্পূর্ণ নতুন স্কুল ও অ্যাডমিন অ্যাকাউন্ট তৈরি করুন',
+    temp_pass_alert: 'স্কুল অ্যাডমিনের জন্য একটি অস্থায়ী পাসওয়ার্ড তৈরি হয়েছে। এটি শুধুমাত্র একবারই দেখানো হবে, কপি করে সংরক্ষণ করুন:',
+    confirm_reset_title: 'স্কুল অ্যাডমিন পাসওয়ার্ড রিসেট নিশ্চিতকরণ',
+    confirm_reset_msg: 'আপনি কি নিশ্চিত যে এই স্কুলের অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান? এটি একটি নতুন ওয়ান-টাইম পাসওয়ার্ড জেনারেট করবে।'
   },
   en: {
     brand_title: 'Sohoj Pathshala',
-    owner_badge: 'Owner',
+    owner_badge: 'Super Admin',
     dashboard: 'Dashboard',
     schools: 'Schools',
     add_school: 'Add New School',
@@ -86,9 +86,9 @@ export const ownerTranslations = {
     support_mode_desc: 'You are viewing school portal in View-Only mode.',
     exit_support: 'Exit',
     onboarding_title: 'New School Onboarding Wizard',
-    onboarding_subtitle: 'Create a brand new school tenant and super admin user',
-    temp_pass_alert: 'A temporary password has been generated for the Super Admin. This is shown only once, copy and save it:',
-    confirm_reset_title: 'Confirm Super Admin Password Reset',
-    confirm_reset_msg: 'Are you sure you want to reset the Super Admin password for this school? A new temporary one-time password will be generated.'
+    onboarding_subtitle: 'Create a brand new school tenant and admin user',
+    temp_pass_alert: 'A temporary password has been generated for the School Admin. This is shown only once, copy and save it:',
+    confirm_reset_title: 'Confirm School Admin Password Reset',
+    confirm_reset_msg: 'Are you sure you want to reset the Admin password for this school? A new temporary one-time password will be generated.'
   }
 };

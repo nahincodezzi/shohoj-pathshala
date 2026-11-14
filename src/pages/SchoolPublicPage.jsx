@@ -2660,7 +2660,7 @@ export default function SchoolPublicPage() {
               const studentFather = matchedStudent?.father_name || 'মোঃ রফিকুল ইসলাম';
 
               return (
-                <Card surface="surface" className="p-6 sm:p-8 border-2 border-primary/30 shadow-lg printable-marksheet-sheet">
+                <Card surface="surface" className="p-6 sm:p-8 border-2 border-primary/30 shadow-lg printable-marksheet-sheet page-fit-single">
                   {/* Institutional Header Letterhead (D26) */}
                   <div className="text-center pb-6 border-b-2 border-primary/40 space-y-1">
                     <div className="flex items-center justify-center gap-3 mb-2">
@@ -3129,17 +3129,72 @@ export default function SchoolPublicPage() {
         <Modal
           isOpen={!!readingNotice}
           onClose={() => setReadingNotice(null)}
-          title={readingNotice.title}
+          title="প্রাতিষ্ঠানিক নোটিশ"
           subtitle={`প্রকাশকাল: ${readingNotice.date} • ক্যাটাগরি: ${readingNotice.category}`}
           maxWidth="max-w-2xl"
         >
           <div className="space-y-5 text-xs">
-            <div className="p-4 rounded-xl bg-surface-2 border border-border leading-relaxed text-text whitespace-pre-wrap">
-              {readingNotice.description}
+            {/* Printable Notice Paper */}
+            <div className="printable-notice-paper page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-xs">
+              {/* Institutional Header Letterhead */}
+              <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                <div className="flex items-center gap-3">
+                  {(settings?.logo || school.logo) ? (
+                    <img src={settings?.logo || school.logo} alt="School Logo" className="w-12 h-12 object-contain rounded-lg border border-slate-300 p-0.5 bg-white shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-emerald-700 text-white font-bold text-xl flex items-center justify-center shrink-0">
+                      {school.name_bn[0]}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-heading font-extrabold text-lg text-slate-900 leading-tight">
+                      {school.name_bn}
+                    </h3>
+                    <p className="text-[11px] text-slate-700">
+                      EIIN: {school.eiin} • {school.board} শিক্ষা বোর্ড • জেলা: {school.district}
+                    </p>
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                      {settings?.address_bn}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="px-2.5 py-1 rounded bg-slate-100 font-bold text-[11px] border border-slate-300 block">
+                    অফিসিয়াল বিজ্ঞপ্তি
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono block mt-1">
+                    স্মারক: {school.code_prefix || 'BDHS'}-বিজ্ঞপ্তি-{readingNotice.id || '১'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Notice Metadata */}
+              <div className="flex justify-between items-center text-[11px] bg-slate-50 p-2.5 rounded border border-slate-200">
+                <span><strong>বিষয়:</strong> {readingNotice.title}</span>
+                <span className="font-mono"><strong>তারিখ:</strong> {readingNotice.date}</span>
+              </div>
+
+              {/* Notice Description Body */}
+              <div className="p-4 rounded bg-white leading-relaxed text-slate-900 whitespace-pre-wrap text-xs sm:text-sm min-h-[140px]">
+                {readingNotice.description}
+              </div>
+
+              {/* Official Signatures */}
+              <div className="pt-8 flex justify-between items-end text-[11px] text-slate-600 border-t border-dashed border-slate-300">
+                <div className="text-center">
+                  <div className="w-32 border-b border-slate-400 mb-1 mx-auto" />
+                  <span>নোটিশ ইনচার্জ</span>
+                </div>
+                <div className="text-center">
+                  <div className="w-36 border-b border-slate-400 mb-1 mx-auto" />
+                  <strong className="text-slate-900 block font-heading">{settings?.headmaster_name || 'প্রধান শিক্ষক'}</strong>
+                  <span className="text-[10px]">প্রধান শিক্ষক • {school.name_bn}</span>
+                </div>
+              </div>
             </div>
 
             {readingNotice.attachment && (
-              <div className="p-4 rounded-xl bg-primary-soft border border-primary/30 flex items-center justify-between gap-4">
+              <div className="p-4 rounded-xl bg-primary-soft border border-primary/30 flex items-center justify-between gap-4 no-print">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5" />
@@ -3161,12 +3216,12 @@ export default function SchoolPublicPage() {
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-2 border-t border-border">
+            <div className="flex justify-between items-center pt-2 border-t border-border no-print">
               <Button variant="secondary" size="sm" onClick={() => setReadingNotice(null)}>
                 বন্ধ করুন
               </Button>
               <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
-                প্রিন্ট করুন
+                প্রিন্ট / সেভ PDF
               </Button>
             </div>
           </div>
@@ -3320,15 +3375,26 @@ export default function SchoolPublicPage() {
           maxWidth="max-w-2xl"
         >
           <div className="space-y-6">
-            <div className="p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-5 shadow-inner">
-              <div className="text-center border-b-2 border-black pb-3">
-                <h3 className="font-heading font-bold text-lg text-slate-900 leading-tight">
-                  {school.name_bn}
-                </h3>
-                <p className="text-[11px] text-slate-700">
-                  {settings?.address_bn} • EIIN: {school.eiin} • কুমিল্লা শিক্ষা বোর্ড
-                </p>
-                <div className="inline-block mt-2 px-3 py-1 bg-slate-100 border border-slate-300 rounded font-bold text-xs uppercase tracking-wide">
+            <div className="printable-admit-card page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-inner">
+              <div className="flex items-center justify-center gap-3 border-b-2 border-black pb-3">
+                {(settings?.logo || school.logo) ? (
+                  <img src={settings?.logo || school.logo} alt="School Logo" className="w-12 h-12 object-contain rounded-lg border border-slate-300 p-0.5 bg-white shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-emerald-700 text-white font-bold text-lg flex items-center justify-center shrink-0">
+                    {school.name_bn[0]}
+                  </div>
+                )}
+                <div className="text-center">
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900 leading-tight">
+                    {school.name_bn}
+                  </h3>
+                  <p className="text-[11px] text-slate-700">
+                    {settings?.address_bn} • EIIN: {school.eiin} • {school.board} শিক্ষা বোর্ড
+                  </p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="inline-block px-3 py-1 bg-slate-100 border border-slate-300 rounded font-bold text-xs uppercase tracking-wide">
                   ভর্তি পরীক্ষার প্রবেশপত্র — সেশন ২০২৭
                 </div>
               </div>

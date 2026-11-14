@@ -124,14 +124,109 @@ input::placeholder, textarea::placeholder {
   color: var(--subtle);
 }
 
-/* প্রিন্ট স্টাইল: যে মোডই থাকুক সাদা কাগজে কালো লেখা */
+/* ==========================================================================
+   সহজ পাঠশালা — Universal High-Precision Print Engine (100% Crisp White & Clean Pagination)
+   ========================================================================== */
 @media print {
-  body {
-    background: #FFFFFF !important;
-    color: #000000 !important;
+  @page {
+    size: A4;
+    margin: 10mm 15mm;
   }
-  .no-print {
+
+  html, body {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset all dark backgrounds and ensure crisp contrast */
+  *, *::before, *::after {
+    background-color: transparent !important;
+    color: #000000 !important;
+    border-color: #CBD5E1 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* Keep table borders, white backgrounds for printable document cards */
+  .bg-white, .printable-money-receipt, .printable-marksheet-sheet, .printable-notice-paper, .printable-admit-card, .printable-card {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #94A3B8 !important;
+  }
+
+  .bg-slate-50, .bg-slate-100, th {
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+  }
+
+  /* Hide all web chrome, navigation, headers, footers, buttons */
+  .no-print,
+  header,
+  nav,
+  aside,
+  button:not(.printable-btn),
+  .theme-toggle,
+  [aria-label="প্রধান নেভিগেশন"],
+  [aria-label="অ্যাডমিন মেনু"],
+  .sticky {
     display: none !important;
+  }
+
+  /* Single-page strict containment */
+  .page-fit-single,
+  .printable-marksheet-sheet,
+  .printable-money-receipt,
+  .printable-admit-card,
+  .printable-notice-paper {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    max-height: 275mm !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Multi-page dynamic pagination */
+  .page-fit-multi,
+  .printable-report-table {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  tr, .printable-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  /* High contrast badge and status in print */
+  .badge, [class*="rounded-full"] {
+    border: 1px solid #475569 !important;
+    color: #000000 !important;
+    background-color: #F1F5F9 !important;
+    padding: 2px 8px !important;
+  }
+
+  /* Modal backdrop reset for print */
+  .fixed.inset-0.bg-black\/60,
+  .fixed.inset-0.bg-black\/50,
+  .fixed.inset-0.bg-black\/70 {
+    background: transparent !important;
+    position: static !important;
   }
 }
 

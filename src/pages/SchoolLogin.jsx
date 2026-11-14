@@ -208,7 +208,7 @@ export default function SchoolLogin() {
                   onClick={() => fillCredentials('admin', 'password123')}
                   className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-primary-soft hover:text-primary text-text font-medium cursor-pointer transition-colors border border-border"
                 >
-                  সুপার অ্যাডমিন
+                  অ্যাডমিন (Admin)
                 </button>
                 <button
                   type="button"
@@ -239,7 +239,7 @@ export default function SchoolLogin() {
         {/* STRICT Security Notice at the Bottom (NO PUBLIC REGISTRATION) */}
         <div className="mt-8 pt-6 border-t border-border text-center text-xs text-muted max-w-[420px] mx-auto">
           <p>
-            অ্যাকাউন্ট নেই? স্কুলের সুপার অ্যাডমিনের সাথে যোগাযোগ করুন। এখানে নিজে অ্যাকাউন্ট খোলা যায় না।
+            অ্যাকাউন্ট নেই? স্কুলের অ্যাডমিনের সাথে যোগাযোগ করুন। এখানে নিজে অ্যাকাউন্ট খোলা যায় না।
           </p>
         </div>
       </div>
@@ -266,9 +266,9 @@ export default function SchoolLogin() {
             <div className="space-y-2">
               <span className="font-bold text-text block">কীভাবে পাসওয়ার্ড রিসেট করবেন:</span>
               <ol className="list-decimal list-inside space-y-1 text-muted">
-                <li>আপনার প্রতিষ্ঠানের সুপার অ্যাডমিন বা প্রধান শিক্ষকের কার্যালয়ে যোগাযোগ করুন।</li>
+                <li>আপনার প্রতিষ্ঠানের অ্যাডমিন বা প্রধান শিক্ষকের কার্যালয়ে যোগাযোগ করুন।</li>
                 <li>অ্যাডমিন প্যানেল থেকে আপনার ইউজারনেম সিলেক্ট করে পাসওয়ার্ড রিসেট করে দেওয়া হবে।</li>
-                <li>স্কুল সুপার অ্যাডমিন অ্যাকাউন্টের ক্ষেত্রে সহজ পাঠশালা সাপোর্ট হেল্পলাইনে যোগাযোগ করুন।</li>
+                <li>স্কুল অ্যাডমিন অ্যাকাউন্টের ক্ষেত্রে প্ল্যাটফর্ম সুপার অ্যাডমিন হেল্পলাইনে যোগাযোগ করুন।</li>
               </ol>
             </div>
 

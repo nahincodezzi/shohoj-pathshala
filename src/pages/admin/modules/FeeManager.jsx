@@ -321,7 +321,7 @@ export default function FeeManager() {
         >
           <div className="space-y-6">
             {/* The 2-Part Receipt Layout (D26) */}
-            <div className="printable-money-receipt p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-6 shadow-inner relative">
+            <div className="printable-money-receipt page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-5 shadow-inner relative">
               
               {/* Void Watermark if voided */}
               {printReceipt.status === 'voided' && (
@@ -333,13 +333,22 @@ export default function FeeManager() {
               )}
 
               {/* Part 1: Student Copy */}
-              <div className="space-y-3 pb-6">
+              <div className="space-y-3 pb-4">
                 <div className="flex items-center justify-between border-b border-black pb-2">
-                  <div>
-                    <h3 className="font-bold text-base">{school.name_bn}</h3>
-                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
+                  <div className="flex items-center gap-3">
+                    {school.logo ? (
+                      <img src={school.logo} alt="Logo" className="w-10 h-10 object-contain rounded border border-slate-300 p-0.5 bg-white shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-emerald-700 text-white font-bold text-base flex items-center justify-center shrink-0">
+                        {school.name_bn[0]}
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-bold text-base leading-tight">{school.name_bn}</h3>
+                      <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
+                    </div>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300">
+                  <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300 shrink-0">
                     শিক্ষার্থী কপি (Student Copy)
                   </span>
                 </div>
@@ -369,14 +378,14 @@ export default function FeeManager() {
                   <p className="text-[10px] text-red-600 font-bold">বাতিলের কারণ: {printReceipt.void_reason}</p>
                 )}
 
-                <div className="pt-4 flex justify-between items-end text-[10px] text-slate-500">
+                <div className="pt-3 flex justify-between items-end text-[10px] text-slate-500">
                   <span>আদায়কারী: {printReceipt.created_by}</span>
                   <span className="border-t border-slate-400 pt-1">অফিস সীল ও স্বাক্ষর</span>
                 </div>
               </div>
 
               {/* Scissor Cut Line Divider (Section 9 Requirement) */}
-              <div className="relative border-t-2 border-dashed border-slate-400 my-4 flex items-center justify-center">
+              <div className="relative border-t-2 border-dashed border-slate-400 my-2 flex items-center justify-center">
                 <span className="absolute bg-white px-3 text-[10px] text-slate-500 flex items-center gap-1 font-mono">
                   <Scissors className="w-3.5 h-3.5" /> এখান থেকে কেটে আলাদা করুন
                 </span>
@@ -385,11 +394,20 @@ export default function FeeManager() {
               {/* Part 2: Office Copy */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between border-b border-black pb-2">
-                  <div>
-                    <h3 className="font-bold text-base">{school.name_bn}</h3>
-                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
+                  <div className="flex items-center gap-3">
+                    {school.logo ? (
+                      <img src={school.logo} alt="Logo" className="w-10 h-10 object-contain rounded border border-slate-300 p-0.5 bg-white shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-emerald-700 text-white font-bold text-base flex items-center justify-center shrink-0">
+                        {school.name_bn[0]}
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-bold text-base leading-tight">{school.name_bn}</h3>
+                      <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
+                    </div>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300">
+                  <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300 shrink-0">
                     অফিস কপি (Office Copy)
                   </span>
                 </div>

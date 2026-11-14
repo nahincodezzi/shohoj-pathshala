@@ -42,6 +42,7 @@ export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [openFaq, setOpenFaq] = useState(null);
   const schools = TenantRepository.getSchools();
+  const landing = TenantRepository.getLandingSettings();
 
   const filteredSchools = schools.filter(s => 
     s.name_bn.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,100 +50,28 @@ export default function LandingPage() {
     s.eiin.includes(searchQuery)
   );
 
-  const modules = [
-    { num: '01', title: 'শিক্ষার্থী ব্যবস্থাপনা', desc: 'শ্রেণিভিত্তিক রোল, ডিজিটাল স্টুডেন্ট আইডি ও ছবিসহ তথ্যভাণ্ডার।', icon: Users },
-    { num: '02', title: 'অনলাইন ভর্তি', desc: '৩-ধাপের আবেদন ফরম, তাৎক্ষণিক ট্র্যাকিং কোড ও ডিজিটাল প্রবেশপত্র প্রিন্ট।', icon: GraduationCap },
-    { num: '03', title: 'রেজাল্ট ও GPA', desc: 'বোর্ড গ্রেডিং অনুযায়ী বিষয়ভিত্তিক নম্বর, জিপিএ ও মার্কশিট জেনারেশন।', icon: FileText },
-    { num: '04', title: 'ফি ও রসিদ', desc: 'বিকাশ/নগদ/ক্যাশ ফি আদায়, ২-কপি মানি রিসিট ও কারণসহ Void নীতি।', icon: CreditCard },
-    { num: '05', title: 'শিক্ষক ও কর্মচারী', desc: 'পদবি ও শিক্ষাগত যোগ্যতাসহ পূর্ণাঙ্গ অ্যাকাডেমিক ডিরেক্টরি।', icon: UserCheck },
-    { num: '06', title: 'নোটিশ বোর্ড', desc: 'হেডার জরুরি টিকার, ক্যাটাগরি ফিল্টার ও পিডিএফ ডাউনলোড সুবিধা।', icon: Bell },
-    { num: '07', title: 'ওয়েবসাইট ও ব্র্যান্ডিং', desc: 'হিরো স্লাইডার, বাণী, পোশাক নীতিমালা, ফটো গ্যালারি ও কাস্টম থিম।', icon: Globe },
-    { num: '08', title: 'নিরাপত্তা ও অডিট', desc: 'রোলভিত্তিক অনুমতি, ৫ বার ভুলে লকআউট ও পূর্ণাঙ্গ অডিট ট্রেইল।', icon: ShieldCheck },
-  ];
+  const moduleIconList = [Users, GraduationCap, FileText, CreditCard, UserCheck, Bell, Globe, ShieldCheck];
+  const modules = (landing.modules || []).map((m, i) => ({
+    ...m,
+    icon: moduleIconList[i % moduleIconList.length]
+  }));
 
-  const onboardingSteps = [
+  const onboardingSteps = landing.onboarding_steps || [
     { step: '১', title: 'স্কুল তৈরি', desc: 'EIIN, নাম, কোড ও সাবডোমেইন দিয়ে নতুন টেন্যান্ট তৈরি।' },
-    { step: '২', title: 'অ্যাডমিন অ্যাকাউন্ট', desc: 'সুপার অ্যাডমিনের জন্য সুরক্ষিত অ্যাকাউন্ট ও পাসওয়ার্ড বরাদ্দ।' },
+    { step: '২', title: 'অ্যাডমিন অ্যাকাউন্ট', desc: 'স্কুল অ্যাডমিনের জন্য সুরক্ষিত অ্যাকাউন্ট ও পাসওয়ার্ড বরাদ্দ।' },
     { step: '৩', title: 'সেটআপ উইজার্ড', desc: 'লোগো, প্রধান শিক্ষকের বাণী, রুটিন ও প্রাতিষ্ঠানিক তথ্য কনফিগার।' },
     { step: '৪', title: 'সাইট লাইভ', desc: 'তাত্ক্ষণিকভাবে পাবলিক পোর্টাল ও অ্যাডমিন প্যানেল সক্রিয়।' },
   ];
 
-  const pricingPlans = [
-    {
-      id: 'basic',
-      name: 'বেসিক প্ল্যান',
-      tagline: 'ছোট শিক্ষাপ্রতিষ্ঠান ও প্রাথমিক বিদ্যালয়ের জন্য',
-      price: 'ফ্রি ট্রায়াল',
-      subtext: 'বাৎসরিক ৳২,৯৯৯',
-      features: [
-        'সর্বোচ্চ ১,০০০ শিক্ষার্থী নিবন্ধন',
-        'পাবলিক ওয়েবসাইট ও হিরো ব্যানার',
-        'নোটিশ বোর্ড ও রুটিন প্রকাশ',
-        'শিক্ষক ও কর্মচারী পরিষদ তালিকা',
-        'স্ট্যান্ডার্ড ক্লাউড ডেটা ব্যাকআপ'
-      ],
-      isPopular: false,
-      cta: 'বিনামূল্যে পরখ করুন'
-    },
-    {
-      id: 'standard',
-      name: 'স্ট্যান্ডার্ড প্ল্যান',
-      tagline: 'মাধ্যমিক বিদ্যালয়ের জন্য সর্বাধিক জনপ্রিয় সমাধান',
-      price: '৳৭,৯৯৯',
-      subtext: 'প্রতি বছর (সব ফিচার উন্মুক্ত)',
-      features: [
-        'সর্বোচ্চ ২,৫০০ শিক্ষার্থী ধারণক্ষমতা',
-        'সম্পূর্ণ অনলাইন ভর্তি ও ডিজিটাল ট্র্যাকিং কোড',
-        'বিষয়ভিত্তিক রেজাল্ট, GPA ও মার্কশিট জেনারেশন',
-        'ফি কালেকশন ও স্বয়ংক্রিয় ২-কপি মানি রিসিট',
-        'রোলভিত্তিক ইউজার পারমিশন (RBAC)',
-        'পূর্ণাঙ্গ অডিট ট্রেইল ও নিরাপত্তা সুরক্ষা',
-        'কাস্টম ব্র্যান্ডিং ও ডার্ক/লাইট মোড'
-      ],
-      isPopular: true,
-      cta: 'জনপ্রিয় চয়েস বেছে নিন'
-    },
-    {
-      id: 'premium',
-      name: 'প্রিমিয়াম প্ল্যান',
-      tagline: 'বৃহৎ মডেল স্কুল, কলেজ ও মাদ্রাসার জন্য',
-      price: '৳১৪,৯৯৯',
-      subtext: 'প্রতি বছর (ডেডিকেটেড সহায়তা)',
-      features: [
-        'সর্বোচ্চ ৫,০০০+ শিক্ষার্থী ধারণক্ষমতা',
-        'নিজস্ব কাস্টম ডোমেইন (যেমন: school.edu.bd)',
-        'এসএমএস গেটওয়ে ইন্টিগ্রেশন সুবিধা',
-        'মাল্টি-শিফট ক্লাস ও পরীক্ষার রুটিন',
-        'ডেডিকেটেড অনবোর্ডিং ম্যানেজার',
-        '২৪/৭ প্রায়োরিটি ফোন ও হোয়াটসঅ্যাপ হেল্পলাইন'
-      ],
-      isPopular: false,
-      cta: 'প্রিমিয়াম অনবোর্ডিং'
-    }
-  ];
-
-  const faqs = [
-    {
-      q: 'সহজ পাঠশালায় স্কুল অনবোর্ড করতে কত সময় লাগে?',
-      a: 'মাত্র ২৪ ঘণ্টার মধ্যে! আপনার প্রতিষ্ঠানের EIIN নম্বর, নাম এবং প্রধান শিক্ষকের তথ্য জমা দিলেই আমাদের ইঞ্জিনিয়ারিং টিম সম্পূর্ণ সুরক্ষিত টেন্যান্ট প্রস্তুত করে লাইভ করে দেয়।'
-    },
-    {
-      q: 'আমাদের কি আলাদা সার্ভার বা সফটওয়্যার ইন্সটল করতে হবে?',
-      a: 'না, কোনো সার্ভার কিনতে হবে না। সহজ পাঠশালা একটি ১০০% ক্লাউডভিত্তিক আধুনিক ওয়েব অ্যাপ্লিকেশন। যেকোনো মোবাইল বা কম্পিউটারের ব্রাউজার থেকেই সবকিছু নিয়ন্ত্রণ করা যায়।'
-    },
-    {
-      q: 'এক স্কুলের তথ্য বা শিক্ষার্থীদের গোপনীয়তা অন্য স্কুল দেখতে পারবে কি?',
-      a: 'কখনোই না! সহজ পাঠশালা কঠোর মাল্টি-টেন্যান্ট ডেটাবেজ আইসোলেশনে চলে। প্রতিটি স্কুলের ডেটা অন্য স্কুল থেকে সম্পূর্ণ পৃথক ও সুরক্ষিত থাকে।'
-    },
-    {
-      q: 'আমরা কি আমাদের নিজস্ব ডোমেইন (যেমন: bdhs.edu.bd) ব্যবহার করতে পারব?',
-      a: 'হ্যাঁ! প্রিমিয়াম প্ল্যানে যেকোনো অফিশিয়াল বা কাস্টম ডোমেইন সম্পূর্ণ নিরাপদে সরাসরি প্ল্যাটফর্মের সাথে কানেক্ট করা সম্ভব।'
-    },
-    {
-      q: 'কম গতির ইন্টারনেটেও কি সফটওয়্যারটি দ্রুত কাজ করবে?',
-      a: 'হ্যাঁ, সম্পূর্ণ সিস্টেমটি উচ্চগতির প্রতিক্রিয়াশীল আর্কিটেকচারে তৈরি, যাতে মোবাইল নেটওয়ার্কেও খুব দ্রুত লোড হয়।'
-    }
-  ];
+  const pricingPlans = landing.pricing_plans || [];
+  const testimonial = landing.testimonial || {
+    quote: 'সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ভর্তি আবেদন গ্রহণ, পরীক্ষার ফলাফল প্রকাশ এবং শিক্ষার্থীদের ফি আদায় প্রক্রিয়া কয়েক ঘণ্টার মধ্যে শতভাগ নির্ভুলভাবে সম্পন্ন হচ্ছে।',
+    author: 'মো. বাহার উদ্দিন ভূঁইয়া',
+    designation: 'প্রধান শিক্ষক • বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS)',
+    meta: 'EIIN: ১০৫৮৬৫ • ফেনী সদর, ফেনী',
+    avatar: 'বূ'
+  };
+  const faqs = landing.faqs || [];
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
@@ -216,27 +145,27 @@ export default function LandingPage() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-soft text-primary text-xs font-semibold border border-primary/25">
               <Sparkles className="w-3.5 h-3.5" />
-              মাল্টি-স্কুল প্ল্যাটফর্ম · বাংলা + English
+              {landing.hero_tag || 'মাল্টি-স্কুল প্ল্যাটফর্ম · বাংলা + English'}
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-text tracking-tight leading-[1.15]">
-              সব স্কুল, <br />
-              <span className="text-primary">এক সহজ প্ল্যাটফর্মে।</span>
+              {(landing.hero_title || 'সব স্কুল,\nএক সহজ প্ল্যাটফর্মে।').split('\n')[0]} <br />
+              <span className="text-primary">{(landing.hero_title || 'সব স্কুল,\nএক সহজ প্ল্যাটফর্মে।').split('\n')[1] || ''}</span>
             </h1>
 
             <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed">
-              বাংলাদেশের প্রতিটি শিক্ষাপ্রতিষ্ঠানের জন্য সম্পূর্ণ ক্লাউডভিত্তিক আধুনিক ওয়েবসাইট, রেজাল্ট পাবলিশিং, অনলাইন ভর্তি ও প্রাতিষ্ঠানিক হিসাবরক্ষণ সমাধান।
+              {landing.hero_subtitle || 'বাংলাদেশের প্রতিটি শিক্ষাপ্রতিষ্ঠানের জন্য সম্পূর্ণ ক্লাউডভিত্তিক আধুনিক ওয়েবসাইট, রেজাল্ট পাবলিশিং, অনলাইন ভর্তি ও প্রাতিষ্ঠানিক হিসাবরক্ষণ সমাধান।'}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <Link to="/bdhs/login">
                 <Button variant="primary" size="lg" iconRight={ArrowRight}>
-                  স্কুল অ্যাডমিন প্যানেল
+                  {landing.hero_btn_admin || 'স্কুল অ্যাডমিন প্যানেল'}
                 </Button>
               </Link>
               <a href="#modules">
                 <Button variant="secondary" size="lg">
-                  প্ল্যাটফর্ম ফিচার দেখুন
+                  {landing.hero_btn_features || 'প্ল্যাটফর্ম ফিচার দেখুন'}
                 </Button>
               </a>
             </div>
@@ -421,7 +350,7 @@ export default function LandingPage() {
                 <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-text mb-0.5">রোলভিত্তিক পারমিশন (RBAC)</h4>
-                  <p className="text-xs text-muted">সুপার অ্যাডমিন, প্রধান শিক্ষক, সহকারী শিক্ষক ও অফিস সহকারীর ক্ষমতার সুস্পষ্ট বিভাজন।</p>
+                  <p className="text-xs text-muted">স্কুল অ্যাডমিন, প্রধান শিক্ষক, সহকারী শিক্ষক ও অফিস সহকারীর ক্ষমতার সুস্পষ্ট বিভাজন।</p>
                 </div>
               </div>
 
@@ -594,17 +523,17 @@ export default function LandingPage() {
             </div>
 
             <blockquote className="text-base sm:text-xl text-text font-medium leading-relaxed italic mb-8">
-              "সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ভর্তি আবেদন গ্রহণ, পরীক্ষার ফলাফল প্রকাশ এবং শিক্ষার্থীদের ফি আদায় প্রক্রিয়া কয়েক ঘণ্টার মধ্যে শতভাগ নির্ভুলভাবে সম্পন্ন হচ্ছে। শিক্ষক ও অভিভাবক উভয়েই এই ডিজিটাল রূপান্তরে অত্যন্ত সন্তুষ্ট।"
+              "{testimonial.quote}"
             </blockquote>
 
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
-                বূ
+                {testimonial.avatar || 'বূ'}
               </div>
               <div>
-                <h4 className="text-base font-heading font-bold text-text">মো. বাহার উদ্দিন ভূঁইয়া</h4>
-                <p className="text-xs text-primary font-semibold">প্রধান শিক্ষক • বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS)</p>
-                <p className="text-[11px] text-muted font-mono">EIIN: ১০৫৮৬৫ • ফেনী সদর, ফেনী</p>
+                <h4 className="text-base font-heading font-bold text-text">{testimonial.author}</h4>
+                <p className="text-xs text-primary font-semibold">{testimonial.designation}</p>
+                <p className="text-[11px] text-muted font-mono">{testimonial.meta}</p>
               </div>
             </div>
           </div>
@@ -704,8 +633,8 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <span className="text-[10px] text-muted block">সরাসরি কল করুন (Helpline)</span>
-                  <a href="tel:+8801812345678" className="text-sm font-bold font-mono text-primary hover:underline">
-                    ০১৮১২-৩৪৫৬৭৮
+                  <a href={`tel:${landing.helpline_phone || '01812345678'}`} className="text-sm font-bold font-mono text-primary hover:underline">
+                    {landing.helpline_phone || '০১৮১২-৩৪৫৬৭৮'}
                   </a>
                 </div>
               </div>
@@ -716,8 +645,8 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <span className="text-[10px] text-muted block">অফিসিয়াল ইমেইল</span>
-                  <a href="mailto:onboard@sohojpathshala.app" className="text-sm font-bold font-mono text-accent hover:underline">
-                    onboard@sohojpathshala.app
+                  <a href={`mailto:${landing.helpline_email || 'onboard@sohojpathshala.app'}`} className="text-sm font-bold font-mono text-accent hover:underline">
+                    {landing.helpline_email || 'onboard@sohojpathshala.app'}
                   </a>
                 </div>
               </div>
@@ -727,7 +656,7 @@ export default function LandingPage() {
               <span className="font-bold text-text block">অনবোর্ডিং প্রক্রিয়া:</span>
               <ul className="space-y-1 text-muted list-disc list-inside">
                 <li>প্রতিষ্ঠানের EIIN, প্রধান শিক্ষকের নাম ও রেজুলেশন কপি প্রদান</li>
-                <li>নিরাপদ সুপার অ্যাডমিন ক্রেডেনশিয়াল ও ডোমেইন সক্রিয়করণ</li>
+                <li>নিরাপদ স্কুল অ্যাডমিন ক্রেডেনশিয়াল ও ডোমেইন সক্রিয়করণ</li>
                 <li>বিনামূল্যে শিক্ষক ও স্টাফদের জন্য সম্পূর্ণ অনলাইন প্রশিক্ষণ</li>
               </ul>
             </div>
@@ -748,12 +677,12 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-primary text-on-primary font-heading font-bold text-sm flex items-center justify-center">
               সপ
             </div>
-            <span>© ২০২৬ সহজ পাঠশালা (Sohoj Pathshala) — অল রাইটস সংরক্ষিত।</span>
+            <span>{landing.footer_copyright || '© ২০২৬ সহজ পাঠশালা (Sohoj Pathshala) — সর্বস্বত্ব সংরক্ষিত।'}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-6 font-semibold">
             <Link to="/bdhs/login" className="hover:text-primary transition-colors">স্কুল অ্যাডমিন লগইন</Link>
-            <Link to="/owner" className="hover:text-primary transition-colors">প্ল্যাটফর্ম Owner প্যানেল</Link>
+            <Link to="/owner" className="hover:text-primary transition-colors">প্ল্যাটফর্ম সুপার অ্যাডমিন প্যানেল</Link>
             <Link to="/design" className="hover:text-primary transition-colors">ডিজাইন শোকেস</Link>
           </div>
         </div>
