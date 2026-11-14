@@ -9,6 +9,7 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
+import { exportToCsv } from '../../../utils/exportCsv';
 import { 
   Users, 
   Plus, 
@@ -84,6 +85,23 @@ export default function StudentManager() {
     }
   };
 
+  const handleExportCsv = () => {
+    const headers = ['Student ID', 'নাম (বাংলা)', 'Student Name (English)', 'শ্রেণি', 'রোল', 'বিভাগ', 'পিতার নাম', 'মোবাইল', 'ঠিকানা'];
+    const rows = filteredStudents.map(s => [
+      s.student_id,
+      s.name_bn,
+      s.name_en,
+      `${s.class}ম`,
+      s.roll,
+      s.group,
+      s.father_name,
+      s.mobile,
+      s.address
+    ]);
+    exportToCsv(`${school.slug}_students`, headers, rows);
+    showToast('শিক্ষার্থীদের তালিকা CSV ফরম্যাটে ডাউনলোড হয়েছে!');
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -93,11 +111,17 @@ export default function StudentManager() {
           <p className="text-xs text-muted">শ্রেণিভিত্তিক রোল ও শিক্ষার্থী প্রোফাইল ডিরেক্টরি</p>
         </div>
 
-        {!supportMode && (
-          <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
-            নতুন শিক্ষার্থী যোগ করুন
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" size="md" icon={Download} onClick={handleExportCsv}>
+            Excel / CSV
           </Button>
-        )}
+
+          {!supportMode && (
+            <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
+              নতুন শিক্ষার্থী
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

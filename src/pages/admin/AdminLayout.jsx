@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -7,6 +7,7 @@ import ThemeToggle from '../../components/common/ThemeToggle';
 import Banner from '../../components/ui/Banner';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
 import { 
   LayoutDashboard, 
   Users, 
@@ -37,6 +38,29 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
   const school = TenantRepository.getSchoolBySlug(slug || '');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+
+  // Dynamic Document Title
+  useEffect(() => {
+    if (school) {
+      document.title = `${school.name_bn} — অ্যাডমিন প্যানেল`;
+    }
+  }, [school]);
+
+  // Global Command Palette Shortcut (Ctrl+K or Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchModalOpen(prev => !prev);
+      }
+      if (e.key === 'Escape') {
+        setSearchModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Determine current active subview from path
   const currentPath = location.pathname;
@@ -239,17 +263,20 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
 
             {/* Topbar Right Controls */}
             <div className="flex items-center gap-3">
-              {/* Quick Search */}
-              <div className="relative hidden md:block w-64">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-muted pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="খুঁজুন (Ctrl+K)..."
-                  value={globalSearch}
-                  onChange={(e) => setGlobalSearch(e.target.value)}
-                  className="w-full h-10 rounded-lg bg-surface-2 border border-border pl-9 pr-3 text-xs outline-none focus:border-primary text-text placeholder:text-subtle"
-                />
-              </div>
+              {/* Quick Search Button / Input (Triggers Command Palette) */}
+              <button
+                type="button"
+                onClick={() => setSearchModalOpen(true)}
+                className="hidden md:flex items-center justify-between w-64 h-10 rounded-lg bg-surface-2 border border-border px-3 text-xs text-muted hover:border-primary/50 hover:text-text transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-3.5 h-3.5 text-muted" />
+                  <span>খুঁজুন...</span>
+                </div>
+                <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] font-mono text-muted">
+                  Ctrl+K
+                </kbd>
+              </button>
 
               <ThemeToggle mode={mode} toggleMode={toggleMode} lang="bn" />
 
@@ -276,6 +303,101 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
           </main>
         </div>
       </div>
+
+      {/* ================= COMMAND PALETTE SEARCH MODAL (Ctrl+K) ================= */}
+      {searchModalOpen && (
+        <Modal
+          isOpen={searchModalOpen}
+          onClose={() => { setSearchModalOpen(false); setGlobalSearch(''); }}
+          title="গ্লোবাল সার্চ ও কমান্ড প্যালেট"
+          subtitle="মডিউল বা শিক্ষার্থী খুঁজে পেতে লিখুন"
+          maxWidth="max-w-lg"
+        >
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-muted pointer-events-none" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="মডিউল, শিক্ষার্থীর নাম, রোল বা আইডি লিখুন..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full h-10 rounded-xl bg-surface-2 border border-border pl-9 pr-4 text-xs outline-none focus:border-primary text-text placeholder:text-subtle font-sans"
+              />
+            </div>
+
+            {/* Matching Modules */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono text-muted uppercase tracking-wider block">
+                সংশ্লিষ্ট মডিউলসমূহ
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {visibleMenuItems
+                  .filter(m => !globalSearch || m.label.toLowerCase().includes(globalSearch.toLowerCase()) || m.key.includes(globalSearch.toLowerCase()))
+                  .slice(0, 6)
+                  .map(m => {
+                    const Icon = m.icon;
+                    return (
+                      <button
+                        key={m.key}
+                        type="button"
+                        onClick={() => {
+                          navigate(m.path);
+                          setSearchModalOpen(false);
+                          setGlobalSearch('');
+                        }}
+                        className="flex items-center gap-2.5 p-2 rounded-lg bg-surface border border-border hover:border-primary/50 text-left cursor-pointer transition-colors"
+                      >
+                        <div className="w-6 h-6 rounded-md bg-primary-soft text-primary flex items-center justify-center shrink-0">
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-xs font-semibold text-text truncate">{m.label}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Matching Students */}
+            {globalSearch.trim() && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <span className="text-[10px] font-mono text-muted uppercase tracking-wider block">
+                  শিক্ষার্থী ফলাফল
+                </span>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {TenantRepository.getStudents(school.id)
+                    .filter(s => 
+                      s.name_bn.toLowerCase().includes(globalSearch.toLowerCase()) ||
+                      s.name_en.toLowerCase().includes(globalSearch.toLowerCase()) ||
+                      String(s.roll) === globalSearch.trim() ||
+                      s.student_id.toLowerCase().includes(globalSearch.toLowerCase())
+                    )
+                    .slice(0, 5)
+                    .map(s => (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          navigate(`/${school.slug}/admin/students`);
+                          setSearchModalOpen(false);
+                          setGlobalSearch('');
+                        }}
+                        className="flex items-center justify-between p-2 rounded-lg bg-surface-2 border border-border hover:border-primary cursor-pointer text-xs transition-colors"
+                      >
+                        <div>
+                          <strong className="text-text block">{s.name_bn}</strong>
+                          <span className="text-[10px] text-muted font-mono">
+                            {s.student_id} • {s.class}ম শ্রেণি (রোল: {s.roll})
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-primary">ম্যানেজ করুন ›</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

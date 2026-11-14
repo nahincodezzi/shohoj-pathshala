@@ -9,7 +9,8 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { CreditCard, Plus, Printer, Ban, CheckCircle2, AlertTriangle, Scissors } from 'lucide-react';
+import { exportToCsv } from '../../../utils/exportCsv';
+import { CreditCard, Plus, Printer, Ban, CheckCircle2, AlertTriangle, Scissors, Download } from 'lucide-react';
 
 export default function FeeManager() {
   const { school, currentUser, supportMode } = useOutletContext();
@@ -80,6 +81,24 @@ export default function FeeManager() {
     }
   };
 
+  const handleExportCsv = () => {
+    const headers = ['রসিদ নং', 'শিক্ষার্থীর নাম', 'শ্রেণি', 'রোল', 'ফি খাত', 'টাকার পরিমাণ (৳)', 'পেমেন্ট মাধ্যম', 'স্ট্যাটাস', 'তারিখ', 'আদায়কারী'];
+    const rows = receipts.map(r => [
+      r.receipt_no,
+      r.student_name,
+      `${r.class}ম`,
+      r.roll,
+      r.category,
+      r.amount,
+      r.payment_method,
+      r.status === 'paid' ? 'পরিশোধিত' : 'বাতিল (Void)',
+      r.created_at,
+      r.created_by
+    ]);
+    exportToCsv(`${school.slug}_fee_receipts`, headers, rows);
+    showToast('ফি রসিদ বিবরণী CSV ফরম্যাটে ডাউনলোড হয়েছে!');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -88,11 +107,17 @@ export default function FeeManager() {
           <p className="text-xs text-muted">২-কপি ডিজিটাল রসিদ প্রিন্ট ও অডিট ট্রেইল (কোনো রসিদ ডিলিট হয় না)</p>
         </div>
 
-        {!supportMode && (
-          <Button variant="primary" size="md" icon={Plus} onClick={() => setCreateModalOpen(true)}>
-            নতুন রসিদ তৈরি করুন
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" size="md" icon={Download} onClick={handleExportCsv}>
+            Excel / CSV
           </Button>
-        )}
+
+          {!supportMode && (
+            <Button variant="primary" size="md" icon={Plus} onClick={() => setCreateModalOpen(true)}>
+              নতুন রসিদ
+            </Button>
+          )}
+        </div>
       </div>
 
       <GridTable
