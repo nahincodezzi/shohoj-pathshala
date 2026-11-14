@@ -21,6 +21,9 @@ const AdmissionManager = lazy(() => import('./pages/admin/modules/AdmissionManag
 const ResultManager = lazy(() => import('./pages/admin/modules/ResultManager'));
 const FeeManager = lazy(() => import('./pages/admin/modules/FeeManager'));
 const TeacherManager = lazy(() => import('./pages/admin/modules/TeacherManager'));
+const CommitteeManager = lazy(() => import('./pages/admin/modules/CommitteeManager'));
+const RoutineManager = lazy(() => import('./pages/admin/modules/RoutineManager'));
+const GalleryManager = lazy(() => import('./pages/admin/modules/GalleryManager'));
 const NoticeManager = lazy(() => import('./pages/admin/modules/NoticeManager'));
 const CmsManager = lazy(() => import('./pages/admin/modules/CmsManager'));
 const UserManager = lazy(() => import('./pages/admin/modules/UserManager'));
@@ -67,6 +70,9 @@ export default function App() {
                   <Route path="results" element={<ResultManager />} />
                   <Route path="fees" element={<FeeManager />} />
                   <Route path="teachers" element={<TeacherManager />} />
+                  <Route path="committee" element={<CommitteeManager />} />
+                  <Route path="routines" element={<RoutineManager />} />
+                  <Route path="gallery" element={<GalleryManager />} />
                   <Route path="notices" element={<NoticeManager />} />
                   <Route path="cms" element={<CmsManager />} />
                   <Route path="users" element={<UserManager />} />

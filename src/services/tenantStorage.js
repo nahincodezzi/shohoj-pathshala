@@ -53,33 +53,383 @@ const SEED_SCHOOLS = [
 const SEED_SETTINGS = [
   {
     school_id: 'sch_bdhs',
-    address_bn: 'ফেনী-পরশুরাম মহাসড়ক, আনন্দপুর, ফুলগাজী, ফেনী।',
-    address_en: 'Feni-Parshuram Highway, Anandapur, Fulgazi, Feni.',
-    phone: '০১৮১২-৩৪৫৬৭৮',
-    email: 'info@bdhs.edu.bd',
+    address_bn: 'ফেনী-পরশুরাম মহাসড়ক সংলগ্ন, বন্দুয়া দৌলতপুর, আনন্দপুর ইউনিয়ন, ফুলগাজী, ফেনী।',
+    address_en: 'Along Feni-Parshuram Highway, Bondua Daulatpur, Anandapur, Fulgazi, Feni.',
+    phone: '০১৮২৪-৪৭২২০০',
+    phone_alt: '০১৭১২-৮৯৩০৪২',
+    email: 'bonduas106644@gmail.com',
+    website: 'https://bonduadaulatpurhighschool.edu.bd',
     established: '১৯৯০',
+    recognized: '১৯৯৪ (স্বীকৃতি: ১ জানুয়ারি, ১৯৯৪)',
     tagline_bn: 'জ্ঞানই আলো, শিক্ষাই শক্তি',
     tagline_en: 'Knowledge is Light, Education is Power',
     motto_bn: 'নৈতিক শিক্ষা ও আধুনিক প্রযুক্তির সমন্বয়ে ভবিষ্যৎ বিনির্মাণ।',
     motto_en: 'Building the future with moral education and modern technology.',
-    office_hours: 'রবি–বৃহস্পতি সকাল ৯টা–দুপুর ২টা',
-    uniform_rules: 'ছাত্র: সাদা শার্ট, নেভি ব্লু প্যান্ট। ছাত্রী: নেভি ব্লু ফ্রক, সাদা ওড়না/হিজাব।',
-    pass_rate: '৯৮.৫%'
+    office_hours: 'রবি–বৃহস্পতি সকাল ৯:০০–দুপুর ৩:০০ (শুক্রবার ও শনিবার সাপ্তাহিক ছুটি)',
+    uniform_rules: 'ছাত্র: সাদা শার্ট ও নেভি ব্লু প্যান্ট | ছাত্রী: লাল ফ্রক/কামিজ ও সাদা পায়জামা/ওড়না',
+    pass_rate: '৯৮.৫%',
+    capacity: '৮৫০+',
+    disciplines: ['বিজ্ঞান বিভাগ (Science)', 'ব্যবসায় শিক্ষা (Business Studies)', 'মানবিক বিভাগ (Humanities)'],
+    history_bn: '১৯৯০ সালের ৮ জানুয়ারি ফেনী জেলার ফুলগাজী উপজেলায় আনন্দপুর ইউনিয়নের শিক্ষানুরাগী সমাজসেবক ব্যক্তিবর্গের উদ্যোগে প্রতিষ্ঠিত হয় ঐতিহ্যবাহী বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়। ১৯৯৪ সালে কুমিল্লা শিক্ষা বোর্ড কর্তৃক আনুষ্ঠানিকভাবে স্বীকৃতি লাভ করে বিদ্যালয়টি। বিগত তিন দশক ধরে অত্র অঞ্চলের আলোকবর্তিকা হিসেবে হাজারো শিক্ষার্থীকে আলোকিত মানুষ ও আদর্শ নাগরিক হিসেবে গড়ে তুলছে।',
+    vision_bn: 'একটি বৈষম্যহীন, আধুনিক প্রযুক্তি-নির্ভর ও আদর্শ বিদ্যাপীঠ হিসেবে কুমিল্লা শিক্ষা বোর্ডের অন্যতম শ্রেষ্ঠ ও মডেল বিদ্যালয়ে রূপান্তরিত হওয়া।',
+    mission_bn: 'মানসম্মত শিক্ষা, নৈতিক মূল্যবোধ ও ডিজিটাল প্রযুক্তির সমন্বয়ে প্রতিটি শিক্ষার্থীকে আধুনিক বিজ্ঞানমনস্ক, দেশপ্রেমিক ও দক্ষ মানবসম্পদ হিসেবে গড়ে তোলা।',
+    headmaster_name: 'জনাব মোঃ জাহাঙ্গীর আলম',
+    headmaster_designation: 'ভারপ্রাপ্ত প্রধান শিক্ষক',
+    headmaster_message: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়ের পক্ষ থেকে সবাইকে জানাই আন্তরিক শুভেচ্ছা ও অভিনন্দন। ১৯৯০ সালে প্রতিষ্ঠিত এই ঐতিহ্যবাহী বিদ্যাপীঠ ফেনী-পরশুরাম আঞ্চলিক মহাসড়কের পাশে আনন্দপুর ইউনিয়নে শিক্ষার আলোকবর্তিকা হিসেবে সেবা দিয়ে যাচ্ছে। বর্তমান ডিজিটাল যুগে আমরা শিক্ষার্থীদের পাঠ্যবইয়ের পাশাপাশি প্রযুক্তি, বিজ্ঞান, নীতি-নৈতিকতা ও সৃজনশীল মেধা বিকাশে সচেষ্ট। একটি সমৃদ্ধ, দক্ষ ও দেশপ্রেমিক ভবিষ্যৎ প্রজন্ম গড়ে তোলাই আমাদের মূল লক্ষ্য। শিক্ষক, অভিভাবক ও শুভানুধ্যায়ীদের সহযোগিতায় বিদ্যালয়টি উত্তরোত্তর সাফল্যের শিখরে পৌঁছাবে এই প্রত্যাশা ব্যক্ত করছি।',
+    chairman_name: 'আলহাজ্ব মো. মজিবুর রহমান',
+    chairman_designation: 'সভাপতি, পরিচালনা পর্ষদ',
+    chairman_message: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় ফুলগাজী উপজেলার একটি গর্বের প্রতিষ্ঠান। পরিচালনা পর্ষদের পক্ষ থেকে আমরা শিক্ষক ও শিক্ষার্থীদের আধুনিক শিক্ষার উপযুক্ত পরিবেশ নিশ্চিত করতে সর্বদা প্রতিশ্রুতিবদ্ধ।',
+    facebook_url: 'https://www.facebook.com/groups/887015382052811/',
+    map_embed_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14674.321!2d91.385!3d23.085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDA1JzA2LjAiTiA5McKwMjMnMDYuMCJF!5e0!3m2!1sen!2sbd!4v1620000000000!5m2!1sen!2sbd'
   },
   {
     school_id: 'sch_bahs',
     address_bn: 'মেইন রোড, বরুড়া পৌরসভা, কুমিল্লা।',
     address_en: 'Main Road, Barura Municipality, Comilla.',
     phone: '০১৭৯৮-৭৬৫৪৩২',
+    phone_alt: '০১৮১৬-১২৩৪৫৬',
     email: 'contact@bahs.edu.bd',
+    website: 'https://baruraadarshahighschool.edu.bd',
     established: '১৯৯৫',
+    recognized: '১৯৯৮',
     tagline_bn: 'আলোকিত মানুষ গড়ার প্রত্যয়',
     tagline_en: 'Dedicated to Enlightened Minds',
     motto_bn: 'শৃঙ্খলা, চরিত্র ও জ্ঞান।',
     motto_en: 'Discipline, Character and Knowledge.',
-    office_hours: 'রবি–বৃহস্পতি সকাল ৯:৩০–দুপুর ২:৩০',
+    office_hours: 'রবি–বৃহস্পতি সকাল ৯:৩০–দুপুর ৩:০০',
     uniform_rules: 'সাদা শার্ট, কালো প্যান্ট ও কালো জুতো।',
-    pass_rate: '৯৫.২%'
+    pass_rate: '৯৫.২%',
+    capacity: '৮০০+',
+    disciplines: ['বিজ্ঞান বিভাগ', 'ব্যবসায় শিক্ষা', 'মানবিক বিভাগ'],
+    history_bn: '১৯৯৫ সালে প্রতিষ্ঠিত বরুড়া আদর্শ উচ্চ বিদ্যালয় বরুড়া উপজেলার অন্যতম পথিকৃৎ শিক্ষাপ্রতিষ্ঠান।',
+    vision_bn: 'নৈতিকতা ও প্রযুক্তির সমন্বয়ে আধুনিক আদর্শ শিক্ষা নিশ্চিতকরণ।',
+    mission_bn: 'জ্ঞানভিত্তিক সমাজ বিনির্মাণে সুদক্ষ ও আদর্শ নাগরিক গড়ে তোলা।',
+    headmaster_name: 'ড. রফিকুল ইসলাম',
+    headmaster_designation: 'প্রধান শিক্ষক',
+    headmaster_message: 'আমাদের বিদ্যালয়ে প্রতিটি শিক্ষার্থীর সুপ্ত প্রতিভার বিকাশ ঘটাতে অভিজ্ঞ শিক্ষকবৃন্দ নিরলস পরিশ্রম করে চলেছেন।',
+    chairman_name: 'জনাব আব্দুল হক',
+    chairman_designation: 'সভাপতি, ম্যানেজিং কমিটি',
+    chairman_message: 'গুণগত শিক্ষা বিস্তারে পরিচালনা পর্ষদ সর্বদা নিবেদিত।',
+    facebook_url: 'https://facebook.com',
+    map_embed_url: ''
+  }
+];
+
+// Hero Sliders per School
+const SEED_SLIDERS = [
+  {
+    id: 'sl_1',
+    school_id: 'sch_bdhs',
+    tag: 'ঐতিহ্য ও আধুনিকতার মেলবন্ধন',
+    title: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়ে স্বাগতম',
+    subtitle: 'ফেনী-পরশুরাম মহাসড়ক সংলগ্ন আনন্দপুর ইউনিয়নে ১৯৯০ সাল থেকে গুণগত মাধ্যমিক শিক্ষার আলোকবর্তিকা।',
+    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=1600&auto=format&fit=crop&q=80',
+    cta_text: 'অনলাইন ভর্তি আবেদন',
+    cta_link: '#admission'
+  },
+  {
+    id: 'sl_2',
+    school_id: 'sch_bdhs',
+    tag: 'শৃঙ্খলা, চরিত্র ও নির্ধারিত পোশাক',
+    title: 'আদর্শ ও মূল্যবোধসম্পন্ন প্রজন্ম গড়ার অঙ্গীকার',
+    subtitle: 'ছাত্রদের সাদা শার্ট ও নীল প্যান্ট, ছাত্রীদের লাল জামা পরিহিত শৃঙ্খলামূলক পাঠদান পরিবেশ।',
+    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&auto=format&fit=crop&q=80',
+    cta_text: 'পোশাক নীতিমালা',
+    cta_link: '#uniform'
+  },
+  {
+    id: 'sl_3',
+    school_id: 'sch_bdhs',
+    tag: 'স্মার্ট শিক্ষা ও বিজ্ঞান চর্চা',
+    title: 'শেখ রাসেল ডিজিটাল ল্যাব ও সমৃদ্ধ বিজ্ঞানাগার',
+    subtitle: 'বিজ্ঞান, ব্যবসায় শিক্ষা ও মানবিক শাখার শিক্ষার্থীদের জন্য আধুনিক কম্পিউটার ও ব্যবহারিক ল্যাব সুবিধা।',
+    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1600&auto=format&fit=crop&q=80',
+    cta_text: 'রেজাল্ট অনুসন্ধান',
+    cta_link: '#results'
+  },
+  {
+    id: 'sl_bahs_1',
+    school_id: 'sch_bahs',
+    tag: 'আলোকিত মানুষ গড়ার প্রত্যয়',
+    title: 'বরুড়া আদর্শ উচ্চ বিদ্যালয়',
+    subtitle: 'শৃঙ্খলা, চরিত্র ও জ্ঞানভিত্তিক আধুনিক শিক্ষালয়।',
+    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&auto=format&fit=crop&q=80',
+    cta_text: 'ভর্তি ফরম',
+    cta_link: '#admission'
+  }
+];
+
+// Uniform & Dress Code per School
+const SEED_UNIFORMS = [
+  {
+    school_id: 'sch_bdhs',
+    boys: {
+      shirt: 'সাদা রঙের হাফ/ফুল হাতা শার্ট (White Shirt)',
+      pant: 'নেভি ব্লু রঙের ফর্মাল প্যান্ট (Navy Blue Pant)',
+      badge: 'বাম পকেটে বিদ্যালয়ের মনোগ্রামযুক্ত প্রাতিষ্ঠানিক ব্যাজ',
+      shoes: 'কালো চামড়ার জুতা ও সাদা রঙের মোজা (Black Shoes & White Socks)',
+      belt: 'কালো বেল্ট (Black Belt)'
+    },
+    girls: {
+      dress: 'লাল রঙের ফ্রক / কামিজ (Red Dress / Kamiz)',
+      salwar: 'সাদা রঙের পায়জামা / সালোয়ার (White Salwar)',
+      orna: 'সাদা রঙের ওড়না / স্কার্ফ (White Orna / Scarf)',
+      badge: 'বামে বিদ্যালয়ের মনোগ্রামযুক্ত প্রাতিষ্ঠানিক ব্যাজ',
+      shoes: 'কালো জুতা ও সাদা মোজা (Black Shoes & White Socks)',
+      hair: 'চুলে সাদা ফিতা (White Hair Ribbon)'
+    },
+    winter: 'শীতকালীন পোশাক: সকল ছাত্র-ছাত্রীর জন্য গাঢ় নীল বা লাল রঙের ভি-নেক সোয়েটার / কার্ডিগান।',
+    guidelines: [
+      '১. সকল শিক্ষার্থীকে প্রতিদিন নির্ধারিত স্কুল ইউনিফর্ম পরিধান করে বিদ্যালয়ে উপস্থিত হওয়া বাধ্যতামূলক।',
+      '২. যথাযথ পোশাক ও ব্যাজ ব্যতীত কোনো শিক্ষার্থীকে ক্লাস বা প্রাত্যহিক সমাবেশে অংশগ্রহণ করতে দেওয়া হবে না।',
+      '৩. পোশাক সবসময় পরিষ্কার, পরিপাটি ও মার্জিত হতে হবে।'
+    ]
+  },
+  {
+    school_id: 'sch_bahs',
+    boys: {
+      shirt: 'সাদা রঙের শার্ট',
+      pant: 'কালো রঙের প্যান্ট',
+      badge: 'স্কুল ব্যাজ',
+      shoes: 'কালো জুতা ও সাদা মোজা',
+      belt: 'কালো বেল্ট'
+    },
+    girls: {
+      dress: 'নেভি ব্লু রঙের জামা',
+      salwar: 'সাদা সালোয়ার',
+      orna: 'সাদা ওড়না',
+      badge: 'স্কুল ব্যাজ',
+      shoes: 'কালো জুতা',
+      hair: 'সাদা ফিতা'
+    },
+    winter: 'কালো সোয়েটার বা ব্লেজার।',
+    guidelines: [
+      '১. প্রতিদিন নির্ধারিত স্কুল ইউনিফর্ম পরিধান বাধ্যতামূলক।'
+    ]
+  }
+];
+
+// Managing Committee & Governing Body per School
+const SEED_COMMITTEE = [
+  {
+    id: 'cm_1',
+    school_id: 'sch_bdhs',
+    name: 'আলহাজ্ব মো. মজিবুর রহমান',
+    designation: 'সভাপতি',
+    role_category: 'সভাপতি, পরিচালনা পর্ষদ',
+    phone: '০১৮১১-৯৯৮৮৭৭',
+    status: 'active',
+    order: 1
+  },
+  {
+    id: 'cm_2',
+    school_id: 'sch_bdhs',
+    name: 'জনাব আবুল কাশেম',
+    designation: 'সহ-সভাপতি',
+    role_category: 'সহ-সভাপতি',
+    phone: '০১৮২২-৮৮৭৭৬৬',
+    status: 'active',
+    order: 2
+  },
+  {
+    id: 'cm_3',
+    school_id: 'sch_bdhs',
+    name: 'জনাব মোঃ জাহাঙ্গীর আলম (পদাধিকারবলে)',
+    designation: 'সদস্য-সচিব',
+    role_category: 'ভারপ্রাপ্ত প্রধান শিক্ষক',
+    phone: '০১৮২৪-৪৭২২০০',
+    status: 'active',
+    order: 3
+  },
+  {
+    id: 'cm_4',
+    school_id: 'sch_bdhs',
+    name: 'জনাব আব্দুল মালেক',
+    designation: 'অভিভাবক সদস্য',
+    role_category: 'অভিভাবক প্রতিনিধি',
+    phone: '০১৮৩৩-৭৭৬৬৫৫',
+    status: 'active',
+    order: 4
+  },
+  {
+    id: 'cm_5',
+    school_id: 'sch_bdhs',
+    name: 'জনাবা রাশিদা বেগম',
+    designation: 'মহিলা অভিভাবক সদস্য',
+    role_category: 'অভিভাবক প্রতিনিধি (মহিলা)',
+    phone: '০১৮৪৪-৬৬৫৫৪৪',
+    status: 'active',
+    order: 5
+  },
+  {
+    id: 'cm_6',
+    school_id: 'sch_bdhs',
+    name: 'জনাব নূরুল ইসলাম',
+    designation: 'শিক্ষক প্রতিনিধি',
+    role_category: 'শিক্ষক প্রতিনিধি',
+    phone: '০১৮৫৫-৫৪৪৩২২',
+    status: 'active',
+    order: 6
+  },
+  {
+    id: 'cm_7',
+    school_id: 'sch_bdhs',
+    name: 'জনাব মোস্তফা কামাল',
+    designation: 'দাতা সদস্য',
+    role_category: 'দাতা সদস্য',
+    phone: '০১৮৬৬-৪৩২২১১',
+    status: 'active',
+    order: 7
+  },
+  {
+    id: 'cm_bahs_1',
+    school_id: 'sch_bahs',
+    name: 'জনাব আব্দুল হক',
+    designation: 'সভাপতি',
+    role_category: 'ম্যানেজিং কমিটি সভাপতি',
+    phone: '০১৭০০-১১২২৩৩',
+    status: 'active',
+    order: 1
+  }
+];
+
+// Routines, Exam Schedules & Syllabus per School
+const SEED_ROUTINES = [
+  {
+    id: 'rt_1',
+    school_id: 'sch_bdhs',
+    title: '৬ষ্ঠ থেকে ১০ম শ্রেণির সাপ্তাহিক ক্লাস রুটিন ২০২৬',
+    category: 'class_routine',
+    effective_date: '১০ জানুয়ারি ২০২৬',
+    file_size: '১.৪ MB',
+    type: 'PDF'
+  },
+  {
+    id: 'rt_2',
+    school_id: 'sch_bdhs',
+    title: 'বার্ষিক পরীক্ষা ও এসএসসি নির্বাচনী পরীক্ষার সময়সূচি',
+    category: 'exam_routine',
+    effective_date: '১৫ অক্টোবর ২০২৬',
+    file_size: '৮৫০ KB',
+    type: 'PDF'
+  },
+  {
+    id: 'rt_3',
+    school_id: 'sch_bdhs',
+    title: 'জাতীয় শিক্ষাক্রম ও পাঠ্যপুস্তক বোর্ড (NCTB) বিস্তারিত সিলেবাস',
+    category: 'syllabus',
+    effective_date: '১ জানুয়ারি ২০২৬',
+    file_size: '৩.২ MB',
+    type: 'PDF'
+  },
+  {
+    id: 'rt_4',
+    school_id: 'sch_bdhs',
+    title: 'একাডেমিক ক্যালেন্ডার ও সরকারি ছুটির তালিকা ২০২৬',
+    category: 'calendar',
+    effective_date: '১ জানুয়ারি ২০২৬',
+    file_size: '৬৫০ KB',
+    type: 'PDF'
+  }
+];
+
+// Photo Gallery per School
+const SEED_GALLERY = [
+  {
+    id: 'gal_1',
+    school_id: 'sch_bdhs',
+    title: 'বিদ্যালয়ের দ্বিতল প্রধান ভবন ও সবুজ প্রাঙ্গণ',
+    category: 'campus',
+    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=900&auto=format&fit=crop&q=80',
+    description: 'ফেনী-পরশুরাম মহাসড়ক সংলগ্ন বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়ের মনোরম ক্যাম্পাস ও খেলার মাঠ।'
+  },
+  {
+    id: 'gal_2',
+    school_id: 'sch_bdhs',
+    title: 'প্রাত্যহিক সমাবেশ ও জাতীয় সংগীত',
+    category: 'campus',
+    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&auto=format&fit=crop&q=80',
+    description: 'ছাত্রদের সাদা শার্ট-নীল প্যান্ট ও ছাত্রীদের লাল ড্রেসে সুশৃঙ্খল অ্যাসেম্বলি।'
+  },
+  {
+    id: 'gal_3',
+    school_id: 'sch_bdhs',
+    title: 'বার্ষিক ক্রীড়া প্রতিযোগিতা ও পুরষ্কার বিতরণী',
+    category: 'sports',
+    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&auto=format&fit=crop&q=80',
+    description: 'উপজেলা পর্যায়ে আয়োজিত বার্ষিক অ্যাথলেটিকস ও দৌড় প্রতিযোগিতা।'
+  },
+  {
+    id: 'gal_4',
+    school_id: 'sch_bdhs',
+    title: 'শেখ রাসেল ডিজিটাল ল্যাবে কম্পিউটার প্রশিক্ষণ কর্মশালা',
+    category: 'academic',
+    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=900&auto=format&fit=crop&q=80',
+    description: 'শিক্ষার্থীদের তথ্যপ্রযুক্তি, কোডিং ও ডিজিটাল লিটারেসির ব্যবহারিক প্রশিক্ষণ।'
+  },
+  {
+    id: 'gal_5',
+    school_id: 'sch_bdhs',
+    title: 'বিজ্ঞান গবেষণাগারে ব্যবহারিক পরীক্ষা (Science Lab)',
+    category: 'academic',
+    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=900&auto=format&fit=crop&q=80',
+    description: 'পদার্থবিজ্ঞান ও রসায়ন ল্যাবে হ্যান্ডস-অন সায়েন্স প্র্যাকটিক্যাল।'
+  },
+  {
+    id: 'gal_6',
+    school_id: 'sch_bdhs',
+    title: 'মহান বিজয় দিবস ও বার্ষিক সাংস্কৃতিক অনুষ্ঠান',
+    category: 'cultural',
+    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=900&auto=format&fit=crop&q=80',
+    description: 'দেশাত্মবোধক গান, কবিতা আবৃত্তি ও নাটক পরিবেশনা।'
+  },
+  {
+    id: 'gal_7',
+    school_id: 'sch_bdhs',
+    title: 'এসএসসি ব্যাচ বিদায় সংবর্ধনা ও দোয়া মাহফিল',
+    category: 'cultural',
+    image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=900&auto=format&fit=crop&q=80',
+    description: 'পরীক্ষার্থীদের সাফল্য কামনা ও বিশেষ দোয়া মাহফিল।'
+  },
+  {
+    id: 'gal_8',
+    school_id: 'sch_bdhs',
+    title: 'বিদ্যালয় শহীদ মিনার ও ভাষা শহীদদের প্রতি শ্রদ্ধা নিবেদন',
+    category: 'cultural',
+    image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=900&auto=format&fit=crop&q=80',
+    description: '২১শে ফেব্রুয়ারির প্রভাতফেরি ও শহীদ মিনারে পুষ্পস্তবক অর্পণ।'
+  }
+];
+
+// Campus Facilities
+const SEED_FACILITIES = [
+  {
+    id: 'fac_1',
+    school_id: 'sch_bdhs',
+    title: 'শেখ রাসেল ডিজিটাল ল্যাব',
+    subtitle: '২০টি আধুনিক কম্পিউটার ও ইন্টারনেট',
+    desc: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT) ক্লাসে প্রতিটি শিক্ষার্থীকে কম্পিউটার ও প্রোগ্রামিংয়ের বাস্তব প্রশিক্ষণ দেওয়া হয়।'
+  },
+  {
+    id: 'fac_2',
+    school_id: 'sch_bdhs',
+    title: 'সমৃদ্ধ বিজ্ঞানাগার (Science Lab)',
+    subtitle: 'পদার্থ, রসায়ন ও জীববিজ্ঞানের আধুনিক যন্ত্রপাতি',
+    desc: 'মাধ্যমিক স্তরের বিজ্ঞান শাখার ব্যবহারিক ক্লাসের জন্য সম্পূর্ণ সুসজ্জিত ল্যাবরেটরি।'
+  },
+  {
+    id: 'fac_3',
+    school_id: 'sch_bdhs',
+    title: 'কেন্দ্রীয় পাঠাগার (Library)',
+    subtitle: '৩,৫০০+ পাঠ্য ও রেফারেন্স গ্রন্থ',
+    desc: 'জ্ঞানপিপাসু শিক্ষার্থীদের জন্য সাহিত্য, বিজ্ঞান, ইতিহাস ও সাধারণ জ্ঞানের সমৃদ্ধ বইয়ের সম্ভার।'
+  },
+  {
+    id: 'fac_4',
+    school_id: 'sch_bdhs',
+    title: 'সুবিশাল খেলার মাঠ',
+    subtitle: 'ফুটবল, ক্রিকেট ও ভলিবল',
+    desc: 'শিক্ষার্থীদের শারীরিক বিকাশ ও ক্রীড়া চর্চার জন্য বিদ্যালয়ের নিজস্ব প্রশস্ত ও মনোরম মাঠ।'
   }
 ];
 
@@ -507,6 +857,12 @@ function saveTable(name, data) {
 export function initTenantStorage() {
   getTable('schools', SEED_SCHOOLS);
   getTable('settings', SEED_SETTINGS);
+  getTable('sliders', SEED_SLIDERS);
+  getTable('uniforms', SEED_UNIFORMS);
+  getTable('committee', SEED_COMMITTEE);
+  getTable('routines', SEED_ROUTINES);
+  getTable('gallery', SEED_GALLERY);
+  getTable('facilities', SEED_FACILITIES);
   getTable('users', SEED_USERS);
   getTable('students', SEED_STUDENTS);
   getTable('teachers', SEED_TEACHERS);
@@ -972,13 +1328,123 @@ export const TenantRepository = {
     return newLog;
   },
 
+  // --- Hero Sliders ---
+  getSliders(schoolId) {
+    const sliders = getTable('sliders', SEED_SLIDERS);
+    return sliders.filter(s => s.school_id === schoolId);
+  },
+
+  updateSliders(schoolId, sliders) {
+    const all = getTable('sliders', SEED_SLIDERS);
+    const others = all.filter(s => s.school_id !== schoolId);
+    saveTable('sliders', [...others, ...sliders]);
+  },
+
+  // --- Uniforms ---
+  getUniform(schoolId) {
+    const uniforms = getTable('uniforms', SEED_UNIFORMS);
+    return uniforms.find(u => u.school_id === schoolId) || null;
+  },
+
+  updateUniform(schoolId, uniformData) {
+    const uniforms = getTable('uniforms', SEED_UNIFORMS);
+    const idx = uniforms.findIndex(u => u.school_id === schoolId);
+    if (idx !== -1) {
+      uniforms[idx] = { ...uniforms[idx], ...uniformData };
+    } else {
+      uniforms.push({ school_id: schoolId, ...uniformData });
+    }
+    saveTable('uniforms', uniforms);
+  },
+
+  // --- Managing Committee ---
+  getCommittee(schoolId) {
+    const members = getTable('committee', SEED_COMMITTEE);
+    return members.filter(m => m.school_id === schoolId).sort((a, b) => a.order - b.order);
+  },
+
+  createCommitteeMember(schoolId, member) {
+    const members = getTable('committee', SEED_COMMITTEE);
+    const newMember = {
+      id: `cm_${Date.now()}`,
+      school_id: schoolId,
+      order: members.length + 1,
+      status: 'active',
+      ...member
+    };
+    members.push(newMember);
+    saveTable('committee', members);
+    return newMember;
+  },
+
+  deleteCommitteeMember(schoolId, memberId) {
+    const members = getTable('committee', SEED_COMMITTEE);
+    const remaining = members.filter(m => !(m.id === memberId && m.school_id === schoolId));
+    saveTable('committee', remaining);
+  },
+
+  // --- Routines & Syllabus ---
+  getRoutines(schoolId) {
+    const routines = getTable('routines', SEED_ROUTINES);
+    return routines.filter(r => r.school_id === schoolId);
+  },
+
+  createRoutine(schoolId, routine) {
+    const routines = getTable('routines', SEED_ROUTINES);
+    const newRoutine = {
+      id: `rt_${Date.now()}`,
+      school_id: schoolId,
+      type: 'PDF',
+      ...routine
+    };
+    routines.unshift(newRoutine);
+    saveTable('routines', routines);
+    return newRoutine;
+  },
+
+  deleteRoutine(schoolId, routineId) {
+    const routines = getTable('routines', SEED_ROUTINES);
+    const remaining = routines.filter(r => !(r.id === routineId && r.school_id === schoolId));
+    saveTable('routines', remaining);
+  },
+
+  // --- Photo Gallery ---
+  getGallery(schoolId) {
+    const items = getTable('gallery', SEED_GALLERY);
+    return items.filter(g => g.school_id === schoolId);
+  },
+
+  createGalleryItem(schoolId, item) {
+    const items = getTable('gallery', SEED_GALLERY);
+    const newItem = {
+      id: `gal_${Date.now()}`,
+      school_id: schoolId,
+      ...item
+    };
+    items.unshift(newItem);
+    saveTable('gallery', items);
+    return newItem;
+  },
+
+  deleteGalleryItem(schoolId, itemId) {
+    const items = getTable('gallery', SEED_GALLERY);
+    const remaining = items.filter(g => !(g.id === itemId && g.school_id === schoolId));
+    saveTable('gallery', remaining);
+  },
+
+  // --- Facilities ---
+  getFacilities(schoolId) {
+    const fac = getTable('facilities', SEED_FACILITIES);
+    return fac.filter(f => f.school_id === schoolId);
+  },
+
   // Factory Reset (Restricted to specific school only!)
   factoryResetSchool(schoolId, confirmCode) {
     if (confirmCode !== 'RESET') {
       throw new Error('ফ্যাক্টরি রিসেট করতে "RESET" কোডটি সঠিকভাবে লিখুন।');
     }
     // Delete all data associated with ONLY this school_id
-    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions'];
+    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions', 'sliders', 'uniforms', 'committee', 'routines', 'gallery'];
     tables.forEach(tableName => {
       const current = getTable(tableName, []);
       const remaining = current.filter(record => record.school_id !== schoolId);

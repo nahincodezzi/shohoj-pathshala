@@ -30,3 +30,4 @@ export default function LoadingSpinner({ fullScreen = true, text = 'লোড �
     </div>
   );
 }
+

@@ -25,7 +25,10 @@ import {
   X, 
   ChevronRight,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  Award,
+  Calendar,
+  Image
 } from 'lucide-react';
 
 export default function AdminLayout({ activeModule = 'dashboard' }) {
@@ -101,6 +104,9 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
     { key: 'results', label: 'রেজাল্ট ও মার্কস', icon: FileText, path: `/${school.slug}/admin/results` },
     { key: 'fees', label: 'ফি ও রসিদ', icon: CreditCard, path: `/${school.slug}/admin/fees`, hideForTeacher: true },
     { key: 'teachers', label: 'শিক্ষক ও কর্মচারী', icon: UserCheck, path: `/${school.slug}/admin/teachers` },
+    { key: 'committee', label: 'পরিচালনা পর্ষদ', icon: Award, path: `/${school.slug}/admin/committee`, requireAdmin: true },
+    { key: 'routines', label: 'রুটিন ও সিলেবাস', icon: Calendar, path: `/${school.slug}/admin/routines` },
+    { key: 'gallery', label: 'ফটো গ্যালারি', icon: Image, path: `/${school.slug}/admin/gallery` },
     { key: 'notices', label: 'নোটিশ বোর্ড', icon: Bell, path: `/${school.slug}/admin/notices` },
     { key: 'cms', label: 'ওয়েবসাইট (CMS)', icon: Globe, path: `/${school.slug}/admin/cms`, requireAdmin: true },
     { key: 'users', label: 'ইউজার ও সিকিউরিটি', icon: ShieldCheck, path: `/${school.slug}/admin/users`, requireSuperAdmin: true },
