@@ -2660,7 +2660,7 @@ export default function SchoolPublicPage() {
               const studentFather = matchedStudent?.father_name || 'মোঃ রফিকুল ইসলাম';
 
               return (
-                <Card surface="surface" className="p-6 sm:p-8 border-2 border-primary/30 shadow-lg printable-marksheet-sheet page-fit-single">
+                <Card surface="surface" className="p-6 sm:p-8 border-2 border-primary/30 shadow-lg printable-marksheet-sheet printable-document page-fit-single">
                   {/* Institutional Header Letterhead (D26) */}
                   <div className="text-center pb-6 border-b-2 border-primary/40 space-y-1">
                     <div className="flex items-center justify-center gap-3 mb-2">
@@ -3135,7 +3135,7 @@ export default function SchoolPublicPage() {
         >
           <div className="space-y-5 text-xs">
             {/* Printable Notice Paper */}
-            <div className="printable-notice-paper page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-xs">
+            <div className="printable-notice-paper printable-document page-fit-single p-5 sm:p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-xs">
               {/* Institutional Header Letterhead */}
               <div className="flex items-center justify-between border-b-2 border-black pb-3">
                 <div className="flex items-center gap-3">
@@ -3375,7 +3375,7 @@ export default function SchoolPublicPage() {
           maxWidth="max-w-2xl"
         >
           <div className="space-y-6">
-            <div className="printable-admit-card page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-inner">
+            <div className="printable-admit-card printable-document page-fit-single p-5 sm:p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-inner">
               <div className="flex items-center justify-center gap-3 border-b-2 border-black pb-3">
                 {(settings?.logo || school.logo) ? (
                   <img src={settings?.logo || school.logo} alt="School Logo" className="w-12 h-12 object-contain rounded-lg border border-slate-300 p-0.5 bg-white shrink-0" />

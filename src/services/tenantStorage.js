@@ -16,7 +16,7 @@ const SEED_SCHOOLS = [
     name_bn: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়',
     name_en: 'Bondua Daulatpur High School',
     eiin: '106644',
-    school_code: '4320',
+    school_code: '432platfrom',
     mpo_code: '0905171301',
     board: 'কুমিল্লা',
     district: 'ফেনী',
@@ -1224,12 +1224,12 @@ export const TenantRepository = {
 
   createSchool(schoolData, superAdminData) {
     const schools = this.getSchools();
-    
+
     // D15: Strict Slug validation & Reserved Slugs check
     const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     const reservedSlugs = ['owner', 'admin', 'api', 'login', 'superadmin', 'platform', 'system', 'root', 'public'];
     const cleanSlug = (schoolData.slug || '').toLowerCase().trim();
-    
+
     if (!slugRegex.test(cleanSlug)) {
       throw new Error('স্কুল Slug শুধুমাত্র ছোট হাতের ইংরেজি অক্ষর (a-z), সংখ্যা (0-9) এবং হাইফেন (-) দিয়ে গঠিত হতে পারে। কোনো স্পেস বা বিশেষ চিহ্ন গ্রহণযোগ্য নয়।');
     }
@@ -1412,7 +1412,7 @@ export const TenantRepository = {
 
     // Successful login: reset attempts
     this.updateUser(user.id, { failed_attempts: 0, locked_until: null });
-    
+
     // Audit Log
     this.addAuditLog(
       user.school_id,
@@ -1649,11 +1649,11 @@ export const TenantRepository = {
     }
 
     const results = getTable('results', SEED_RESULTS);
-    const existingIdx = results.findIndex(r => 
-      r.school_id === schoolId && 
-      r.class === String(resultData.class) && 
-      Number(r.roll) === Number(resultData.roll) && 
-      r.exam === resultData.exam && 
+    const existingIdx = results.findIndex(r =>
+      r.school_id === schoolId &&
+      r.class === String(resultData.class) &&
+      Number(r.roll) === Number(resultData.roll) &&
+      r.exam === resultData.exam &&
       String(r.year) === String(resultData.year)
     );
 
@@ -1703,10 +1703,10 @@ export const TenantRepository = {
 
   searchResult(schoolId, { classVal, rollVal, examVal, yearVal }) {
     const results = this.getResults(schoolId);
-    return results.find(r => 
-      r.class === String(classVal) && 
-      Number(r.roll) === Number(rollVal) && 
-      r.exam.toLowerCase() === examVal.toLowerCase() && 
+    return results.find(r =>
+      r.class === String(classVal) &&
+      Number(r.roll) === Number(rollVal) &&
+      r.exam.toLowerCase() === examVal.toLowerCase() &&
       String(r.year) === String(yearVal) &&
       r.published === true
     ) || null;

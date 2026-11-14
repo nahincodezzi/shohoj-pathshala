@@ -30,23 +30,23 @@ export default function Modal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+      className="modal-root fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto print:static print:p-0 print:overflow-visible"
       role="dialog"
       aria-modal="true"
     >
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity no-print print:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Dialog Card */}
       <div 
-        className={`relative w-full ${maxWidth} rounded-2xl bg-surface border border-border shadow-2xl p-6 transition-all z-10 max-h-[90vh] flex flex-col ${className}`}
+        className={`relative w-full ${maxWidth} rounded-2xl bg-surface border border-border shadow-2xl p-6 transition-all z-10 max-h-[90vh] flex flex-col print:border-none print:bg-transparent print:p-0 print:shadow-none print:max-h-none print:max-w-none ${className}`}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-border mb-4">
+        {/* Header - Hidden in Print so only official letterhead is printed */}
+        <div className="flex items-start justify-between gap-4 pb-4 border-b border-border mb-4 no-print print:hidden">
           <div>
             <h3 className="text-lg sm:text-xl font-heading font-bold text-text">
               {title}
@@ -67,7 +67,7 @@ export default function Modal({
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 pr-1">
+        <div className="overflow-y-auto flex-1 pr-1 print:overflow-visible print:p-0">
           {children}
         </div>
       </div>

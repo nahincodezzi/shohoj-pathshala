@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
 import { TenantRepository, hashPassword } from '../../services/tenantStorage';
@@ -55,7 +55,27 @@ export default function OwnerPanel() {
   const [ownerPassword, setOwnerPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState('schools'); // 'schools', 'audit', 'plans', 'cms'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTabState] = useState(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['schools', 'plans', 'cms', 'audit'].includes(tabFromUrl)) {
+      return tabFromUrl;
+    }
+    return 'schools';
+  });
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (tab === 'schools') {
+        next.delete('tab');
+      } else {
+        next.set('tab', tab);
+      }
+      return next;
+    }, { replace: true });
+  };
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -376,6 +396,47 @@ export default function OwnerPanel() {
         </div>
       </header>
 
+      {/* Mobile Navigation Tabs for Small/Narrow Screens (Always Accessible) */}
+      <div className="md:hidden bg-surface border-b border-border px-4 py-2.5 overflow-x-auto flex items-center gap-2 sticky top-18 z-30 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setActiveTab('schools')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+            activeTab === 'schools' ? 'bg-indigo text-white shadow-xs' : 'text-muted hover:text-text bg-surface-2'
+          }`}
+        >
+          {t.schools}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('cms')}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition-colors ${
+            activeTab === 'cms' ? 'bg-indigo text-white shadow-xs' : 'text-indigo bg-indigo/10 border border-indigo/30'
+          }`}
+        >
+          <LayoutTemplate className="w-3.5 h-3.5" />
+          ল্যান্ডিং পেজ (CMS)
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('plans')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+            activeTab === 'plans' ? 'bg-indigo text-white shadow-xs' : 'text-muted hover:text-text bg-surface-2'
+          }`}
+        >
+          {t.plans_validity}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('audit')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+            activeTab === 'audit' ? 'bg-indigo text-white shadow-xs' : 'text-muted hover:text-text bg-surface-2'
+          }`}
+        >
+          {t.audit_log}
+        </button>
+      </div>
+
       {/* ================= 2. MAIN WORKSPACE ================= */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full space-y-8">
         
@@ -437,6 +498,37 @@ export default function OwnerPanel() {
         {/* Tab 1: Schools Directory */}
         {activeTab === 'schools' && (
           <div className="space-y-6">
+            {/* Quick CMS Action Banner for Super Admin */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo/15 via-indigo/5 to-surface-2 border-2 border-indigo/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-indigo text-white flex items-center justify-center shrink-0 shadow-md">
+                  <LayoutTemplate className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-heading font-bold text-text">
+                      পাবলিক ল্যান্ডিং পেজ CMS (কনটেন্ট ম্যানেজমেন্ট)
+                    </h3>
+                    <Badge variant="indigo">লাইভ এডিটর</Badge>
+                  </div>
+                  <p className="text-xs text-muted mt-0.5">
+                    মূল পাবলিক ওয়েবসাইটের হিরো ব্যানার, ৮টি মডিউল, ৩টি প্রাইসিং প্যাকেজ, প্রধান শিক্ষকের বাণী ও FAQ পরিবর্তন ও সেভ করুন।
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="bg-indigo hover:bg-indigo/90 shadow-sm"
+                  icon={LayoutTemplate}
+                  onClick={() => setActiveTab('cms')}
+                >
+                  ল্যান্ডিং পেজ (CMS) খুলুন
+                </Button>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">{t.schools}</h2>

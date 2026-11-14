@@ -682,7 +682,8 @@ export default function LandingPage() {
 
           <div className="flex flex-wrap items-center gap-6 font-semibold">
             <Link to="/bdhs/login" className="hover:text-primary transition-colors">স্কুল অ্যাডমিন লগইন</Link>
-            <Link to="/owner" className="hover:text-primary transition-colors">প্ল্যাটফর্ম সুপার অ্যাডমিন প্যানেল</Link>
+            <Link to="/owner" className="hover:text-primary transition-colors">সুপার অ্যাডমিন ড্যাশবোর্ড</Link>
+            <Link to="/owner?tab=cms" className="hover:text-primary text-indigo font-bold transition-colors">ল্যান্ডিং পেজ (CMS)</Link>
             <Link to="/design" className="hover:text-primary transition-colors">ডিজাইন শোকেস</Link>
           </div>
         </div>

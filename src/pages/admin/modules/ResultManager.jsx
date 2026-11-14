@@ -444,35 +444,44 @@ export default function ResultManager() {
         >
           <div className="space-y-4">
             {/* Printable Marksheet Container */}
-            <div className="printable-document p-6 rounded-2xl bg-surface border border-border space-y-4">
-              {/* Header Letterhead */}
-              <div className="text-center pb-4 border-b border-border space-y-1">
-                <h3 className="text-lg font-heading font-bold text-text">{school.name_bn}</h3>
-                <p className="text-xs text-muted">
-                  EIIN: {school.eiin} • বোর্ড: {school.board} • কোড: {school.school_code}
-                </p>
-                <span className="inline-block px-3 py-1 rounded-full bg-primary-soft text-primary font-bold text-xs">
-                  একাডেমিক ট্রান্সক্রিপ্ট — {selectedResult.exam} {toBengaliNumber(selectedResult.year)}
-                </span>
+            <div className="printable-marksheet-sheet printable-document page-fit-single p-6 rounded-xl bg-white text-black border border-slate-300 space-y-4">
+              {/* Header Letterhead with Dynamic School Logo */}
+              <div className="flex items-center justify-center gap-3 pb-3 border-b-2 border-black">
+                {school.logo_url || school.logo ? (
+                  <img src={school.logo_url || school.logo} alt="School Logo" className="w-12 h-12 object-contain rounded-lg border border-slate-300 p-0.5 bg-white shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-emerald-700 text-white font-bold text-xl flex items-center justify-center shrink-0">
+                    {school.name_bn[0]}
+                  </div>
+                )}
+                <div className="text-center">
+                  <h3 className="text-lg font-heading font-extrabold text-slate-900 leading-tight">{school.name_bn}</h3>
+                  <p className="text-[11px] text-slate-700">
+                    EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board} • স্কুল কোড: {school.school_code}
+                  </p>
+                  <span className="inline-block px-2.5 py-0.5 mt-1 rounded bg-slate-100 text-slate-900 border border-slate-300 font-bold text-[11px]">
+                    একাডেমিক ট্রান্সক্রিপ্ট — {selectedResult.exam} {toBengaliNumber(selectedResult.year)}
+                  </span>
+                </div>
               </div>
 
               {/* Student Info Box */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-xl bg-surface-2 border border-border text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
                 <div>
-                  <span className="text-muted block text-[10px]">শিক্ষার্থীর নাম:</span>
-                  <strong className="text-text block truncate">{selectedResult.student_name_bn || '—'}</strong>
+                  <span className="text-slate-600 block text-[10px]">শিক্ষার্থীর নাম:</span>
+                  <strong className="text-slate-900 block truncate">{selectedResult.student_name_bn || '—'}</strong>
                 </div>
                 <div>
-                  <span className="text-muted block text-[10px]">শ্রেণি:</span>
-                  <span className="font-semibold text-text">{toBengaliOrdinal(selectedResult.class)}</span>
+                  <span className="text-slate-600 block text-[10px]">শ্রেণি:</span>
+                  <span className="font-semibold text-slate-900">{toBengaliOrdinal(selectedResult.class)}</span>
                 </div>
                 <div>
-                  <span className="text-muted block text-[10px]">রোল নম্বর:</span>
-                  <span className="font-mono font-bold text-text">{toBengaliNumber(selectedResult.roll)}</span>
+                  <span className="text-slate-600 block text-[10px]">রোল নম্বর:</span>
+                  <span className="font-mono font-bold text-slate-900">{toBengaliNumber(selectedResult.roll)}</span>
                 </div>
                 <div>
-                  <span className="text-muted block text-[10px]">বিভাগ:</span>
-                  <span className="font-semibold text-text">{selectedResult.group || 'General'}</span>
+                  <span className="text-slate-600 block text-[10px]">বিভাগ:</span>
+                  <span className="font-semibold text-slate-900">{selectedResult.group || 'General'}</span>
                 </div>
               </div>
 
@@ -490,27 +499,31 @@ export default function ResultManager() {
               />
 
               {/* Final Summary Card */}
-              <div className="p-4 rounded-xl bg-primary-soft border border-primary/25 flex items-center justify-between">
+              <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-300 flex items-center justify-between text-black">
                 <div>
-                  <span className="text-xs text-muted block">চূড়ান্ত গ্রেড পয়েন্ট (GPA):</span>
-                  <div className="text-2xl font-mono font-extrabold text-primary">
+                  <span className="text-xs text-slate-600 block">চূড়ান্ত গ্রেড পয়েন্ট (GPA):</span>
+                  <div className="text-2xl font-mono font-extrabold text-slate-900">
                     {selectedResult.total_gpa}
                   </div>
                 </div>
-                <Badge variant={selectedResult.status === 'PASSED' ? 'success' : 'danger'}>
-                  {selectedResult.status}
-                </Badge>
+                <div className="text-right">
+                  <span className={`inline-block px-3 py-1 rounded font-bold text-xs border ${
+                    selectedResult.status === 'PASSED' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'
+                  }`}>
+                    {selectedResult.status === 'PASSED' ? '✓ উত্তীর্ণ (PASSED)' : '✕ অনুত্তীর্ণ (FAILED)'}
+                  </span>
+                </div>
               </div>
 
               {/* Signatures */}
-              <div className="pt-8 flex items-center justify-between text-xs text-muted border-t border-border">
+              <div className="pt-6 flex items-center justify-between text-xs text-slate-700 border-t border-slate-300">
                 <div className="text-center">
-                  <div className="w-32 border-b border-border-strong mb-1"></div>
+                  <div className="w-32 border-b border-slate-400 mb-1"></div>
                   <span>শ্রেণি শিক্ষকের স্বাক্ষর</span>
                 </div>
                 <div className="text-center">
-                  <div className="w-32 border-b border-border-strong mb-1"></div>
-                  <span>প্রধান শিক্ষকের স্বাক্ষর ও সিল</span>
+                  <div className="w-36 border-b border-slate-400 mb-1"></div>
+                  <span className="font-bold text-slate-900">প্রধান শিক্ষকের স্বাক্ষর ও সিল</span>
                 </div>
               </div>
             </div>

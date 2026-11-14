@@ -321,7 +321,7 @@ export default function FeeManager() {
         >
           <div className="space-y-6">
             {/* The 2-Part Receipt Layout (D26) */}
-            <div className="printable-money-receipt page-fit-single p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-5 shadow-inner relative">
+            <div className="printable-money-receipt printable-document page-fit-single p-5 sm:p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-inner relative">
               
               {/* Void Watermark if voided */}
               {printReceipt.status === 'voided' && (

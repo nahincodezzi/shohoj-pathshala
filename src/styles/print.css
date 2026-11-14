@@ -1,118 +1,170 @@
 /**
- * Sohoj Pathshala — Unified Print System
- * Guarantees zero dark-mode bleeding, isolates documents, and formats for standard A4
+ * Sohoj Pathshala — Unified Universal Print Engine
+ * Guarantees 100% pure white background, dark-mode independence, dynamic school letterhead,
+ * and strict 1-page containment for Notice, Marksheet, 2-Copy Money Receipt, Admit Card & Routine.
  */
 
 @media print {
-  /* 1. Global Reset & Hiding Chrome */
+  /* 1. Page Definition - Standard A4 with precise institutional margins */
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  /* 2. Global Universal Reset */
   *, *::before, *::after {
     box-sizing: border-box !important;
     text-shadow: none !important;
-    color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   html, body {
-    background: #ffffff !important;
+    background: #FFFFFF !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    min-height: 100% !important;
-    overflow: visible !important;
-    font-size: 11pt !important;
+    height: 100% !important;
+    max-height: 297mm !important;
+    font-size: 10.5pt !important;
+    font-family: 'Noto Sans Bengali', 'Hind Siliguri', 'Inter', system-ui, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
   }
 
-  /* Hide entire page structure when printing */
-  header, 
-  nav, 
-  footer, 
-  aside, 
-  .no-print, 
-  button, 
-  [role="dialog"] > div:first-child, /* modal backdrop */
-  .fixed, 
+  /* 3. Hide all navigation, headers, footers, sidebars, buttons, and web chrome */
+  header,
+  nav,
+  footer,
+  aside,
+  button:not(.printable-btn),
+  .no-print,
+  .theme-toggle,
+  .toast-container,
+  .ticker-wrap,
   .sticky,
-  .toast-container {
+  [aria-label="মডাল বন্ধ করুন"],
+  .fixed.inset-0.bg-black\/60,
+  .fixed.inset-0.bg-black\/50,
+  .fixed.inset-0.bg-black\/70,
+  .backdrop-blur-xs,
+  .backdrop-blur-md {
     display: none !important;
+    visibility: hidden !important;
   }
 
-  /* 2. Unfold Modals & Scroll Containers */
-  .modal-container, 
-  .modal-body, 
-  [role="dialog"],
-  .overflow-y-auto,
-  .max-h-\[85vh\],
-  .max-h-\[90vh\] {
-    position: static !important;
-    display: block !important;
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
+  /* 4. Complete Print Isolation for Single-Page Printable Documents */
+  /* When any printable document is present, hide the rest of the body */
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) {
+    visibility: hidden !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    max-height: 297mm !important;
+  }
+
+  /* Isolate and project the printable document onto Page 1 starting at top: 0 */
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-document,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-notice-paper,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-marksheet-sheet,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-money-receipt,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-admit-card,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-routine-sheet {
+    visibility: visible !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0 !important;
     margin: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: #ffffff !important;
+    padding: 8mm 10mm !important;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1.5px solid #000000 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    max-height: 272mm !important;
+    overflow: hidden !important;
+    z-index: 999999 !important;
   }
 
-  /* 3. Printable Document Specifics */
-  .printable-document {
+  /* Make all children inside the isolated printable document visible with dark text */
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-document *,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-notice-paper *,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-marksheet-sheet *,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-money-receipt *,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-admit-card *,
+  body:has(.printable-document, .printable-notice-paper, .printable-marksheet-sheet, .printable-money-receipt, .printable-admit-card, .printable-routine-sheet) .printable-routine-sheet * {
+    visibility: visible !important;
+    color: #000000 !important;
+    text-shadow: none !important;
+  }
+
+  /* Specific background fills for tables & badges inside printable documents */
+  th, .bg-slate-50, .bg-slate-100 {
+    background-color: #F8FAFC !important;
+    color: #000000 !important;
+  }
+
+  td, th {
+    border-color: #CBD5E1 !important;
+  }
+
+  /* Re-hide any explicit .no-print elements inside the printable document */
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Strict Single-Page containment helper */
+  .page-fit-single {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    max-height: 272mm !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Multi-page dynamic streaming for large ledgers / student directories */
+  body:has(.printable-multi-page),
+  html:has(.printable-multi-page) {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    visibility: visible !important;
+  }
+
+  .printable-multi-page {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .printable-multi-page tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .printable-multi-page thead {
+    display: table-header-group !important;
+  }
+
+  /* Modal container reset for print */
+  [role="dialog"] {
+    position: static !important;
     display: block !important;
     width: 100% !important;
-    margin: 0 auto !important;
+    max-width: 100% !important;
+    overflow: visible !important;
     padding: 0 !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    page-break-inside: avoid !important;
-  }
-
-  .printable-card {
-    background: #ffffff !important;
-    border: 1px solid #1f2937 !important;
-    color: #000000 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
     box-shadow: none !important;
   }
-
-  /* Money Receipt Dual Copy */
-  .money-receipt-sheet {
-    width: 100% !important;
-    margin: 0 auto !important;
-    padding: 10mm !important;
-    background: #ffffff !important;
-  }
-
-  .receipt-copy {
-    border: 1.5px solid #111827 !important;
-    padding: 12px 16px !important;
-    margin-bottom: 24px !important;
-    background: #ffffff !important;
-  }
-
-  .receipt-cut-line {
-    border-top: 1.5px dashed #4b5563 !important;
-    margin: 20px 0 !important;
-    text-align: center !important;
-  }
-
-  .receipt-cut-line::after {
-    content: "✂ এখান থেকে কেটে আলাদা করুন (Cut Along Dashed Line) ✂";
-    display: inline-block;
-    background: #ffffff;
-    padding: 0 10px;
-    font-size: 9pt;
-    position: relative;
-    top: -9px;
-    color: #4b5563 !important;
-  }
-
-  @page {
-    size: A4 portrait;
-    margin: 12mm 15mm;
-  }
 }
-
