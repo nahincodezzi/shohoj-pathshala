@@ -40,7 +40,7 @@ export default function RoutineManager() {
         file_size: '১.২ MB'
       });
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'রুটিন সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
   };
 

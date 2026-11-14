@@ -42,7 +42,7 @@ export default function CommitteeManager() {
         status: 'active'
       });
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'সদস্য সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
   };
 

@@ -51,7 +51,7 @@ export default function FeeManager() {
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     if (!form.amount || Number(form.amount) <= 0) {
-      alert('টাকার সঠিক পরিমাণ দিন।');
+      showToast('টাকার সঠিক পরিমাণ দিন।', 'error');
       return;
     }
 
@@ -65,7 +65,7 @@ export default function FeeManager() {
       setCreateModalOpen(false);
       setPrintReceipt(newRec); // Auto open print preview
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'রসিদ তৈরিতে ত্রুটি হয়েছে', 'error');
     }
   };
 
@@ -77,7 +77,7 @@ export default function FeeManager() {
       setVoidModalReceipt(null);
       setVoidReason('');
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'রসিদ বাতিলকরণে ত্রুটি হয়েছে', 'error');
     }
   };
 

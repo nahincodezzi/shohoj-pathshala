@@ -22,7 +22,7 @@ export default function AdmissionManager() {
       showToast(`আবেদন অনুমোদিত! রোল ${result.admission.assigned_roll} বরাদ্দ হয়েছে এবং শিক্ষার্থী তৈরি হয়েছে।`);
       setSelectedAdm(null);
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'অনুমোদনে ত্রুটি হয়েছে', 'error');
     }
   };
 

@@ -33,7 +33,7 @@ export default function UserManager() {
     e.preventDefault();
     const existing = TenantRepository.getUsers(school.id);
     if (existing.some(u => u.username.toLowerCase() === newUser.username.toLowerCase())) {
-      alert(`"${newUser.username}" ইউজারনেম ইতোমধ্যে বিদ্যমান রয়েছে।`);
+      showToast(`"${newUser.username}" ইউজারনেম ইতোমধ্যে বিদ্যমান রয়েছে।`, 'error');
       return;
     }
 

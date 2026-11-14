@@ -39,7 +39,7 @@ export default function GalleryManager() {
         description: ''
       });
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'ছবি সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
   };
 
