@@ -194,40 +194,46 @@ export default function SchoolLogin() {
             </Button>
           </form>
 
-          {/* Quick Demo Login Credentials Bar */}
-          <div className="mt-8 p-3.5 rounded-xl bg-surface border border-border text-xs">
-            <span className="font-bold text-text block mb-1.5">ডেমো লগইন রোল নির্বাচন করুন:</span>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin', 'password123')}
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-primary-soft hover:text-primary text-muted cursor-pointer"
-              >
-                সুপার অ্যাডমিন
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('headmaster', 'password123')}
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-primary-soft hover:text-primary text-muted cursor-pointer"
-              >
-                প্রধান শিক্ষক
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('teacher', 'password123')}
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-primary-soft hover:text-primary text-muted cursor-pointer"
-              >
-                সহকারী শিক্ষক
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('office', 'password123')}
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-primary-soft hover:text-primary text-muted cursor-pointer"
-              >
-                অফিস সহকারী
-              </button>
+          {/* Collapsible Demo Login Credentials (D21) */}
+          <details className="mt-8 rounded-xl bg-surface border border-border text-xs group overflow-hidden">
+            <summary className="p-3.5 font-bold text-text cursor-pointer hover:bg-surface-2 transition-colors flex items-center justify-between select-none">
+              <span>ডেমো অ্যাকাউন্ট সহায়িকা (Demo Credentials)</span>
+              <span className="text-[11px] text-primary group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div className="p-3.5 pt-0 border-t border-border/60 mt-1 space-y-2">
+              <span className="text-muted block text-[11px]">এক ক্লিকে ডেমো রোলের ইউজার ও পাসওয়ার্ড পূরণ করুন:</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('admin', 'password123')}
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-primary-soft hover:text-primary text-text font-medium cursor-pointer transition-colors border border-border"
+                >
+                  সুপার অ্যাডমিন
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('headmaster', 'password123')}
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-primary-soft hover:text-primary text-text font-medium cursor-pointer transition-colors border border-border"
+                >
+                  প্রধান শিক্ষক
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('teacher', 'password123')}
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-primary-soft hover:text-primary text-text font-medium cursor-pointer transition-colors border border-border"
+                >
+                  সহকারী শিক্ষক
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('office', 'password123')}
+                  className="px-2.5 py-1 rounded-lg bg-surface-2 hover:bg-primary-soft hover:text-primary text-text font-medium cursor-pointer transition-colors border border-border"
+                >
+                  অফিস সহকারী
+                </button>
+              </div>
             </div>
-          </div>
+          </details>
         </div>
 
         {/* STRICT Security Notice at the Bottom (NO PUBLIC REGISTRATION) */}

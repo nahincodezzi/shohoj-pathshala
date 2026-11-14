@@ -10,6 +10,7 @@ import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
 import { exportToCsv } from '../../../utils/exportCsv';
+import { numberToBanglaWords } from '../../../utils/numberToBanglaWords';
 import { CreditCard, Plus, Printer, Ban, CheckCircle2, AlertTriangle, Scissors, Download } from 'lucide-react';
 
 export default function FeeManager() {
@@ -32,7 +33,8 @@ export default function FeeManager() {
     roll: '',
     category: 'মাসিক বেতন ও পরীক্ষার ফি',
     amount: '',
-    payment_method: 'ক্যাশ'
+    payment_method: 'ক্যাশ',
+    trx_id: ''
   });
 
   const handleStudentSelect = (studentId) => {
@@ -233,6 +235,15 @@ export default function FeeManager() {
             />
           </div>
 
+          {form.payment_method !== 'ক্যাশ' && (
+            <Input
+              label="ট্রানজেকশন আইডি (TrxID / স্লিপ নম্বর)"
+              placeholder="যেমন: BKASH-9X82KD"
+              value={form.trx_id}
+              onChange={(e) => setForm({ ...form, trx_id: e.target.value })}
+            />
+          )}
+
           <Input
             label="টাকার পরিমাণ (টাকায়)"
             type="number"
@@ -300,8 +311,8 @@ export default function FeeManager() {
           maxWidth="max-w-2xl"
         >
           <div className="space-y-6">
-            {/* The 2-Part Receipt Layout */}
-            <div className="p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-6 shadow-inner relative">
+            {/* The 2-Part Receipt Layout (D26) */}
+            <div className="printable-money-receipt p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-6 shadow-inner relative">
               
               {/* Void Watermark if voided */}
               {printReceipt.status === 'voided' && (
@@ -317,7 +328,7 @@ export default function FeeManager() {
                 <div className="flex items-center justify-between border-b border-black pb-2">
                   <div>
                     <h3 className="font-bold text-base">{school.name_bn}</h3>
-                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • মানি রিসিট</p>
+                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
                   </div>
                   <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300">
                     শিক্ষার্থী কপি (Student Copy)
@@ -330,12 +341,19 @@ export default function FeeManager() {
                   <div>শিক্ষার্থী: <strong>{printReceipt.student_name}</strong></div>
                   <div className="text-right">শ্রেণি: <strong>{printReceipt.class}ম</strong> (রোল: {printReceipt.roll})</div>
                   <div>খাত: <strong>{printReceipt.category}</strong></div>
-                  <div className="text-right">মাধ্যম: <strong>{printReceipt.payment_method}</strong></div>
+                  <div className="text-right">
+                    মাধ্যম: <strong>{printReceipt.payment_method}</strong>
+                    {printReceipt.trx_id && <span className="font-mono block text-[10px] text-slate-600">Trx ID: {printReceipt.trx_id}</span>}
+                  </div>
                 </div>
 
                 <div className="p-2.5 rounded bg-slate-50 border border-slate-200 flex justify-between items-center text-sm">
                   <span>মোট আদায়কৃত টাকা:</span>
                   <span className="font-mono font-bold text-base">৳{Number(printReceipt.amount).toLocaleString('bn-BD')}</span>
+                </div>
+
+                <div className="px-2 text-[11px] text-slate-700 font-medium">
+                  কথায়: <strong className="text-slate-900">{numberToBanglaWords(printReceipt.amount)} মাত্র</strong>
                 </div>
 
                 {printReceipt.status === 'voided' && (
@@ -360,7 +378,7 @@ export default function FeeManager() {
                 <div className="flex items-center justify-between border-b border-black pb-2">
                   <div>
                     <h3 className="font-bold text-base">{school.name_bn}</h3>
-                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • মানি রিসিট</p>
+                    <p className="text-[10px] text-slate-600">EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board || 'কুমিল্লা'} • মানি রিসিট</p>
                   </div>
                   <span className="px-2.5 py-0.5 rounded bg-slate-100 font-bold text-[11px] border border-slate-300">
                     অফিস কপি (Office Copy)
@@ -373,12 +391,19 @@ export default function FeeManager() {
                   <div>শিক্ষার্থী: <strong>{printReceipt.student_name}</strong></div>
                   <div className="text-right">শ্রেণি: <strong>{printReceipt.class}ম</strong> (রোল: {printReceipt.roll})</div>
                   <div>খাত: <strong>{printReceipt.category}</strong></div>
-                  <div className="text-right">মাধ্যম: <strong>{printReceipt.payment_method}</strong></div>
+                  <div className="text-right">
+                    মাধ্যম: <strong>{printReceipt.payment_method}</strong>
+                    {printReceipt.trx_id && <span className="font-mono block text-[10px] text-slate-600">Trx ID: {printReceipt.trx_id}</span>}
+                  </div>
                 </div>
 
                 <div className="p-2.5 rounded bg-slate-50 border border-slate-200 flex justify-between items-center text-sm">
                   <span>মোট আদায়কৃত টাকা:</span>
                   <span className="font-mono font-bold text-base">৳{Number(printReceipt.amount).toLocaleString('bn-BD')}</span>
+                </div>
+
+                <div className="px-2 text-[11px] text-slate-700 font-medium">
+                  কথায়: <strong className="text-slate-900">{numberToBanglaWords(printReceipt.amount)} মাত্র</strong>
                 </div>
 
                 <div className="pt-4 flex justify-between items-end text-[10px] text-slate-500">

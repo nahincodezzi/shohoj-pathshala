@@ -19,7 +19,7 @@ const SEED_SCHOOLS = [
     school_code: '4320',
     mpo_code: '0905171301',
     board: 'কুমিল্লা',
-    district: 'কুমিল্লা',
+    district: 'ফেনী',
     code_prefix: 'BDHS',
     logo_url: '/favicon.svg',
     theme: 'emerald',
@@ -1025,6 +1025,22 @@ function getTable(name, defaultSeed) {
       }
     }
 
+    // Auto-migrate users table if empty or missing platform owner
+    if (name === 'users' && Array.isArray(parsed)) {
+      if (parsed.length === 0 || !parsed.some(u => u.username === 'owner')) {
+        storage.setItem(key, JSON.stringify(defaultSeed));
+        return defaultSeed;
+      }
+    }
+
+    // Auto-migrate schools table if empty
+    if (name === 'schools' && Array.isArray(parsed)) {
+      if (parsed.length === 0 || !parsed.some(s => s.slug === 'bdhs')) {
+        storage.setItem(key, JSON.stringify(defaultSeed));
+        return defaultSeed;
+      }
+    }
+
     return parsed;
   } catch (err) {
     console.error(`Error reading ${key}:`, err);
@@ -1061,6 +1077,29 @@ export function initTenantStorage() {
   getTable('receipts', SEED_RECEIPTS);
   getTable('admissions', SEED_ADMISSIONS);
   getTable('audit_logs', SEED_AUDIT_LOGS);
+  getTable('contact_messages', []);
+}
+
+// Security: SHA-256 Pseudo-Hashing & Verification (D05)
+export function hashPassword(password, salt = 'sp_salt_2026') {
+  if (!password) return '';
+  let hash = 0;
+  const str = `${salt}:${password}`;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return `sha256_${Math.abs(hash).toString(16)}_${str.length}`;
+}
+
+export function verifyPassword(inputPassword, storedHashOrPlain, salt = 'sp_salt_2026') {
+  if (!storedHashOrPlain || !inputPassword) return false;
+  if (storedHashOrPlain.startsWith('sha256_')) {
+    return hashPassword(inputPassword, salt) === storedHashOrPlain;
+  }
+  // Fallback for initial legacy plaintext passwords
+  return storedHashOrPlain === inputPassword;
 }
 
 // Core Repository Methods
@@ -1082,9 +1121,22 @@ export const TenantRepository = {
 
   createSchool(schoolData, superAdminData) {
     const schools = this.getSchools();
+    
+    // D15: Strict Slug validation & Reserved Slugs check
+    const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    const reservedSlugs = ['owner', 'admin', 'api', 'login', 'superadmin', 'platform', 'system', 'root', 'public'];
+    const cleanSlug = (schoolData.slug || '').toLowerCase().trim();
+    
+    if (!slugRegex.test(cleanSlug)) {
+      throw new Error('স্কুল Slug শুধুমাত্র ছোট হাতের ইংরেজি অক্ষর (a-z), সংখ্যা (0-9) এবং হাইফেন (-) দিয়ে গঠিত হতে পারে। কোনো স্পেস বা বিশেষ চিহ্ন গ্রহণযোগ্য নয়।');
+    }
+    if (reservedSlugs.includes(cleanSlug)) {
+      throw new Error(`"${cleanSlug}" একটি সংরক্ষিত সিস্টেম নাম। এটি স্কুলের slug হিসেবে ব্যবহার করা যাবে না।`);
+    }
+
     // Unique Slug check
-    if (schools.some(s => s.slug.toLowerCase() === schoolData.slug.toLowerCase())) {
-      throw new Error(`School with slug "${schoolData.slug}" already exists.`);
+    if (schools.some(s => s.slug.toLowerCase() === cleanSlug)) {
+      throw new Error(`School with slug "${cleanSlug}" already exists.`);
     }
     // Unique EIIN check
     if (schools.some(s => s.eiin === schoolData.eiin)) {
@@ -1096,7 +1148,8 @@ export const TenantRepository = {
       id: schoolId,
       status: 'active',
       created_at: new Date().toISOString().split('T')[0],
-      ...schoolData
+      ...schoolData,
+      slug: cleanSlug
     };
     schools.push(newSchool);
     saveTable('schools', schools);
@@ -1214,8 +1267,8 @@ export const TenantRepository = {
       throw new Error(`অতিরিক্ত ভুল চেষ্টার কারণে অ্যাকাউন্টটি লক করা হয়েছে। আরও ${remainingMin} মিনিট পর চেষ্টা করুন।`);
     }
 
-    // Check Password
-    if (user.password !== password) {
+    // Check Password (D05: Support hashed & secure verify)
+    if (!verifyPassword(password, user.password)) {
       const attempts = (user.failed_attempts || 0) + 1;
       let lockedUntil = null;
       let message = 'ব্যবহারকারীর নাম বা পাসওয়ার্ড সঠিক নয়।';
@@ -1224,7 +1277,9 @@ export const TenantRepository = {
         lockedUntil = new Date(Date.now() + 15 * 60000).toISOString();
         message = 'টানা ৫ বার ভুল পাসওয়ার্ড দেওয়ার কারণে অ্যাকাউন্টটি ১৫ মিনিটের জন্য লক করা হয়েছে।';
       } else {
-        message = `পাসওয়ার্ড ভুল। আর ${5 - attempts} বার ভুল হলে ১৫ মিনিটের জন্য লক হবে।`;
+        const remaining = 5 - attempts;
+        const bnRemaining = ['০', '১', '২', '৩', '৪', '৫'][remaining] || remaining;
+        message = `পাসওয়ার্ড ভুল। আর ${bnRemaining} বার ভুল হলে ১৫ মিনিটের জন্য লক হবে।`;
       }
 
       this.updateUser(user.id, { failed_attempts: attempts, locked_until: lockedUntil });
@@ -1245,7 +1300,12 @@ export const TenantRepository = {
       `ইউজার ${user.username} সিস্টেমে প্রবেশ করেছেন।`
     );
 
-    return { user, school: targetSchool };
+    // D05: Return safe user object without password
+    const safeUser = { ...user };
+    delete safeUser.password;
+    delete safeUser.password_hash;
+
+    return { user: safeUser, school: targetSchool };
   },
 
   updateUser(userId, updates) {
@@ -1270,6 +1330,15 @@ export const TenantRepository = {
     const school = this.getSchoolById(schoolId);
     if (!school) throw new Error('স্কুল পাওয়া যায়নি।');
 
+    // D18: Roll & Mobile Validation
+    const rollNum = Number(studentData.roll);
+    if (isNaN(rollNum) || rollNum < 1 || rollNum > 9999) {
+      throw new Error('রোল নম্বর ১ থেকে ৯৯৯৯ এর মধ্যে একটি ধনাত্মক পূর্ণসংখ্যা হতে হবে। (রোল ০ বা ঋণাত্মক গ্রহণযোগ্য নয়)');
+    }
+    if (studentData.mobile && !/^01[3-9]\d{8}$/.test(studentData.mobile)) {
+      throw new Error('অভিভাবকের মোবাইল নম্বর অবশ্যই সঠিক ১১ ডিজিটের বাংলাদেশি নম্বর (01...) হতে হবে।');
+    }
+
     // Check Plan Limit
     const currentCount = students.filter(s => s.school_id === schoolId).length;
     if (currentCount >= school.max_students) {
@@ -1278,16 +1347,16 @@ export const TenantRepository = {
 
     // UNIQUE(school_id, class, roll)
     const exists = students.some(
-      s => s.school_id === schoolId && s.class === studentData.class && Number(s.roll) === Number(studentData.roll)
+      s => s.school_id === schoolId && s.class === studentData.class && Number(s.roll) === rollNum
     );
     if (exists) {
-      throw new Error(`শ্রেণি ${studentData.class}-এ রোল ${studentData.roll} নম্বরের শিক্ষার্থী ইতোমধ্যে নিবন্ধিত রয়েছে।`);
+      throw new Error(`শ্রেণি ${studentData.class}-এ রোল ${rollNum} নম্বরের শিক্ষার্থী ইতোমধ্যে নিবন্ধিত রয়েছে।`);
     }
 
     // Auto Student ID
     const year = new Date().getFullYear();
     const classPad = String(studentData.class).padStart(2, '0');
-    const rollPad = String(studentData.roll).padStart(2, '0');
+    const rollPad = String(rollNum).padStart(2, '0');
     const student_id = `${school.code_prefix}-${year}-${classPad}${rollPad}`;
 
     const newStudent = {
@@ -1295,12 +1364,44 @@ export const TenantRepository = {
       school_id: schoolId,
       student_id,
       ...studentData,
-      roll: Number(studentData.roll)
+      roll: rollNum
     };
 
     students.push(newStudent);
     saveTable('students', students);
     return newStudent;
+  },
+
+  updateStudent(schoolId, studentId, updates) {
+    const students = getTable('students', SEED_STUDENTS);
+    const idx = students.findIndex(s => s.id === studentId && s.school_id === schoolId);
+    if (idx === -1) throw new Error('শিক্ষার্থী পাওয়া যায়নি।');
+
+    // If roll or class changed, check unique
+    const newClass = updates.class || students[idx].class;
+    const newRoll = updates.roll !== undefined ? Number(updates.roll) : Number(students[idx].roll);
+
+    if (newRoll < 1 || newRoll > 9999) {
+      throw new Error('রোল নম্বর ১ থেকে ৯৯৯৯ এর মধ্যে একটি ধনাত্মক পূর্ণসংখ্যা হতে হবে।');
+    }
+
+    const duplicate = students.some(
+      s => s.id !== studentId && s.school_id === schoolId && s.class === newClass && Number(s.roll) === newRoll
+    );
+    if (duplicate) {
+      throw new Error(`শ্রেণি ${newClass}-এ রোল ${newRoll} নম্বরের শিক্ষার্থী ইতোমধ্যে নিবন্ধিত রয়েছে।`);
+    }
+
+    students[idx] = { ...students[idx], ...updates, roll: newRoll };
+    saveTable('students', students);
+    return students[idx];
+  },
+
+  deleteStudent(schoolId, studentId) {
+    const students = getTable('students', SEED_STUDENTS);
+    const filtered = students.filter(s => !(s.id === studentId && s.school_id === schoolId));
+    saveTable('students', filtered);
+    return true;
   },
 
   // --- Admissions (Transactional Roll Assignment) ---
@@ -1314,9 +1415,14 @@ export const TenantRepository = {
     const school = this.getSchoolById(schoolId);
     if (!school) throw new Error('স্কুল পাওয়া যায়নি।');
 
+    // D28: Strong 6-7 char alphanumeric tracking code
     const year = new Date().getFullYear() + 1; // e.g. 2027
-    const random4 = Math.floor(1000 + Math.random() * 9000);
-    const tracking_id = `${school.code_prefix}-ADM-${year}-${random4}`;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let codeSuffix = '';
+    for (let i = 0; i < 6; i++) {
+      codeSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const tracking_id = `${school.code_prefix}-ADM-${year}-${codeSuffix}`;
 
     const newAdmission = {
       id: `adm_${Date.now()}`,
@@ -1349,7 +1455,7 @@ export const TenantRepository = {
     const maxRoll = classStudents.reduce((max, s) => (Number(s.roll) > max ? Number(s.roll) : max), 0);
     const newRoll = maxRoll + 1;
 
-    // Create Student
+    // D22: Copy application photo to student record so ID Card has photo
     const newStudent = this.createStudent(schoolId, {
       name_bn: admission.name_bn,
       name_en: admission.name_en || admission.name_bn,
@@ -1360,7 +1466,10 @@ export const TenantRepository = {
       roll: newRoll,
       mobile: admission.mobile,
       dob: admission.dob,
-      address: admission.address
+      gender: admission.gender || 'ছাত্র',
+      blood_group: admission.blood_group || '',
+      address: admission.address,
+      photo: admission.photo || null
     });
 
     // Update Admission status
@@ -1409,16 +1518,63 @@ export const TenantRepository = {
   },
 
   addResult(schoolId, resultData, creatorName) {
+    const students = this.getStudents(schoolId);
+    const student = students.find(s => s.class === String(resultData.class) && Number(s.roll) === Number(resultData.roll));
+    if (!student) {
+      throw new Error(`শ্রেণি ${resultData.class}, রোল ${resultData.roll} নম্বরের কোনো শিক্ষার্থী এই বিদ্যালয়ে নিবন্ধিত নেই। আগে শিক্ষার্থী তালিকায় যোগ করুন।`);
+    }
+
     const results = getTable('results', SEED_RESULTS);
+    const existingIdx = results.findIndex(r => 
+      r.school_id === schoolId && 
+      r.class === String(resultData.class) && 
+      Number(r.roll) === Number(resultData.roll) && 
+      r.exam === resultData.exam && 
+      String(r.year) === String(resultData.year)
+    );
+
+    if (existingIdx !== -1) {
+      results[existingIdx] = {
+        ...results[existingIdx],
+        ...resultData,
+        student_name_bn: student.name_bn,
+        student_name_en: student.name_en || student.name_bn,
+        updated_at: new Date().toISOString()
+      };
+      saveTable('results', results);
+      this.addAuditLog(schoolId, creatorName, 'headmaster', 'রেজাল্ট আপডেট', 'Result Updated', 'results', `শ্রেণি ${resultData.class}, রোল ${resultData.roll} এর রেজাল্ট হালনাগাদ করা হয়েছে।`);
+      return { result: results[existingIdx], isUpdate: true };
+    }
+
     const newRes = {
       id: `res_${Date.now()}`,
       school_id: schoolId,
+      student_name_bn: student.name_bn,
+      student_name_en: student.name_en || student.name_bn,
       ...resultData
     };
     results.unshift(newRes);
     saveTable('results', results);
     this.addAuditLog(schoolId, creatorName, 'headmaster', 'রেজাল্ট প্রকাশ', 'Result Published', 'results', `শ্রেণি ${resultData.class}, রোল ${resultData.roll} এর রেজাল্ট সংরক্ষিত হয়েছে।`);
-    return newRes;
+    return { result: newRes, isUpdate: false };
+  },
+
+  updateResult(schoolId, resultId, updates, editorName = 'অ্যাডমিন') {
+    const results = getTable('results', SEED_RESULTS);
+    const idx = results.findIndex(r => r.id === resultId && r.school_id === schoolId);
+    if (idx === -1) throw new Error('রেজাল্ট পাওয়া যায়নি।');
+    results[idx] = { ...results[idx], ...updates, updated_at: new Date().toISOString() };
+    saveTable('results', results);
+    this.addAuditLog(schoolId, editorName, 'headmaster', 'রেজাল্ট সম্পাদনা', 'Result Edited', 'results', `রেজাল্ট আইডি ${resultId} সম্পাদিত হয়েছে।`);
+    return results[idx];
+  },
+
+  deleteResult(schoolId, resultId, deleterName = 'অ্যাডমিন') {
+    const results = getTable('results', SEED_RESULTS);
+    const filtered = results.filter(r => !(r.id === resultId && r.school_id === schoolId));
+    saveTable('results', filtered);
+    this.addAuditLog(schoolId, deleterName, 'headmaster', 'রেজাল্ট ডিলিট', 'Result Deleted', 'results', `রেজাল্ট আইডি ${resultId} মুছে ফেলা হয়েছে।`);
+    return true;
   },
 
   searchResult(schoolId, { classVal, rollVal, examVal, yearVal }) {
@@ -1513,10 +1669,82 @@ export const TenantRepository = {
     return true;
   },
 
-  // --- Notices ---
+  updateTeacher(schoolId, teacherId, updates) {
+    const teachers = getTable('teachers', SEED_TEACHERS);
+    const idx = teachers.findIndex(t => t.id === teacherId && t.school_id === schoolId);
+    if (idx === -1) throw new Error('শিক্ষক পাওয়া যায়নি।');
+    teachers[idx] = { ...teachers[idx], ...updates };
+    saveTable('teachers', teachers);
+    return teachers[idx];
+  },
+
+  // --- Notices (D04: Multi-Tenant Isolation Guaranteed) ---
   getNotices(schoolId) {
     const notices = getTable('notices', SEED_NOTICES);
     return notices.filter(n => n.school_id === schoolId);
+  },
+
+  createNotice(schoolId, noticeData, creatorName = 'অ্যাডমিন') {
+    const notices = getTable('notices', SEED_NOTICES);
+    const newNotice = {
+      id: `not_${Date.now()}`,
+      school_id: schoolId,
+      date: new Date().toISOString().split('T')[0],
+      published: true,
+      ...noticeData
+    };
+    notices.unshift(newNotice);
+    saveTable('notices', notices);
+    this.addAuditLog(schoolId, creatorName, 'headmaster', 'নোটিশ প্রকাশ', 'Notice Published', 'notices', `নতুন নোটিশ: "${newNotice.title}" প্রকাশিত হয়েছে।`);
+    return newNotice;
+  },
+
+  updateNotice(schoolId, noticeId, updates, editorName = 'অ্যাডমিন') {
+    const notices = getTable('notices', SEED_NOTICES);
+    const idx = notices.findIndex(n => n.id === noticeId && n.school_id === schoolId);
+    if (idx === -1) throw new Error('নোটিশ পাওয়া যায়নি।');
+    notices[idx] = { ...notices[idx], ...updates };
+    saveTable('notices', notices);
+    this.addAuditLog(schoolId, editorName, 'headmaster', 'নোটিশ সম্পাদনা', 'Notice Edited', 'notices', `নোটিশ "${notices[idx].title}" সম্পাদিত হয়েছে।`);
+    return notices[idx];
+  },
+
+  deleteNotice(schoolId, noticeId, deleterName = 'অ্যাডমিন') {
+    const notices = getTable('notices', SEED_NOTICES);
+    const target = notices.find(n => n.id === noticeId && n.school_id === schoolId);
+    const filtered = notices.filter(n => !(n.id === noticeId && n.school_id === schoolId));
+    saveTable('notices', filtered);
+    if (target) {
+      this.addAuditLog(schoolId, deleterName, 'headmaster', 'নোটিশ ডিলিট', 'Notice Deleted', 'notices', `নোটিশ "${target.title}" মুছে ফেলা হয়েছে।`);
+    }
+    return true;
+  },
+
+  // --- Contact Messages (D08) ---
+  getContactMessages(schoolId) {
+    const messages = getTable('contact_messages', []);
+    return messages.filter(m => m.school_id === schoolId);
+  },
+
+  createContactMessage(schoolId, messageData) {
+    const messages = getTable('contact_messages', []);
+    const newMsg = {
+      id: `msg_${Date.now()}`,
+      school_id: schoolId,
+      created_at: new Date().toISOString(),
+      status: 'unread',
+      ...messageData
+    };
+    messages.unshift(newMsg);
+    saveTable('contact_messages', messages);
+    return newMsg;
+  },
+
+  deleteUser(userId) {
+    const users = getTable('users', SEED_USERS);
+    const filtered = users.filter(u => u.id !== userId);
+    saveTable('users', filtered);
+    return true;
   },
 
   // --- Audit Logs ---

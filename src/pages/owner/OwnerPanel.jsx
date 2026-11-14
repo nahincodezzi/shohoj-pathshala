@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
-import { TenantRepository } from '../../services/tenantStorage';
+import { TenantRepository, hashPassword } from '../../services/tenantStorage';
 import { ownerTranslations } from '../../i18n/owner';
 import ThemeToggle from '../../components/common/ThemeToggle';
 import Card from '../../components/ui/Card';
@@ -30,17 +30,23 @@ import {
   Copy,
   Clock,
   Layers,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
 
 export default function OwnerPanel() {
   const navigate = useNavigate();
-  const { currentUser, enterSupportMode } = useAuth();
+  const { currentUser, login, logout, enterSupportMode } = useAuth();
   const { mode, toggleMode } = useTheme({ isOwner: true });
   const { showToast } = useToast();
 
   const [lang, setLang] = useState(() => localStorage.getItem('owner_lang') || 'bn');
   const t = ownerTranslations[lang] || ownerTranslations.bn;
+
+  // D03: Owner Authentication State
+  const [ownerUsername, setOwnerUsername] = useState('owner');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const [activeTab, setActiveTab] = useState('schools'); // 'schools', 'audit', 'plans'
   const [statusFilter, setStatusFilter] = useState('all');
@@ -69,6 +75,7 @@ export default function OwnerPanel() {
   });
 
   // Password Reset Modal State
+  const [confirmResetSchool, setConfirmResetSchool] = useState(null);
   const [resetModalSchool, setResetModalSchool] = useState(null);
   const [newTempPassword, setNewTempPassword] = useState('');
 
@@ -86,6 +93,17 @@ export default function OwnerPanel() {
     const nextLang = lang === 'bn' ? 'en' : 'bn';
     setLang(nextLang);
     localStorage.setItem('owner_lang', nextLang);
+  };
+
+  const handleOwnerLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    try {
+      login(ownerUsername, ownerPassword, null);
+      showToast(lang === 'bn' ? 'Platform Owner হিসেবে সফলভাবে লগইন হয়েছে' : 'Successfully logged in as Platform Owner');
+    } catch (err) {
+      setLoginError(err.message || 'অথেনটিকেশন ব্যর্থ হয়েছে');
+    }
   };
 
   const filteredSchools = schools.filter(s => {
@@ -107,21 +125,21 @@ export default function OwnerPanel() {
     e.preventDefault();
     setOnboardError('');
 
+    const cleanSlug = (onboardForm.slug || '').toLowerCase().trim();
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(cleanSlug)) {
+      setOnboardError('Slug শুধুমাত্র ছোট হাতের ইংরেজি অক্ষর (a-z), সংখ্যা (0-9) এবং হাইফেন (-) হতে পারে। স্পেস বা চিহ্ন চলবে না।');
+      return;
+    }
+    const reserved = ['owner', 'admin', 'api', 'login', 'superadmin', 'platform', 'system', 'root', 'public'];
+    if (reserved.includes(cleanSlug)) {
+      setOnboardError(`"${cleanSlug}" একটি সংরক্ষিত সিস্টেম নাম। এটি ব্যবহার করা যাবে না।`);
+      return;
+    }
+
     try {
       const result = TenantRepository.createSchool({
-        name_bn: onboardForm.name_bn,
-        name_en: onboardForm.name_en,
-        slug: onboardForm.slug.toLowerCase().trim(),
-        eiin: onboardForm.eiin.trim(),
-        school_code: onboardForm.school_code,
-        mpo_code: onboardForm.mpo_code,
-        board: onboardForm.board,
-        district: onboardForm.district,
-        code_prefix: onboardForm.code_prefix.toUpperCase().trim(),
-        theme: onboardForm.theme,
-        plan: onboardForm.plan,
-        expires_at: onboardForm.expires_at,
-        max_students: Number(onboardForm.max_students)
+        ...onboardForm,
+        slug: cleanSlug
       }, {
         username: onboardForm.admin_username,
         name: `অ্যাডমিন (${onboardForm.name_bn})`
@@ -144,25 +162,95 @@ export default function OwnerPanel() {
     }
   };
 
-  // Handle Admin Password Reset
+  // Handle Admin Password Reset (Confirmed)
   const handleAdminPasswordReset = (school) => {
-    const tempPass = `Pass@${Math.floor(1000 + Math.random() * 9000)}`;
-    const schoolUsers = TenantRepository.getUsers(school.id);
-    const superAdmin = schoolUsers.find(u => u.role === 'school_superadmin');
+    try {
+      const tempPass = `Pass@${Math.floor(1000 + Math.random() * 9000)}`;
+      const schoolUsers = TenantRepository.getUsers(school.id);
+      const superAdmin = schoolUsers.find(u => u.role === 'school_superadmin');
 
-    if (superAdmin) {
-      TenantRepository.updateUser(superAdmin.id, {
-        password: tempPass,
-        failed_attempts: 0,
-        locked_until: null,
-        must_change_password: true
-      });
-      setNewTempPassword(tempPass);
-      setResetModalSchool(school);
-    } else {
-      alert('সুপার অ্যাডমিন ইউজার পাওয়া যায়নি।');
+      if (superAdmin) {
+        TenantRepository.updateUser(superAdmin.id, {
+          password: hashPassword(tempPass),
+          failed_attempts: 0,
+          locked_until: null,
+          must_change_password: true
+        });
+        setNewTempPassword(tempPass);
+        setResetModalSchool(school);
+        setConfirmResetSchool(null);
+        showToast(lang === 'bn' ? 'অস্থায়ী পাসওয়ার্ড সফলভাবে তৈরি হয়েছে!' : 'Temporary password generated successfully!');
+      } else {
+        showToast(lang === 'bn' ? 'সুপার অ্যাডমিন ইউজার পাওয়া যায়নি।' : 'Super admin user not found.', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || 'পাসওয়ার্ড রিসেট করা যায়নি', 'error');
     }
   };
+
+  // D03: If not logged in as platform_owner, show Owner Login Screen
+  if (!currentUser || currentUser.role !== 'platform_owner') {
+    return (
+      <div className="min-h-screen bg-bg text-text flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-surface rounded-2xl border border-border p-8 shadow-xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-14 h-14 rounded-2xl bg-indigo text-white font-heading font-bold text-2xl flex items-center justify-center mx-auto shadow-md">
+              সপ
+            </div>
+            <h1 className="text-2xl font-heading font-bold text-text">সহজ পাঠশালা · Platform Core</h1>
+            <p className="text-xs text-muted">প্ল্যাটফর্ম Owner অথেনটিকেশন ও কেন্দ্রীয় নিয়ন্ত্রণ</p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-danger-soft text-danger text-[11px] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5" /> শুধুমাত্র অনুমোদিত Platform Owner-দের জন্য
+            </div>
+          </div>
+
+          {loginError && (
+            <div className="p-3 rounded-xl bg-danger-soft border border-danger/30 text-xs text-danger font-semibold text-center">
+              {loginError}
+            </div>
+          )}
+
+          <form onSubmit={handleOwnerLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-text mb-1">Owner ইউজারনেম</label>
+              <Input
+                value={ownerUsername}
+                onChange={(e) => setOwnerUsername(e.target.value)}
+                required
+                placeholder="যেমন: owner"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-text mb-1">পাসওয়ার্ড</label>
+              <Input
+                type="password"
+                value={ownerPassword}
+                onChange={(e) => setOwnerPassword(e.target.value)}
+                required
+                placeholder="আপনার গোপন পাসওয়ার্ড দিন"
+              />
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-surface-2 border border-border text-[11px] text-muted space-y-1">
+              <span className="font-semibold text-text block">ডিফল্ট Owner ক্রেডেনশিয়াল:</span>
+              <span className="font-mono">ইউজার: <strong className="text-text">owner</strong> | পাসওয়ার্ড: <strong className="text-text">password123</strong></span>
+            </div>
+
+            <Button type="submit" variant="primary" className="w-full bg-indigo hover:bg-indigo/90">
+              প্ল্যাটফর্ম সেন্টারে প্রবেশ করুন
+            </Button>
+          </form>
+
+          <div className="text-center pt-2">
+            <Link to="/" className="text-xs text-muted hover:text-text">
+              ← প্ল্যাটফর্মের পাবলিক হোমপেজে ফিরে যান
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
@@ -227,6 +315,18 @@ export default function OwnerPanel() {
             </button>
 
             <ThemeToggle mode={mode} toggleMode={toggleMode} lang={lang} />
+
+            {/* Logout Button */}
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={LogOut}
+              onClick={logout}
+              title={t.logout}
+              className="h-10 text-xs text-danger border-danger/30 hover:bg-danger-soft cursor-pointer"
+            >
+              {t.logout}
+            </Button>
           </div>
         </div>
       </header>
@@ -242,7 +342,7 @@ export default function OwnerPanel() {
               <p className="text-3xl font-mono font-extrabold text-indigo">
                 {schools.length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
               </p>
-              <span className="text-[11px] text-muted">অনবোর্ডকৃত প্রতিষ্ঠান</span>
+              <span className="text-[11px] text-muted">{t.total_schools_sub}</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-indigo-soft text-indigo flex items-center justify-center shrink-0">
               <Building2 className="w-6 h-6" />
@@ -255,7 +355,7 @@ export default function OwnerPanel() {
               <p className="text-3xl font-mono font-extrabold text-success">
                 {activeSchools.length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
               </p>
-              <span className="text-[11px] text-muted">সক্রিয় লাইভ স্কুল</span>
+              <span className="text-[11px] text-muted">{t.active_schools_sub}</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-success-soft text-success flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-6 h-6" />
@@ -268,7 +368,7 @@ export default function OwnerPanel() {
               <p className="text-3xl font-mono font-extrabold text-primary">
                 {allStudents.length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
               </p>
-              <span className="text-[11px] text-muted">প্ল্যাটফর্মের সর্বমোট শিক্ষার্থী</span>
+              <span className="text-[11px] text-muted">{t.total_students_sub}</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
               <Users className="w-6 h-6" />
@@ -281,7 +381,7 @@ export default function OwnerPanel() {
               <p className="text-3xl font-mono font-extrabold text-warning">
                 {expiringSoonSchools.length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
               </p>
-              <span className="text-[11px] text-muted">নবায়ন আবশ্যক স্কুল</span>
+              <span className="text-[11px] text-muted">{t.expiring_soon_sub}</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-warning-soft text-warning flex items-center justify-center shrink-0">
               <Clock className="w-6 h-6" />
@@ -295,7 +395,7 @@ export default function OwnerPanel() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">{t.schools}</h2>
-                <p className="text-xs text-muted">সহজ পাঠশালা মাল্টি-স্কুল টেন্যান্ট নিয়ন্ত্রণ ও পরিচালনা</p>
+                <p className="text-xs text-muted">{t.school_management_sub}</p>
               </div>
 
               <Button 
@@ -397,9 +497,9 @@ export default function OwnerPanel() {
                         variant="ghost"
                         size="sm"
                         icon={Key}
-                        onClick={() => handleAdminPasswordReset(row)}
+                        onClick={() => setConfirmResetSchool(row)}
                         title={t.btn_reset_pass}
-                        className="text-muted hover:text-text hover:bg-surface-2 shrink-0"
+                        className="text-muted hover:text-text hover:bg-surface-2 shrink-0 cursor-pointer"
                       />
                     </div>
                   )
@@ -416,7 +516,7 @@ export default function OwnerPanel() {
           <div className="space-y-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">{t.audit_log}</h2>
-              <p className="text-xs text-muted">প্ল্যাটফর্মের প্রতিটি স্কুলের গুরুত্বপূর্ণ পরিবর্তন ও প্রশাসনিক ট্র্যাকিং</p>
+              <p className="text-xs text-muted">{t.audit_log_sub}</p>
             </div>
 
             <GridTable
@@ -443,50 +543,108 @@ export default function OwnerPanel() {
           </div>
         )}
 
-        {/* Tab 3: Plans & Validity */}
+        {/* Tab 3: Plans & Validity (D25) */}
         {activeTab === 'plans' && (
           <div className="space-y-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">{t.plans_validity}</h2>
-              <p className="text-xs text-muted">স্কুল প্যাকেজ টিয়ার এবং শিক্ষার্থী সীমার তালিকা</p>
+              <p className="text-xs text-muted">{t.plans_sub}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Basic Plan */}
               <Card surface="surface" className="p-6 space-y-4">
-                <Badge variant="muted">বেসিক প্ল্যান</Badge>
-                <h3 className="text-2xl font-bold font-mono">Basic</h3>
-                <ul className="text-xs space-y-2 text-muted">
-                  <li>• সর্বোচ্চ ৫০০ শিক্ষার্থী</li>
-                  <li>• ২-ভাষিক ওয়েবসাইট</li>
-                  <li>• রেজাল্ট ও নোটিশ বোর্ড</li>
-                </ul>
+                <div className="flex items-center justify-between">
+                  <Badge variant="muted">বেসিক প্ল্যান (Basic)</Badge>
+                  <span className="text-xs font-mono font-bold text-muted">
+                    {schools.filter(s => s.plan === 'basic').length} স্কুল সক্রিয়
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold font-mono text-text">Basic</h3>
+                  <p className="text-xs text-muted mt-0.5">ছোট ও প্রাথমিক স্তরের প্রতিষ্ঠান</p>
+                </div>
+                <div className="pt-2 border-t border-border space-y-2 text-xs">
+                  <div className="flex items-center justify-between"><span className="text-muted">শিক্ষার্থী সীমা:</span><strong className="font-mono">৫০০ জন</strong></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">পাবলিক ওয়েবসাইট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">অনলাইন ভর্তি:</span><span className="text-danger font-semibold">✕ অন্তর্ভুক্ত নয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">ফি ও রসিদ আদায়:</span><span className="text-danger font-semibold">✕ অন্তর্ভুক্ত নয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">রেজাল্ট প্রকাশ:</span><span className="text-danger font-semibold">✕ অন্তর্ভুক্ত নয়</span></div>
+                </div>
               </Card>
 
+              {/* Standard Plan */}
               <Card surface="surface" className="p-6 space-y-4 border-2 border-indigo">
-                <Badge variant="indigo">স্ট্যান্ডার্ড প্ল্যান</Badge>
-                <h3 className="text-2xl font-bold font-mono text-indigo">Standard</h3>
-                <ul className="text-xs space-y-2 text-muted">
-                  <li>• সর্বোচ্চ ১৫০০ শিক্ষার্থী</li>
-                  <li>• অনলাইন ভর্তি ও প্রবেশপত্র</li>
-                  <li>• ২-পার্ট মানি রিসিট ও ফি আদায়</li>
-                  <li>• এসএমএস নোটিফিকেশন সাপোর্ট</li>
-                </ul>
+                <div className="flex items-center justify-between">
+                  <Badge variant="indigo">স্ট্যান্ডার্ড প্ল্যান (Standard)</Badge>
+                  <span className="text-xs font-mono font-bold text-indigo">
+                    {schools.filter(s => s.plan === 'standard').length} স্কুল সক্রিয়
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold font-mono text-indigo">Standard</h3>
+                  <p className="text-xs text-muted mt-0.5">মাধ্যমিক স্তরের বিদ্যালয় ও মাদ্রাসা</p>
+                </div>
+                <div className="pt-2 border-t border-border space-y-2 text-xs">
+                  <div className="flex items-center justify-between"><span className="text-muted">শিক্ষার্থী সীমা:</span><strong className="font-mono">১৫০০ জন</strong></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">পাবলিক ওয়েবসাইট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">অনলাইন ভর্তি ও এডমিট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">রেজাল্ট ও মার্কশিট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">ফি ও ডিজিটাল রসিদ:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                </div>
               </Card>
 
-              <Card surface="surface" className="p-6 space-y-4">
-                <Badge variant="primary">প্রিমিয়াম প্ল্যান</Badge>
-                <h3 className="text-2xl font-bold font-mono">Premium</h3>
-                <ul className="text-xs space-y-2 text-muted">
-                  <li>• আনলিমিটেড শিক্ষার্থী</li>
-                  <li>• কাস্টম ডোমেইন সাপোর্ট</li>
-                  <li>• ২৪/৭ প্রায়োরিটি সাপোর্ট</li>
-                  <li>• ফুল ব্যাকআপ ও রিস্টোর</li>
-                </ul>
+              {/* Premium Plan */}
+              <Card surface="surface" className="p-6 space-y-4 border border-primary/40">
+                <div className="flex items-center justify-between">
+                  <Badge variant="primary">প্রিমিয়াম প্ল্যান (Premium)</Badge>
+                  <span className="text-xs font-mono font-bold text-primary">
+                    {schools.filter(s => s.plan === 'premium').length} স্কুল সক্রিয়
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold font-mono text-primary">Premium</h3>
+                  <p className="text-xs text-muted mt-0.5">বৃহৎ বিদ্যাপীঠ, কলেজ ও মডেল স্কুল</p>
+                </div>
+                <div className="pt-2 border-t border-border space-y-2 text-xs">
+                  <div className="flex items-center justify-between"><span className="text-muted">শিক্ষার্থী সীমা:</span><strong className="font-mono text-primary">আনলিমিটেড</strong></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">সব স্ট্যান্ডার্ড ফিচার:</span><span className="text-success font-semibold">✓ অন্তর্ভুক্ত</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">এসএমএস গেটওয়ে:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">কাস্টম ডোমেইন সাপোর্ট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted">২৪/৭ প্রায়োরিটি সাপোর্ট:</span><span className="text-success font-semibold">✓ সক্রিয়</span></div>
+                </div>
               </Card>
             </div>
           </div>
         )}
       </main>
+
+      {/* D14: Admin Password Reset Confirmation Modal */}
+      {confirmResetSchool && (
+        <Modal
+          isOpen={!!confirmResetSchool}
+          onClose={() => setConfirmResetSchool(null)}
+          title={t.confirm_reset_title}
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-text leading-relaxed">
+              আপনি কি নিশ্চিত যে <strong>{confirmResetSchool.name_bn}</strong>-এর সুপার অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান?
+            </p>
+            <p className="text-xs text-muted">
+              {t.confirm_reset_msg}
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setConfirmResetSchool(null)}>
+                {lang === 'bn' ? 'বাতিল' : 'Cancel'}
+              </Button>
+              <Button variant="dangerSolid" size="sm" onClick={() => handleAdminPasswordReset(confirmResetSchool)}>
+                {lang === 'bn' ? 'হ্যাঁ, রিসেট করুন' : 'Yes, Reset Password'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* ================= NEW SCHOOL ONBOARDING WIZARD MODAL (Section 15) ================= */}
       <Modal

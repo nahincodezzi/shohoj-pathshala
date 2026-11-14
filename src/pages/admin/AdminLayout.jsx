@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
-import { TenantRepository } from '../../services/tenantStorage';
+import { TenantRepository, hashPassword } from '../../services/tenantStorage';
 import ThemeToggle from '../../components/common/ThemeToggle';
 import Banner from '../../components/ui/Banner';
 import Badge from '../../components/ui/Badge';
@@ -92,6 +92,66 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
     );
   }
 
+  // D01: Check Multi-Tenant Cross-School Access
+  const isPlatformOwner = currentUser?.role === 'platform_owner' || supportMode;
+  const isTenantOwner = currentUser?.school_id === school.id;
+
+  if (!isPlatformOwner && !isTenantOwner) {
+    const userSchool = currentUser?.school_id ? TenantRepository.getSchoolById(currentUser.school_id) : null;
+    return (
+      <div className="min-h-screen bg-bg text-text p-6 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-danger-soft text-danger flex items-center justify-center mb-4">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-heading font-bold mb-2 text-danger">অননুমোদিত প্রবেশাধিকার (Cross-Tenant Access Denied)</h2>
+        <p className="text-sm text-muted max-w-md mb-6">
+          নিরাপত্তা বিধিমালার কারণে এক স্কুলের অ্যাডমিন অন্য স্কুলের প্যানেলে প্রবেশ করতে পারেন না।
+          আপনি <strong>{userSchool?.name_bn || 'অন্য স্কুলের'}</strong> ব্যবহারকারী হিসেবে লগইন আছেন।
+        </p>
+        <div className="flex items-center gap-3">
+          {userSchool ? (
+            <Link to={`/${userSchool.slug}/admin`}>
+              <Button variant="primary">আপনার স্কুলের অ্যাডমিনে যান</Button>
+            </Link>
+          ) : (
+            <Link to="/">
+              <Button variant="primary">হোমপেজে যান</Button>
+            </Link>
+          )}
+          <Button variant="secondary" onClick={logout}>লগআউট করুন</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // D16: First Login Must Change Password State
+  const [mustChangeModal, setMustChangeModal] = useState(Boolean(currentUser?.must_change_password));
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passError, setPassError] = useState('');
+
+  const handleForcePasswordChange = (e) => {
+    e.preventDefault();
+    setPassError('');
+    if (newPassword.length < 6 || !/(?=.*[A-Za-z])(?=.*\d)/.test(newPassword)) {
+      setPassError('পাসওয়ার্ডে কমপক্ষে ৬টি অক্ষর, যার মধ্যে অন্তত ১টি বর্ণ এবং ১টি সংখ্যা থাকা আবশ্যক।');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPassError('নতুন পাসওয়ার্ড ও কনফার্ম পাসওয়ার্ড দুটি মেলেনি।');
+      return;
+    }
+
+    TenantRepository.updateUser(currentUser.id, {
+      password: hashPassword(newPassword),
+      must_change_password: false
+    });
+
+    const updated = { ...currentUser, must_change_password: false };
+    sessionStorage.setItem('sp_active_user', JSON.stringify(updated));
+    setMustChangeModal(false);
+  };
+
   // Calculate days remaining in school plan
   const expiresDate = new Date(school.expires_at || '2027-12-31');
   const daysLeft = Math.ceil((expiresDate - new Date()) / (1000 * 60 * 60 * 24));
@@ -129,6 +189,18 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
     teacher: 'সহকারী শিক্ষক',
     office_assistant: 'অফিস সহকারী'
   };
+
+  // D02: Check Route Access
+  const currentMenuItem = menuItems.find(item => item.key === subview);
+  const isDeniedByRole = currentMenuItem && (
+    (currentUser?.role === 'teacher' && currentMenuItem.hideForTeacher) ||
+    (currentMenuItem.requireSuperAdmin && currentUser?.role !== 'school_superadmin' && !supportMode) ||
+    (currentMenuItem.requireAdmin && !['school_superadmin', 'headmaster'].includes(currentUser?.role) && !supportMode)
+  );
+
+  // D17: Plan Feature Gating for Basic Plan
+  const plan = (school.plan || 'standard').toLowerCase();
+  const isDeniedByPlan = plan === 'basic' && ['admissions', 'results', 'fees'].includes(subview);
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
@@ -316,9 +388,37 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
             </div>
           </header>
 
-          {/* Dynamic Module Outlet Component Rendering */}
+          {/* Dynamic Module Outlet Component Rendering (Guarded by RBAC and Plan) */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-            <Outlet context={{ school, currentUser, supportMode }} />
+            {isDeniedByRole ? (
+              <div className="bg-surface rounded-2xl p-8 border border-border text-center max-w-lg mx-auto my-12">
+                <div className="w-16 h-16 rounded-2xl bg-danger-soft text-danger flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-heading font-bold text-text mb-2">অননুমোদিত মডিউল (Access Denied)</h3>
+                <p className="text-sm text-muted mb-6">
+                  আপনার বর্তমান রোল (<strong>{roleNameMap[currentUser?.role] || currentUser?.role}</strong>)-এর এই মডিউলে প্রবেশের অনুমতি নেই।
+                </p>
+                <Link to={`/${school.slug}/admin`}>
+                  <Button variant="primary">ড্যাশবোর্ডে ফিরে যান</Button>
+                </Link>
+              </div>
+            ) : isDeniedByPlan ? (
+              <div className="bg-surface rounded-2xl p-8 border border-border text-center max-w-lg mx-auto my-12">
+                <div className="w-16 h-16 rounded-2xl bg-warning-soft text-warning flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-heading font-bold text-text mb-2">প্ল্যান আপগ্রেড প্রয়োজন (Feature Locked)</h3>
+                <p className="text-sm text-muted mb-6">
+                  আপনার বিদ্যালয়ের বর্তমান প্ল্যান (<strong>{school.plan?.toUpperCase()}</strong>)-এ এই মডিউলটি অন্তর্ভুক্ত নেই। এই ফিচারটি সক্রিয় করতে স্ট্যান্ডার্ড বা প্রিমিয়াম প্ল্যানে আপগ্রেড করুন।
+                </p>
+                <Link to={`/${school.slug}/admin`}>
+                  <Button variant="primary">ড্যাশবোর্ডে ফিরে যান</Button>
+                </Link>
+              </div>
+            ) : (
+              <Outlet context={{ school, currentUser, supportMode }} />
+            )}
           </main>
         </div>
       </div>
@@ -460,6 +560,61 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
           </div>
         </Modal>
       )}
+      {/* D16: Mandatory First Login Password Change Modal */}
+      {mustChangeModal && (
+        <Modal
+          isOpen={mustChangeModal}
+          onClose={() => {}} // Non-dismissible
+          title="প্রথমবার লগইনে পাসওয়ার্ড পরিবর্তন আবশ্যক"
+          subtitle="নিরাপত্তার স্বার্থে আপনার অস্থায়ী পাসওয়ার্ড পরিবর্তন করে নতুন নিরাপদ পাসওয়ার্ড দিন"
+          maxWidth="max-w-md"
+        >
+          <form onSubmit={handleForcePasswordChange} className="space-y-4">
+            <div className="p-3 rounded-xl bg-warning-soft border border-warning-line text-xs text-warning flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>আপনি একটি অস্থায়ী পাসওয়ার্ড দিয়ে লগইন করেছেন। ড্যাশবোর্ড ব্যবহারের পূর্বে নতুন পাসওয়ার্ড সেট করুন।</span>
+            </div>
+
+            {passError && (
+              <div className="p-2.5 rounded-lg bg-danger-soft border border-danger/30 text-xs text-danger">
+                {passError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-text mb-1">নতুন পাসওয়ার্ড *</label>
+              <input
+                type="password"
+                required
+                placeholder="কমপক্ষে ৬ অক্ষর (বর্ণ ও সংখ্যা)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-surface-2 border border-border text-xs focus:outline-none focus:border-primary text-text"
+              />
+              <span className="text-[10px] text-muted block mt-1">কমপক্ষে ৬টি অক্ষর, যার মধ্যে অন্তত ১টি বর্ণ এবং ১টি সংখ্যা আবশ্যক।</span>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-text mb-1">পাসওয়ার্ড নিশ্চিত করুন *</label>
+              <input
+                type="password"
+                required
+                placeholder="নতুন পাসওয়ার্ড আবার লিখুন"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-surface-2 border border-border text-xs focus:outline-none focus:border-primary text-text"
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button type="submit" variant="primary" className="w-full">
+                পাসওয়ার্ড পরিবর্তন ও সম্পন্ন করুন
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
     </div>
   );
 }

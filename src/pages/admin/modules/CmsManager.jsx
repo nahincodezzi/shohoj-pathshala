@@ -24,7 +24,8 @@ import {
   Plus, 
   ShieldAlert, 
   RotateCcw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Mail
 } from 'lucide-react';
 
 export default function CmsManager() {
@@ -32,6 +33,7 @@ export default function CmsManager() {
   const { showToast } = useToast();
 
   const settings = TenantRepository.getSettings(school.id) || {};
+  const contactMessages = TenantRepository.getContactMessages(school.id);
   const currentUniform = TenantRepository.getUniform(school.id) || {
     boys: { shirt: '', pant: '', shoes: '', badge: '', belt: '' },
     girls: { dress: '', salwar: '', orna: '', shoes: '', hair: '' },
@@ -166,6 +168,7 @@ export default function CmsManager() {
           { key: 'messages', label: 'প্রধান শিক্ষক ও সভাপতির বাণী', icon: Award },
           { key: 'about', label: 'ইতিহাস, ভিশন ও মিশন', icon: BookOpen },
           { key: 'contact', label: 'যোগাযোগ ও সোশ্যাল মিডিয়া', icon: MapPin },
+          { key: 'inbox', label: `মেসেজ ইনবক্স (${contactMessages.length})`, icon: Mail },
           ...(currentUser?.role === 'school_superadmin' ? [{ key: 'reset', label: 'ফ্যাক্টরি রিসেট', icon: RotateCcw }] : [])
         ].map((tab) => {
           const Icon = tab.icon;
@@ -592,6 +595,56 @@ export default function CmsManager() {
               onChange={(e) => setMapEmbedUrl(e.target.value)}
               placeholder="https://www.google.com/maps/embed?pb=..."
             />
+          </Card>
+        )}
+
+        {/* TAB: CONTACT MESSAGES INBOX (D08) */}
+        {activeTab === 'inbox' && (
+          <Card surface="surface" className="p-6 space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-text">পাবলিক কন্টাক্ট ইনবক্স (Inquiries)</h3>
+                <p className="text-xs text-muted">ওয়েবসাইটের 'যোগাযোগ' ফর্মের মাধ্যমে আসা বার্তা ও অনুসন্ধান</p>
+              </div>
+              <Badge variant="primary">{contactMessages.length} টি বার্তা</Badge>
+            </div>
+
+            {contactMessages.length === 0 ? (
+              <div className="py-12 text-center text-muted text-xs">
+                কোনো নতুন বার্তা নেই। ওয়েবসাইটে কেউ মেসেজ পাঠালে এখানে দেখা যাবে।
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {contactMessages.map((msg) => (
+                  <div key={msg.id} className="p-4 rounded-xl bg-surface-2 border border-border space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-text text-sm">{msg.name}</strong>
+                        <span className="text-muted font-mono">({msg.mobile})</span>
+                        {msg.email && <span className="text-primary text-[11px] font-mono">[{msg.email}]</span>}
+                      </div>
+                      <span className="text-[11px] text-muted font-mono">{msg.created_at}</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface border border-border/80 text-xs text-text leading-relaxed whitespace-pre-wrap">
+                      {msg.message}
+                    </div>
+                    <div className="flex items-center gap-2 pt-1 text-xs">
+                      <a href={`tel:${msg.mobile}`} className="text-primary hover:underline font-semibold">
+                        📞 কল করুন
+                      </a>
+                      {msg.email && (
+                        <>
+                          <span>•</span>
+                          <a href={`mailto:${msg.email}`} className="text-primary hover:underline font-semibold">
+                            ✉️ ইমেইল পাঠান
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         )}
 

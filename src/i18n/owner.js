@@ -11,9 +11,16 @@ export const ownerTranslations = {
     settings: 'সেটিংস',
     logout: 'লগআউট',
     total_schools: 'মোট স্কুল',
+    total_schools_sub: 'অনবোর্ডকৃত প্রতিষ্ঠান',
     active_schools: 'চালু স্কুল',
+    active_schools_sub: 'সক্রিয় লাইভ স্কুল',
     total_students: 'মোট শিক্ষার্থী',
+    total_students_sub: 'প্ল্যাটফর্মের সর্বমোট শিক্ষার্থী',
     expiring_soon: '৩০ দিনে মেয়াদ শেষ',
+    expiring_soon_sub: 'নবায়ন আবশ্যক স্কুল',
+    school_management_sub: 'সহজ পাঠশালা মাল্টি-স্কুল টেন্যান্ট নিয়ন্ত্রণ ও পরিচালনা',
+    audit_log_sub: 'প্ল্যাটফর্মের প্রতিটি স্কুলের গুরুত্বপূর্ণ পরিবর্তন ও প্রশাসনিক ট্র্যাকিং',
+    plans_sub: 'স্কুল প্যাকেজ টিয়ার, ফিচার ও শিক্ষার্থী সীমার বিবরণী',
     search_placeholder: 'নাম, slug বা EIIN দিয়ে খুঁজুন...',
     all: 'সব',
     active: 'চালু',
@@ -34,7 +41,9 @@ export const ownerTranslations = {
     exit_support: 'বের হন',
     onboarding_title: 'নতুন স্কুল অনবোর্ডিং উইজার্ড',
     onboarding_subtitle: 'সিস্টেমে সম্পূর্ণ নতুন স্কুল ও সুপার অ্যাডমিন তৈরি করুন',
-    temp_pass_alert: 'সুপার অ্যাডমিনের জন্য একটি অস্থায়ী পাসওয়ার্ড তৈরি হয়েছে। এটি শুধুমাত্র একবারই দেখানো হবে, কপি করে সংরক্ষণ করুন:'
+    temp_pass_alert: 'সুপার অ্যাডমিনের জন্য একটি অস্থায়ী পাসওয়ার্ড তৈরি হয়েছে। এটি শুধুমাত্র একবারই দেখানো হবে, কপি করে সংরক্ষণ করুন:',
+    confirm_reset_title: 'সুপার অ্যাডমিন পাসওয়ার্ড রিসেট নিশ্চিতকরণ',
+    confirm_reset_msg: 'আপনি কি নিশ্চিত যে এই স্কুলের সুপার অ্যাডমিন পাসওয়ার্ড রিসেট করতে চান? এটি একটি নতুন ওয়ান-টাইম পাসওয়ার্ড জেনারেট করবে।'
   },
   en: {
     brand_title: 'Sohoj Pathshala',
@@ -48,9 +57,16 @@ export const ownerTranslations = {
     settings: 'Settings',
     logout: 'Log out',
     total_schools: 'Total Schools',
+    total_schools_sub: 'Onboarded Institutions',
     active_schools: 'Active Schools',
+    active_schools_sub: 'Live Active Schools',
     total_students: 'Total Students',
+    total_students_sub: 'Total Platform Students',
     expiring_soon: 'Expiring in 30 Days',
+    expiring_soon_sub: 'Renewal Required',
+    school_management_sub: 'Sohoj Pathshala Multi-School Tenant Control & Management',
+    audit_log_sub: 'Administrative tracking & security audit log across all tenants',
+    plans_sub: 'School subscription tiers, feature breakdown & capacity limits',
     search_placeholder: 'Search by name, slug or EIIN...',
     all: 'All',
     active: 'Active',
@@ -71,7 +87,8 @@ export const ownerTranslations = {
     exit_support: 'Exit',
     onboarding_title: 'New School Onboarding Wizard',
     onboarding_subtitle: 'Create a brand new school tenant and super admin user',
-    temp_pass_alert: 'A temporary password has been generated for the Super Admin. This is shown only once, copy and save it:'
+    temp_pass_alert: 'A temporary password has been generated for the Super Admin. This is shown only once, copy and save it:',
+    confirm_reset_title: 'Confirm Super Admin Password Reset',
+    confirm_reset_msg: 'Are you sure you want to reset the Super Admin password for this school? A new temporary one-time password will be generated.'
   }
 };
-

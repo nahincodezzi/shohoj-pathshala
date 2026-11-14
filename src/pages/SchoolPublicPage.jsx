@@ -16,6 +16,7 @@ import Modal from '../components/ui/Modal';
 import Alert from '../components/ui/Alert';
 import FileUpload from '../components/ui/FileUpload';
 import { useToast } from '../components/ui/ToastContext';
+import { toBengaliNumber, toEnglishNumber, toBengaliOrdinal } from '../utils/dateFormatter';
 import { 
   GraduationCap, 
   Users, 
@@ -59,10 +60,9 @@ import {
 
 export default function SchoolPublicPage() {
   const { slug } = useParams();
-  const { mode, theme, toggleMode } = useTheme({ slug });
-  const { showToast } = useToast();
-
   const school = TenantRepository.getSchoolBySlug(slug || '');
+  const { mode, theme, toggleMode } = useTheme({ slug, defaultTheme: school?.theme });
+  const { showToast } = useToast();
   const settings = school ? TenantRepository.getSettings(school.id) : null;
   const teachers = school ? TenantRepository.getTeachers(school.id) : [];
   const students = school ? TenantRepository.getStudents(school.id) : [];
@@ -122,12 +122,26 @@ export default function SchoolPublicPage() {
     dob: '',
     address: ''
   });
+  const [step1Errors, setStep1Errors] = useState({});
+  const [step2Errors, setStep2Errors] = useState({});
   const [mobileError, setMobileError] = useState('');
   const [submittedAdmission, setSubmittedAdmission] = useState(null);
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [searchTrackCode, setSearchTrackCode] = useState('');
+  const [searchTrackPhone, setSearchTrackPhone] = useState('');
+  const [trackError, setTrackError] = useState('');
   const [trackResult, setTrackResult] = useState(null);
   const [admitCardData, setAdmitCardData] = useState(null);
+
+  // Contact Form State (D08)
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    mobile: '',
+    email: '',
+    message: ''
+  });
+  const [contactErrors, setContactErrors] = useState({});
+  const [contactSuccess, setContactSuccess] = useState(false);
 
   // Notice Read Modal
   const [readingNotice, setReadingNotice] = useState(null);
@@ -225,25 +239,82 @@ export default function SchoolPublicPage() {
     return v.category === activeGalleryFilter;
   });
 
-  // Handle Result Search
+  // Handle Result Search (D12, D33, D37)
   const handleResultSearch = (e) => {
     e.preventDefault();
     setHasSearched(true);
-    const res = TenantRepository.searchResult(school.id, resultQuery);
+    const cleanRoll = toEnglishNumber((resultQuery.rollVal || '').trim());
+    const res = TenantRepository.searchResult(school.id, {
+      ...resultQuery,
+      rollVal: cleanRoll
+    });
     setSearchOutput(res);
   };
 
-  // Handle Admission Submit
+  // Admission Validation Helpers (D09)
+  const validateStep1 = () => {
+    const errs = {};
+    if (!admissionForm.name_bn.trim()) {
+      errs.name_bn = 'বাংলায় শিক্ষার্থীর নাম আবশ্যক';
+    } else if (!/[\u0980-\u09FF]/.test(admissionForm.name_bn)) {
+      errs.name_bn = 'নাম অবশ্যই বাংলা অক্ষরে লিখতে হবে';
+    }
+
+    if (!admissionForm.name_en.trim()) {
+      errs.name_en = 'ইংরেজি বড় হাতের অক্ষরে নাম আবশ্যক';
+    }
+
+    if (!admissionForm.photo) {
+      errs.photo = 'শিক্ষার্থীর পাসপোর্ট সাইজ ছবি আপলোড করুন';
+    }
+
+    if (['9', '10'].includes(admissionForm.applied_class) && admissionForm.group === 'General') {
+      errs.group = '৯ম ও ১০ম শ্রেণির জন্য বিভাগ নির্বাচন করুন (বিজ্ঞান/ব্যবসায় শিক্ষা/মানবিক)';
+    }
+
+    if (admissionForm.prev_gpa.trim()) {
+      const gpaNum = parseFloat(toEnglishNumber(admissionForm.prev_gpa));
+      if (isNaN(gpaNum) || gpaNum < 1.00 || gpaNum > 5.00) {
+        errs.prev_gpa = 'জিপিএ ১.০০ থেকে ৫.০০ এর মধ্যে হতে হবে';
+      }
+    }
+
+    setStep1Errors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const errs = {};
+    if (!admissionForm.father_name.trim()) errs.father_name = 'পিতার নাম আবশ্যক';
+    if (!admissionForm.mother_name.trim()) errs.mother_name = 'মাতার নাম আবশ্যক';
+    
+    const cleanPhone = toEnglishNumber(admissionForm.mobile.trim());
+    if (!/^01[3-9]\d{8}$/.test(cleanPhone)) {
+      errs.mobile = 'সঠিক ১১ ডিজিট বাংলাদেশি মোবাইল নম্বর দিন (যেমন: 018XXXXXXXX)';
+    }
+
+    if (!admissionForm.address.trim()) {
+      errs.address = 'বর্তমান ঠিকানা আবশ্যক';
+    }
+
+    setStep2Errors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  // Handle Admission Submit (D09)
   const handleAdmissionSubmit = (e) => {
     e.preventDefault();
-    if (admissionForm.mobile.length !== 11 || !/^\d+$/.test(admissionForm.mobile)) {
-      setMobileError('মোবাইল নম্বর ১১ ডিজিট হতে হবে (যেমন: 018XXXXXXXX)');
+    if (!validateStep1() || !validateStep2()) {
+      showToast('আবেদন ফরমে কিছু ভুল রয়েছে, সংশোধন করুন।', 'error');
       return;
     }
-    setMobileError('');
 
     try {
-      const newAdm = TenantRepository.createAdmission(school.id, admissionForm);
+      const newAdm = TenantRepository.createAdmission(school.id, {
+        ...admissionForm,
+        mobile: toEnglishNumber(admissionForm.mobile.trim()),
+        prev_gpa: admissionForm.prev_gpa ? toEnglishNumber(admissionForm.prev_gpa.trim()) : ''
+      });
       setSubmittedAdmission(newAdm);
       showToast('ভর্তি আবেদন সফলভাবে জমা হয়েছে!', 'success');
     } catch (err) {
@@ -251,13 +322,185 @@ export default function SchoolPublicPage() {
     }
   };
 
-  // Handle Tracking Lookup
+  // Handle Tracking Lookup (D28: Requires Code AND Phone)
   const handleTrackingLookup = (e) => {
     e.preventDefault();
-    const adm = TenantRepository.getAdmissions(school.id).find(
-      a => a.tracking_id.toLowerCase() === searchTrackCode.trim().toLowerCase()
+    setTrackError('');
+    const code = searchTrackCode.trim().toUpperCase();
+    const phone = toEnglishNumber(searchTrackPhone.trim());
+
+    if (!code) {
+      setTrackError('ট্র্যাকিং কোড দিন');
+      return;
+    }
+    if (!phone || phone.length < 11) {
+      setTrackError('আবেদনে প্রদত্ত ১১ ডিজিটের মোবাইল নম্বর দিন');
+      return;
+    }
+
+    const admissions = TenantRepository.getAdmissions(school.id);
+    const adm = admissions.find(
+      a => a.tracking_id.toUpperCase() === code && a.mobile === phone
     );
     setTrackResult(adm || 'NOT_FOUND');
+  };
+
+  // Handle Routine Download (D10)
+  const handleRoutineDownload = (routine) => {
+    if (routine.file_url && routine.file_url.startsWith('http')) {
+      window.open(routine.file_url, '_blank');
+      return;
+    }
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>${routine.title} — ${school.name_bn}</title>
+  <style>
+    body { font-family: 'Noto Sans Bengali', system-ui, sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; }
+    .header { text-align: center; border-bottom: 2px solid #0f766e; padding-bottom: 20px; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 6px 0; font-size: 24px; color: #0f766e; }
+    .header p { margin: 2px 0; font-size: 13px; color: #475569; }
+    .title-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+    th, td { border: 1px solid #94a3b8; padding: 10px 12px; text-align: left; }
+    th { background: #e2e8f0; font-weight: bold; }
+    .footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; color: #475569; padding-top: 30px; border-top: 1px dashed #cbd5e1; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${school.name_bn}</h1>
+    <p>EIIN: ${school.eiin} • শিক্ষাবোর্ড: ${school.board} • জেলা: ${school.district}</p>
+    <p>অফিশিয়াল একাডেমিক বিজ্ঞপ্তি ও রুটিন</p>
+  </div>
+  <div class="title-box">
+    <h2 style="margin: 0 0 6px 0; font-size: 18px;">${routine.title}</h2>
+    <p style="margin: 0; font-size: 12px; color: #64748b;">কার্যকরের তারিখ: ${routine.effective_date} • ক্যাটাগরি: ${routine.category === 'class_routine' ? 'ক্লাস রুটিন' : 'পরীক্ষার সময়সূচি'}</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>বার / সময়</th>
+        <th>১০:০০ - ১০:৪৫</th>
+        <th>১০:৫০ - ১১:৩৫</th>
+        <th>১১:৪০ - ১২:২৫</th>
+        <th>১:১৫ - ২:০০</th>
+        <th>২:০৫ - ২:৫০</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>রবিবার</strong></td>
+        <td>বাংলা ১ম পত্র</td>
+        <td>ইংরেজি ১ম পত্র</td>
+        <td>সাধারণ গণিত</td>
+        <td>পদার্থবিজ্ঞান / হিসাববিজ্ঞান</td>
+        <td>আইসিটি</td>
+      </tr>
+      <tr>
+        <td><strong>সোমবার</strong></td>
+        <td>ইংরেজি ২য় পত্র</td>
+        <td>বাংলা ২য় পত্র</td>
+        <td>উচ্চতর গণিত / সাধারণ বিজ্ঞান</td>
+        <td>রসায়ন / ব্যবসায় উদ্যোগ</td>
+        <td>ধর্ম ও নৈতিক শিক্ষা</td>
+      </tr>
+      <tr>
+        <td><strong>মঙ্গলবার</strong></td>
+        <td>সাধারণ গণিত</td>
+        <td>বাংলাদেশ ও বিশ্বপরিচয়</td>
+        <td>ইংরেজি ১ম পত্র</td>
+        <td>জীববিজ্ঞান / ফিন্যান্স</td>
+        <td>শারীরিক শিক্ষা</td>
+      </tr>
+      <tr>
+        <td><strong>বুধবার</strong></td>
+        <td>পদার্থবিজ্ঞান / হিসাববিজ্ঞান</td>
+        <td>রসায়ন / ব্যবসায় উদ্যোগ</td>
+        <td>বাংলা ১ম পত্র</td>
+        <td>উচ্চতর গণিত / কৃষি শিক্ষা</td>
+        <td>চারু ও কারুকলা</td>
+      </tr>
+      <tr>
+        <td><strong>বৃহস্পতিবার</strong></td>
+        <td>আইসিটি</td>
+        <td>সাধারণ গণিত</td>
+        <td>ইংরেজি ২য় পত্র</td>
+        <td>ধর্ম ও নৈতিক শিক্ষা</td>
+        <td>সাপ্তাহিক মূল্যায়ন</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="footer">
+    <div>প্রস্তুতকারক: একাডেমিক কো-অর্ডিনেটর</div>
+    <div>অনুমোদনকারী: প্রধান শিক্ষক (${school.name_bn})</div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${routine.title.replace(/\s+/g, '_')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`রুটিন ডাউনলোড সম্পন্ন হয়েছে: ${routine.title}`, 'success');
+  };
+
+  // Handle Contact Message Submit (D08)
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!contactForm.name.trim()) errs.name = 'আপনার নাম লিখুন';
+    const cleanPhone = toEnglishNumber(contactForm.mobile.trim());
+    if (!/^01[3-9]\d{8}$/.test(cleanPhone)) {
+      errs.mobile = 'সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 018XXXXXXXX)';
+    }
+    if (contactForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactForm.email.trim())) {
+      errs.email = 'সঠিক ইমেইল ঠিকানা দিন (অথবা ফাঁকা রাখুন)';
+    }
+    if (!contactForm.message.trim() || contactForm.message.trim().length < 5) {
+      errs.message = 'আপনার বার্তা কমপক্ষে ৫ অক্ষরের হতে হবে';
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setContactErrors(errs);
+      return;
+    }
+    setContactErrors({});
+
+    try {
+      TenantRepository.createContactMessage(school.id, {
+        name: contactForm.name.trim(),
+        mobile: cleanPhone,
+        email: contactForm.email.trim(),
+        message: contactForm.message.trim()
+      });
+      setContactSuccess(true);
+      setContactForm({ name: '', mobile: '', email: '', message: '' });
+      showToast('আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে! কর্তৃপক্ষ শীঘ্রই যোগাযোগ করবে।', 'success');
+    } catch (err) {
+      showToast(err.message || 'বার্তা পাঠাতে ত্রুটি হয়েছে', 'error');
+    }
+  };
+
+  // Category Badge Helper (D31, D32)
+  const renderCategoryBadge = (cat) => {
+    switch (cat) {
+      case 'exam':
+        return <Badge variant="info">পরীক্ষা</Badge>;
+      case 'admission':
+        return <Badge variant="primary">ভর্তি</Badge>;
+      case 'academic':
+        return <Badge variant="success">একাডেমিক</Badge>;
+      default:
+        return <Badge variant="muted">সাধারণ</Badge>;
+    }
   };
 
   // Structured Navigation Groups
@@ -819,18 +1062,22 @@ export default function SchoolPublicPage() {
                       <ChevronRight className="w-5 h-5" />
                     </button>
 
-                    {/* Indicator Dots */}
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                    {/* Indicator Dots (D38: Accessible 44px Tap Target) */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1">
                       {sliders.map((_, i) => (
                         <button
                           key={i}
                           type="button"
                           onClick={() => setCurrentSlide(i)}
-                          className={`h-2 rounded-full transition-all cursor-pointer ${
-                            i === currentSlide ? 'w-6 bg-primary' : 'w-2 bg-white/40'
-                          }`}
+                          className="p-3 inline-flex items-center justify-center cursor-pointer select-none"
                           aria-label={`স্লাইড ${i + 1}`}
-                        />
+                        >
+                          <span
+                            className={`h-2.5 rounded-full transition-all block ${
+                              i === currentSlide ? 'w-7 bg-primary shadow-xs' : 'w-2.5 bg-white/50 hover:bg-white/80'
+                            }`}
+                          />
+                        </button>
                       ))}
                     </div>
                   </>
@@ -851,16 +1098,16 @@ export default function SchoolPublicPage() {
 
               <Card surface="surface" className="text-center p-5 border-l-4 border-l-success">
                 <span className="text-3xl sm:text-4xl font-mono font-extrabold text-success block">
-                  {settings?.capacity || '৮৫০+'}
+                  {settings?.capacity || (students.length > 0 ? `${toBengaliNumber(students.length)}+` : `${toBengaliNumber(school.max_students || 850)}+`)}
                 </span>
-                <span className="text-xs text-muted font-medium mt-1 block">শিক্ষার্থী ধারণক্ষমতা</span>
+                <span className="text-xs text-muted font-medium mt-1 block">নিবন্ধিত শিক্ষার্থী</span>
               </Card>
 
               <Card surface="surface" className="text-center p-5 border-l-4 border-l-accent">
                 <span className="text-3xl sm:text-4xl font-mono font-extrabold text-accent block">
                   {settings?.pass_rate || '৯৮.৫%'}
                 </span>
-                <span className="text-xs text-muted font-medium mt-1 block">বোর্ড পাসের হার</span>
+                <span className="text-xs text-muted font-medium mt-1 block">বোর্ড পাসের গড় হার</span>
               </Card>
 
               <Card surface="surface" className="text-center p-5 border-l-4 border-l-indigo">
@@ -1061,9 +1308,7 @@ export default function SchoolPublicPage() {
                 <Card key={n.id} surface="surface" className="p-5 flex flex-col justify-between space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant={n.category === 'exam' ? 'info' : n.category === 'admission' ? 'primary' : 'muted'}>
-                        {n.category === 'exam' ? 'পরীক্ষা' : n.category === 'admission' ? 'ভর্তি' : 'সাধারণ'}
-                      </Badge>
+                      {renderCategoryBadge(n.category)}
                       <span className="text-[11px] font-mono text-muted">{n.date}</span>
                     </div>
                     <h4 className="text-sm font-bold text-text line-clamp-2">{n.title}</h4>
@@ -1555,12 +1800,60 @@ export default function SchoolPublicPage() {
       {activeTab === 'academics' && (
         <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10 animate-fade-in">
           <div>
-            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ACADEMICS & ROUTINES</span>
+            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ACADEMICS & CURRICULUM</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
-              ক্লাস রুটিন, পরীক্ষার সময়সূচি ও সিলেবাস
+              শিক্ষা ব্যবস্থা, পাঠ্যক্রম ও রুটিন
             </h2>
             <p className="text-xs sm:text-sm text-muted">
-              সকল শ্রেণির ডাউনলোডযোগ্য রুটিন ও পাঠ্যসূচি
+              জাতীয় শিক্ষাক্রম ও পাঠ্যপুস্তক বোর্ড (NCTB) অনুমোদিত পাঠ্যক্রম, বিভাগসমূহ ও সময়সূচি
+            </p>
+          </div>
+
+          {/* Academic Overview Grid (D35) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card surface="surface" className="p-6 space-y-3 border-t-4 border-t-primary">
+              <span className="text-xs font-mono font-bold text-primary uppercase">নিম্ন মাধ্যমিক (৬ষ্ঠ - ৮ম)</span>
+              <h4 className="text-base font-bold text-text">সাধারণ সমন্বিত পাঠ্যক্রম</h4>
+              <p className="text-xs text-muted leading-relaxed">
+                নতুন জাতীয় শিক্ষাক্রম অনুসারে অভিজ্ঞতা ও কার্যক্রমভিত্তিক শিখন পদ্ধতি। বাংলা, ইংরেজি, গণিত, বিজ্ঞান ও তথ্যপ্রযুক্তিতে বিশেষ গুরুত্ব।
+              </p>
+              <div className="pt-2 text-[11px] font-mono text-primary font-semibold">
+                শাখা: 'ক' ও 'খ' • বিষয় সংখ্যা: ১০টি
+              </div>
+            </Card>
+
+            <Card surface="surface" className="p-6 space-y-3 border-t-4 border-t-accent">
+              <span className="text-xs font-mono font-bold text-accent uppercase">মাধ্যমিক স্তর (৯ম - ১০ম)</span>
+              <h4 className="text-base font-bold text-text">তিনটি পৃথক একাডেমিক বিভাগ</h4>
+              <ul className="text-xs text-muted space-y-1.5 list-disc list-inside">
+                <li><strong className="text-text">বিজ্ঞান বিভাগ:</strong> পদার্থ, রসায়ন, জীববিজ্ঞান ও উচ্চতর গণিত</li>
+                <li><strong className="text-text">ব্যবসায় শিক্ষা:</strong> হিসাববিজ্ঞান ও ফিন্যান্স</li>
+                <li><strong className="text-text">মানবিক বিভাগ:</strong> ইতিহাস, ভূগোল ও অর্থনীতি</li>
+              </ul>
+              <div className="pt-1 text-[11px] font-mono text-accent font-semibold">
+                বোর্ড: {school.board} • SSC পরীক্ষার প্রস্তুতি
+              </div>
+            </Card>
+
+            <Card surface="surface" className="p-6 space-y-3 border-t-4 border-t-indigo">
+              <span className="text-xs font-mono font-bold text-indigo uppercase">মূল্যায়ন ও পরীক্ষা</span>
+              <h4 className="text-base font-bold text-text">ধারাবাহিক ও সামষ্টিক মূল্যায়ন</h4>
+              <p className="text-xs text-muted leading-relaxed">
+                বছরে দুটি প্রধান প্রান্তিক পরীক্ষা (অর্ধ-বার্ষিক ও বার্ষিক) এবং নিয়মিত ক্লাস টেস্ট ও সাপ্তাহিক কুইজের সমন্বয়ে শিক্ষার্থীদের গ্রেডিং সম্পন্ন হয়।
+              </p>
+              <div className="pt-2 text-[11px] font-mono text-indigo font-semibold">
+                গ্রেডিং স্কেল: GPA ৫.০০ (NCTB স্ট্যান্ডার্ড)
+              </div>
+            </Card>
+          </div>
+
+          {/* Routine Section Header */}
+          <div className="pt-4 border-t border-border">
+            <h3 className="text-xl font-heading font-bold text-text mb-1">
+              ডাউনলোডযোগ্য ক্লাস রুটিন ও পরীক্ষার সময়সূচি
+            </h3>
+            <p className="text-xs text-muted mb-4">
+              অফিশিয়াল রুটিনের কপি অফলাইনে সংরক্ষণ বা প্রিন্ট করার জন্য ডাউনলোড বাটনে ক্লিক করুন।
             </p>
           </div>
 
@@ -1575,7 +1868,7 @@ export default function SchoolPublicPage() {
                     <div>
                       <h4 className="text-sm font-bold text-text leading-tight">{rt.title}</h4>
                       <span className="text-[11px] text-muted font-mono mt-0.5 block">
-                        কার্যকরের তারিখ: {rt.effective_date} • ফাইল সাইজ: {rt.file_size}
+                        কার্যকরের তারিখ: {rt.effective_date} • ফরম্যাট: {rt.type || 'PDF'}
                       </span>
                     </div>
                   </div>
@@ -1584,19 +1877,9 @@ export default function SchoolPublicPage() {
                     variant="secondary"
                     size="sm"
                     icon={Download}
-                    onClick={() => {
-                      if (rt.file_url) {
-                        const a = document.createElement('a');
-                        a.href = rt.file_url;
-                        a.download = `${rt.title}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                      }
-                      showToast(`ডাউনলোড শুরু হয়েছে: ${rt.title} (${rt.file_size})`, 'success');
-                    }}
+                    onClick={() => handleRoutineDownload(rt)}
                   >
-                    ডাউনলোড (PDF)
+                    ডাউনলোড (PDF / রুটিন)
                   </Button>
                 </Card>
               ))}
@@ -1733,9 +2016,7 @@ export default function SchoolPublicPage() {
                 <Card key={n.id} surface="surface" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2 text-[11px]">
-                      <Badge variant={n.category === 'exam' ? 'info' : n.category === 'admission' ? 'primary' : 'muted'}>
-                        {n.category === 'exam' ? 'পরীক্ষা' : n.category === 'admission' ? 'ভর্তি' : 'সাধারণ'}
-                      </Badge>
+                      {renderCategoryBadge(n.category)}
                       {n.is_urgent && <Badge variant="danger">জরুরি</Badge>}
                       <span className="text-muted font-mono">{n.date}</span>
                     </div>
@@ -1792,59 +2073,96 @@ export default function SchoolPublicPage() {
               <form onSubmit={handleAdmissionSubmit}>
                 {admissionStep === 1 && (
                   <div className="space-y-4">
-                    <FileUpload
-                      label="শিক্ষার্থীর পাসপোর্ট সাইজ ছবি (Passport Photo)"
-                      helperText="JPG বা PNG ফরম্যাট। ডিজিটাল প্রবেশপত্রে এই ছবিটি প্রদর্শিত হবে।"
-                      accept="image/*"
-                      type="image"
-                      aspectRatio="square"
-                      value={admissionForm.photo}
-                      onChange={(val) => setAdmissionForm({ ...admissionForm, photo: val })}
-                    />
-                    <Input
-                      label="শিক্ষার্থীর নাম (বাংলায়)"
-                      placeholder="e.g. মোঃ তানভীর আহমেদ"
-                      value={admissionForm.name_bn}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, name_bn: e.target.value })}
-                      required
-                    />
-                    <Input
-                      label="Student Name (English Block Letters)"
-                      placeholder="e.g. MD. TANVIR AHMED"
-                      value={admissionForm.name_en}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, name_en: e.target.value })}
-                      required
-                    />
+                    <div>
+                      <FileUpload
+                        label="শিক্ষার্থীর পাসপোর্ট সাইজ ছবি (Passport Photo) *"
+                        helperText="JPG বা PNG ফরম্যাট। ডিজিটাল প্রবেশপত্রে এই ছবিটি প্রদর্শিত হবে।"
+                        accept="image/*"
+                        type="image"
+                        aspectRatio="square"
+                        value={admissionForm.photo}
+                        onChange={(val) => {
+                          setAdmissionForm({ ...admissionForm, photo: val });
+                          if (step1Errors.photo) setStep1Errors({ ...step1Errors, photo: '' });
+                        }}
+                      />
+                      {step1Errors.photo && (
+                        <p className="text-xs text-danger font-medium mt-1">⚠️ {step1Errors.photo}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label="শিক্ষার্থীর নাম (বাংলায়) *"
+                        placeholder="যেমন: মোঃ তানভীর আহমেদ"
+                        value={admissionForm.name_bn}
+                        onChange={(e) => {
+                          setAdmissionForm({ ...admissionForm, name_bn: e.target.value });
+                          if (step1Errors.name_bn) setStep1Errors({ ...step1Errors, name_bn: '' });
+                        }}
+                        error={step1Errors.name_bn}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Input
+                        label="Student Name (English Block Letters) *"
+                        placeholder="e.g. MD. TANVIR AHMED"
+                        value={admissionForm.name_en}
+                        onChange={(e) => {
+                          setAdmissionForm({ ...admissionForm, name_en: e.target.value });
+                          if (step1Errors.name_en) setStep1Errors({ ...step1Errors, name_en: '' });
+                        }}
+                        error={step1Errors.name_en}
+                        required
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Select
-                        label="ভর্তির শ্রেণি"
+                        label="ভর্তির শ্রেণি *"
                         value={admissionForm.applied_class}
                         onChange={(e) => setAdmissionForm({ ...admissionForm, applied_class: e.target.value })}
                         options={['6', '7', '8', '9']}
                       />
-                      <Select
-                        label="শাখা / বিভাগ"
-                        value={admissionForm.group}
-                        onChange={(e) => setAdmissionForm({ ...admissionForm, group: e.target.value })}
-                        options={['General', 'Science', 'Business Studies', 'Humanities']}
-                      />
+                      <div>
+                        <Select
+                          label="শাখা / বিভাগ *"
+                          value={admissionForm.group}
+                          onChange={(e) => {
+                            setAdmissionForm({ ...admissionForm, group: e.target.value });
+                            if (step1Errors.group) setStep1Errors({ ...step1Errors, group: '' });
+                          }}
+                          options={['General', 'Science', 'Business Studies', 'Humanities']}
+                        />
+                        {step1Errors.group && (
+                          <p className="text-xs text-danger font-medium mt-1">⚠️ {step1Errors.group}</p>
+                        )}
+                      </div>
                     </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Input
                         label="পূর্ববর্তী বিদ্যালয়ের নাম"
-                        placeholder="e.g. বন্দুয়া সরকারি প্রাথমিক বিদ্যালয়"
+                        placeholder="যেমন: বন্দুয়া সরকারি প্রাথমিক বিদ্যালয়"
                         value={admissionForm.prev_school}
                         onChange={(e) => setAdmissionForm({ ...admissionForm, prev_school: e.target.value })}
                       />
                       <Input
-                        label="পূর্ববর্তী পরীক্ষার জিপিএ"
-                        placeholder="e.g. ৫.০০"
+                        label="পূর্ববর্তী পরীক্ষার জিপিএ (GPA)"
+                        placeholder="যেমন: ৫.০০"
                         value={admissionForm.prev_gpa}
-                        onChange={(e) => setAdmissionForm({ ...admissionForm, prev_gpa: e.target.value })}
+                        onChange={(e) => {
+                          setAdmissionForm({ ...admissionForm, prev_gpa: e.target.value });
+                          if (step1Errors.prev_gpa) setStep1Errors({ ...step1Errors, prev_gpa: '' });
+                        }}
+                        error={step1Errors.prev_gpa}
                       />
                     </div>
+
                     <div className="pt-4 flex justify-end">
-                      <Button variant="primary" onClick={() => setAdmissionStep(2)}>
+                      <Button variant="primary" type="button" onClick={handleStep1Next}>
                         পরবর্তী ধাপ ›
                       </Button>
                     </div>
@@ -1854,40 +2172,55 @@ export default function SchoolPublicPage() {
                 {admissionStep === 2 && (
                   <div className="space-y-4">
                     <Input
-                      label="পিতার নাম"
-                      placeholder="e.g. মোঃ রফিকুল ইসলাম"
+                      label="পিতার নাম *"
+                      placeholder="যেমন: মোঃ রফিকুল ইসলাম"
                       value={admissionForm.father_name}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, father_name: e.target.value })}
+                      onChange={(e) => {
+                        setAdmissionForm({ ...admissionForm, father_name: e.target.value });
+                        if (step2Errors.father_name) setStep2Errors({ ...step2Errors, father_name: '' });
+                      }}
+                      error={step2Errors.father_name}
                       required
                     />
                     <Input
-                      label="মাতার নাম"
-                      placeholder="e.g. নাজমুন নাহার"
+                      label="মাতার নাম *"
+                      placeholder="যেমন: নাজমুন নাহার"
                       value={admissionForm.mother_name}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, mother_name: e.target.value })}
+                      onChange={(e) => {
+                        setAdmissionForm({ ...admissionForm, mother_name: e.target.value });
+                        if (step2Errors.mother_name) setStep2Errors({ ...step2Errors, mother_name: '' });
+                      }}
+                      error={step2Errors.mother_name}
                       required
                     />
                     <Input
-                      label="অভিভাবকের সচল মোবাইল নম্বর"
+                      label="অভিভাবকের সচল মোবাইল নম্বর *"
                       placeholder="018XXXXXXXX"
                       value={admissionForm.mobile}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, mobile: e.target.value })}
-                      error={mobileError}
+                      onChange={(e) => {
+                        setAdmissionForm({ ...admissionForm, mobile: e.target.value });
+                        if (step2Errors.mobile) setStep2Errors({ ...step2Errors, mobile: '' });
+                      }}
+                      error={step2Errors.mobile}
                       helperText="ভর্তি পরীক্ষার ফলাফল ও রোল এই নম্বরে পাঠানো হবে।"
                       required
                     />
                     <Input
-                      label="বর্তমান ঠিকানা"
+                      label="বর্তমান ঠিকানা *"
                       placeholder="গ্রাম, ডাকঘর, উপজেলা, জেলা"
                       value={admissionForm.address}
-                      onChange={(e) => setAdmissionForm({ ...admissionForm, address: e.target.value })}
+                      onChange={(e) => {
+                        setAdmissionForm({ ...admissionForm, address: e.target.value });
+                        if (step2Errors.address) setStep2Errors({ ...step2Errors, address: '' });
+                      }}
+                      error={step2Errors.address}
                       required
                     />
                     <div className="pt-4 flex items-center justify-between">
-                      <Button variant="secondary" onClick={() => setAdmissionStep(1)}>
+                      <Button variant="secondary" type="button" onClick={() => setAdmissionStep(1)}>
                         ‹ আগের ধাপ
                       </Button>
-                      <Button variant="primary" onClick={() => setAdmissionStep(3)}>
+                      <Button variant="primary" type="button" onClick={handleStep2Next}>
                         পরবর্তী ধাপ ›
                       </Button>
                     </div>
@@ -2019,7 +2352,7 @@ export default function SchoolPublicPage() {
                   label="পরীক্ষা"
                   value={resultQuery.examVal}
                   onChange={(e) => setResultQuery({ ...resultQuery, examVal: e.target.value })}
-                  options={['Annual', 'Half-Yearly', 'Pre-Test', 'Test']}
+                  options={['First-Term', 'Half-Yearly', 'Annual', 'Pre-Test', 'Test']}
                 />
                 <Select
                   label="বছর"
@@ -2038,84 +2371,130 @@ export default function SchoolPublicPage() {
           </Card>
 
           {hasSearched && (
-            searchOutput ? (
-              <Card surface="surface" className="p-6 border-2 border-primary/30 shadow-lg">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
-                  <div>
-                    <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ACADEMIC TRANSCRIPT</span>
-                    <h3 className="text-xl sm:text-2xl font-heading font-bold text-text mt-0.5">
-                      {searchOutput.class}ম শ্রেণি • {searchOutput.exam} {searchOutput.year}
-                    </h3>
-                    <p className="text-xs text-muted mt-1 font-mono">
-                      রোল নম্বর: <strong className="text-text">{searchOutput.roll}</strong> • {school.name_bn}
-                    </p>
-                  </div>
-                  <Badge variant={searchOutput.status === 'PASSED' ? 'success' : 'danger'} symbol={searchOutput.status === 'PASSED' ? '✓' : '✕'} className="text-sm px-3.5 py-1">
-                    {searchOutput.status}
-                  </Badge>
-                </div>
+            searchOutput ? (() => {
+              const matchedStudent = students.find(
+                s => s.class === searchOutput.class && String(s.roll) === String(searchOutput.roll)
+              );
+              const studentName = matchedStudent?.name_bn || searchOutput.student_name || 'মোহাম্মদ তানভীর আহমেদ';
+              const studentFather = matchedStudent?.father_name || 'মোঃ রফিকুল ইসলাম';
 
-                <div className="my-6 p-4 rounded-xl bg-primary-soft border border-primary/25 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-mono text-muted uppercase">GPA (গ্রেড পয়েন্ট)</span>
-                    <div className="text-3xl sm:text-4xl font-mono font-extrabold text-primary">
-                      {searchOutput.total_gpa}
+              return (
+                <Card surface="surface" className="p-6 sm:p-8 border-2 border-primary/30 shadow-lg printable-marksheet-sheet">
+                  {/* Institutional Header Letterhead (D26) */}
+                  <div className="text-center pb-6 border-b-2 border-primary/40 space-y-1">
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      {(settings?.logo || school.logo) ? (
+                        <img src={settings?.logo || school.logo} alt="Logo" className="w-12 h-12 rounded-xl object-cover border border-border" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-primary text-on-primary font-bold text-xl flex items-center justify-center">
+                          {school.name_bn[0]}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-text">
+                          {school.name_bn}
+                        </h3>
+                        <p className="text-xs text-muted font-mono">
+                          EIIN: {school.eiin} • শিক্ষাবোর্ড: {school.board} • জেলা: {school.district}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono font-bold uppercase tracking-wider">
+                      অফিশিয়াল একাডেমিক ট্রান্সক্রিপ্ট ও গ্রেড শিট
+                    </span>
+                  </div>
+
+                  {/* Student & Exam Details Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 text-xs bg-surface-2 rounded-xl p-4 my-6 border border-border">
+                    <div>
+                      <span className="text-muted block text-[10px]">শিক্ষার্থীর নাম:</span>
+                      <strong className="text-text text-sm">{studentName}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted block text-[10px]">পিতার নাম:</span>
+                      <strong className="text-text">{studentFather}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted block text-[10px]">শ্রেণি ও রোল:</span>
+                      <strong className="text-primary font-mono text-sm">{searchOutput.class}ম শ্রেণি (রোল: {searchOutput.roll})</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted block text-[10px]">পরীক্ষা ও বছর:</span>
+                      <strong className="text-text font-mono">{searchOutput.exam} ({searchOutput.year})</strong>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs text-muted font-medium">সর্বোচ্চ স্কেল: ৫.০০</span>
-                    <div className="w-32 h-2 rounded-full bg-surface mt-1 overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full" 
-                        style={{ width: `${(parseFloat(searchOutput.total_gpa) / 5) * 100}%` }}
-                      />
+
+                  {/* GPA Box */}
+                  <div className="my-6 p-4 rounded-xl bg-primary-soft border border-primary/25 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-mono text-muted uppercase">প্রাপ্ত সার্বিক GPA</span>
+                      <div className="text-3xl sm:text-4xl font-mono font-extrabold text-primary">
+                        {searchOutput.total_gpa}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant={searchOutput.status === 'PASSED' ? 'success' : 'danger'} symbol={searchOutput.status === 'PASSED' ? '✓' : '✕'} className="text-sm px-3.5 py-1">
+                        {searchOutput.status === 'PASSED' ? 'উত্তীর্ণ (PASSED)' : 'অনুত্তীর্ণ (FAILED)'}
+                      </Badge>
+                      <span className="text-xs text-muted font-medium block mt-1">সর্বোচ্চ স্কেল: ৫.০০</span>
                     </div>
                   </div>
-                </div>
 
-                <GridTable
-                  columns={[
-                    { key: 'code', label: 'কোড', width: '70px', fontMono: true },
-                    { key: 'name', label: 'বিষয়ের নাম', width: '2fr' },
-                    { key: 'marks', label: 'প্রাপ্ত নম্বর', width: '90px', align: 'right', fontMono: true },
-                    { 
-                      key: 'grade', 
-                      label: 'গ্রেড', 
-                      width: '80px', 
-                      align: 'center',
-                      render: (val) => (
-                        <span className={`font-mono font-bold ${val === 'A+' ? 'text-primary' : val === 'F' ? 'text-danger' : 'text-text'}`}>
-                          {val}
-                        </span>
-                      )
-                    },
-                    { key: 'gpa', label: 'পয়েন্ট', width: '80px', align: 'right', fontMono: true }
-                  ]}
-                  data={searchOutput.subjects}
-                  zebra
-                />
+                  {/* Marksheet Grid with Full Marks Column (D26) */}
+                  <GridTable
+                    columns={[
+                      { key: 'code', label: 'কোড', width: '70px', fontMono: true },
+                      { key: 'name', label: 'বিষয়ের নাম', width: '2fr' },
+                      { 
+                        key: 'full_marks', 
+                        label: 'পূর্ণমান', 
+                        width: '70px', 
+                        align: 'center', 
+                        fontMono: true,
+                        render: () => '১০০'
+                      },
+                      { key: 'marks', label: 'প্রাপ্ত নম্বর', width: '90px', align: 'right', fontMono: true },
+                      { 
+                        key: 'grade', 
+                        label: 'গ্রেড', 
+                        width: '80px', 
+                        align: 'center',
+                        render: (val) => (
+                          <span className={`font-mono font-bold ${val === 'A+' ? 'text-primary' : val === 'F' ? 'text-danger' : 'text-text'}`}>
+                            {val}
+                          </span>
+                        )
+                      },
+                      { key: 'gpa', label: 'পয়েন্ট', width: '80px', align: 'right', fontMono: true }
+                    ]}
+                    data={searchOutput.subjects}
+                    zebra
+                  />
 
-                <div className="pt-8 pb-3 flex justify-between items-end text-xs text-muted border-t border-dashed border-border mt-8">
-                  <div className="text-center">
-                    <div className="w-32 border-b border-text/40 mb-1 mx-auto" />
-                    <span>শ্রেণি শিক্ষকের স্বাক্ষর</span>
+                  {/* Official Signatures */}
+                  <div className="pt-10 pb-3 flex justify-between items-end text-xs text-muted border-t border-dashed border-border mt-8">
+                    <div className="text-center">
+                      <div className="w-32 border-b border-text/40 mb-1 mx-auto" />
+                      <span>শ্রেণি শিক্ষকের স্বাক্ষর</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-36 border-b border-text/40 mb-1 mx-auto" />
+                      <span className="font-bold text-text">প্রধান শিক্ষকের স্বাক্ষর ও সিল</span>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="w-36 border-b border-text/40 mb-1 mx-auto" />
-                    <span className="font-bold text-text">প্রধান শিক্ষকের স্বাক্ষর ও সিল</span>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border no-print">
-                  <Button variant="secondary" size="sm" onClick={() => setSearchOutput(null)}>
-                    আবার খুঁজুন
-                  </Button>
-                  <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
-                    প্রিন্ট / সেভ PDF
-                  </Button>
-                </div>
-              </Card>
-            ) : (
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t border-border no-print">
+                    <Button variant="secondary" size="sm" onClick={() => setSearchOutput(null)}>
+                      আবার খুঁজুন
+                    </Button>
+                    <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
+                      প্রিন্ট / সেভ PDF
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })() : (
               <EmptyState
                 icon={Search}
                 title="কোনো ফলাফল পাওয়া যায়নি"
@@ -2339,22 +2718,76 @@ export default function SchoolPublicPage() {
 
             <div className="lg:col-span-7">
               <Card surface="surface" className="p-6 space-y-4">
-                <h4 className="text-sm font-bold text-text">ইনকোয়ারি বা মেসেজ পাঠান</h4>
-                <form onSubmit={(e) => { e.preventDefault(); showToast('আপনার বার্তাটি পাঠানো হয়েছে! কর্তৃপক্ষ শীঘ্রই যোগাযোগ করবে।'); e.target.reset(); }} className="space-y-4">
-                  <Input label="আপনার নাম" placeholder="e.g. মোহাম্মদ আব্দুল্লাহ" required />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Input label="মোবাইল নম্বর" placeholder="018XXXXXXXX" required />
-                    <Input label="ইমেইল (ঐচ্ছিক)" placeholder="name@domain.com" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-medium text-text">আপনার বার্তা বা প্রশ্ন:</label>
-                    <textarea
-                      rows={4}
-                      placeholder="এখানে আপনার প্রশ্ন বা অনুসন্ধানের বিষয় লিখুন..."
-                      className="w-full rounded-[10px] bg-surface-2 border border-border text-text p-3 text-xs outline-none focus:border-primary"
+                <h4 className="text-sm font-bold text-text">ইনকোয়ারি বা মেসেজ পাঠান (Contact Form)</h4>
+
+                {contactSuccess && (
+                  <Alert variant="success">
+                    ✓ আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে! বিদ্যালয় কর্তৃপক্ষ দ্রুত আপনার মোবাইল বা ইমেইলে যোগাযোগ করবে।
+                  </Alert>
+                )}
+
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <div>
+                    <Input
+                      label="আপনার নাম *"
+                      placeholder="যেমন: মোহাম্মদ আব্দুল্লাহ"
+                      value={contactForm.name}
+                      onChange={(e) => {
+                        setContactForm({ ...contactForm, name: e.target.value });
+                        if (contactErrors.name) setContactErrors({ ...contactErrors, name: '' });
+                      }}
+                      error={contactErrors.name}
                       required
                     />
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Input
+                        label="মোবাইল নম্বর *"
+                        placeholder="018XXXXXXXX"
+                        value={contactForm.mobile}
+                        onChange={(e) => {
+                          setContactForm({ ...contactForm, mobile: e.target.value });
+                          if (contactErrors.mobile) setContactErrors({ ...contactErrors, mobile: '' });
+                        }}
+                        error={contactErrors.mobile}
+                        helperText="১১ ডিজিটের বাংলাদেশি মোবাইল"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        label="ইমেইল (ঐচ্ছিক)"
+                        placeholder="name@domain.com"
+                        value={contactForm.email}
+                        onChange={(e) => {
+                          setContactForm({ ...contactForm, email: e.target.value });
+                          if (contactErrors.email) setContactErrors({ ...contactErrors, email: '' });
+                        }}
+                        error={contactErrors.email}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-text">আপনার বার্তা বা অনুসন্ধানের বিষয়: *</label>
+                    <textarea
+                      rows={4}
+                      placeholder="এখানে আপনার প্রশ্ন বা অনুসন্ধানের বিষয় লিখুন (কমপক্ষে ৫ অক্ষর)..."
+                      value={contactForm.message}
+                      onChange={(e) => {
+                        setContactForm({ ...contactForm, message: e.target.value });
+                        if (contactErrors.message) setContactErrors({ ...contactErrors, message: '' });
+                      }}
+                      className="w-full rounded-[10px] bg-surface-2 border border-border text-text p-3 text-xs outline-none focus:border-primary"
+                      required
+                    />
+                    {contactErrors.message && (
+                      <p className="text-xs text-danger font-medium">⚠️ {contactErrors.message}</p>
+                    )}
+                  </div>
+
                   <Button type="submit" variant="primary" size="md">
                     বার্তা প্রেরণ করুন
                   </Button>
@@ -2491,11 +2924,19 @@ export default function SchoolPublicPage() {
           subtitle="আপনার ট্র্যাকিং নম্বরটি প্রবেশ করান"
         >
           <form onSubmit={handleTrackingLookup} className="space-y-4">
+            {trackError && <Alert variant="danger">{trackError}</Alert>}
             <Input
-              label="ট্র্যাকিং নম্বর (যেমন: BDHS-ADM-2027-XXXX)"
+              label="ট্র্যাকিং নম্বর (যেমন: BDHS-ADM-2027-XXXX) *"
               placeholder="BDHS-ADM-..."
               value={searchTrackCode}
               onChange={(e) => setSearchTrackCode(e.target.value)}
+              required
+            />
+            <Input
+              label="আবেদনে দেওয়া অভিভাবকের মোবাইল নম্বর *"
+              placeholder="018XXXXXXXX"
+              value={searchTrackPhone}
+              onChange={(e) => setSearchTrackPhone(e.target.value)}
               required
             />
             <Button type="submit" variant="primary" size="md" className="w-full">
@@ -2504,7 +2945,7 @@ export default function SchoolPublicPage() {
 
             {trackResult && (
               trackResult === 'NOT_FOUND' ? (
-                <Alert variant="danger">এই ট্র্যাকিং কোডের কোনো আবেদন পাওয়া যায়নি।</Alert>
+                <Alert variant="danger">প্রদত্ত ট্র্যাকিং কোড ও মোবাইল নম্বরের সাথে মিলে এমন কোনো আবেদন পাওয়া যায়নি। তথ্য সঠিকভাবে দিন।</Alert>
               ) : (
                 <div className="p-4 rounded-xl bg-surface-2 border border-border space-y-2 text-xs">
                   <div className="flex justify-between">

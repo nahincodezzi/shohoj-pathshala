@@ -1,0 +1,117 @@
+/**
+ * Sohoj Pathshala — Unified Print System
+ * Guarantees zero dark-mode bleeding, isolates documents, and formats for standard A4
+ */
+
+@media print {
+  /* 1. Global Reset & Hiding Chrome */
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+    text-shadow: none !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide entire page structure when printing */
+  header, 
+  nav, 
+  footer, 
+  aside, 
+  .no-print, 
+  button, 
+  [role="dialog"] > div:first-child, /* modal backdrop */
+  .fixed, 
+  .sticky,
+  .toast-container {
+    display: none !important;
+  }
+
+  /* 2. Unfold Modals & Scroll Containers */
+  .modal-container, 
+  .modal-body, 
+  [role="dialog"],
+  .overflow-y-auto,
+  .max-h-\[85vh\],
+  .max-h-\[90vh\] {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  /* 3. Printable Document Specifics */
+  .printable-document {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printable-card {
+    background: #ffffff !important;
+    border: 1px solid #1f2937 !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+
+  /* Money Receipt Dual Copy */
+  .money-receipt-sheet {
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+  }
+
+  .receipt-copy {
+    border: 1.5px solid #111827 !important;
+    padding: 12px 16px !important;
+    margin-bottom: 24px !important;
+    background: #ffffff !important;
+  }
+
+  .receipt-cut-line {
+    border-top: 1.5px dashed #4b5563 !important;
+    margin: 20px 0 !important;
+    text-align: center !important;
+  }
+
+  .receipt-cut-line::after {
+    content: "✂ এখান থেকে কেটে আলাদা করুন (Cut Along Dashed Line) ✂";
+    display: inline-block;
+    background: #ffffff;
+    padding: 0 10px;
+    font-size: 9pt;
+    position: relative;
+    top: -9px;
+    color: #4b5563 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+}

@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
  * Supports landing: platform_mode, platform_theme
  */
 export function useTheme(options = {}) {
-  const { slug, isOwner = false } = options;
+  const { slug, isOwner = false, defaultTheme } = options;
 
   // Determine storage keys
   const modeKey = isOwner 
@@ -32,11 +32,25 @@ export function useTheme(options = {}) {
     if (isOwner) return 'indigo';
     try {
       const saved = localStorage.getItem(themeKey);
-      return saved === 'indigo' ? 'indigo' : 'emerald';
-    } catch {
+      if (saved) return saved === 'indigo' ? 'indigo' : 'emerald';
+      if (defaultTheme) return defaultTheme === 'indigo' ? 'indigo' : 'emerald';
       return 'emerald';
+    } catch {
+      return defaultTheme || 'emerald';
     }
   });
+
+  // If defaultTheme is provided and changes, and user hasn't explicitly set localStorage, sync it
+  useEffect(() => {
+    if (!isOwner && defaultTheme) {
+      try {
+        const saved = localStorage.getItem(themeKey);
+        if (!saved && (defaultTheme === 'indigo' || defaultTheme === 'emerald')) {
+          setThemeState(defaultTheme);
+        }
+      } catch (e) {}
+    }
+  }, [defaultTheme, themeKey, isOwner]);
 
   // Apply to DOM
   const applyThemeToDOM = useCallback((currentMode, currentTheme) => {

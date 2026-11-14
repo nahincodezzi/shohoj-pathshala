@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { TenantRepository } from '../../../services/tenantStorage';
+import { TenantRepository, hashPassword } from '../../../services/tenantStorage';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -9,18 +9,20 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { ShieldCheck, Plus, AlertTriangle, KeyRound, RotateCcw } from 'lucide-react';
+import { ShieldCheck, Plus, AlertTriangle, KeyRound, RotateCcw, Trash2, Power } from 'lucide-react';
 
 export default function UserManager() {
   const { school, currentUser, supportMode } = useOutletContext();
   const { showToast } = useToast();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteModalUser, setDeleteModalUser] = useState(null);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetCode, setResetCode] = useState('');
   const [resetError, setResetError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
 
-  const users = TenantRepository.getUsers(school.id);
+  const [users, setUsers] = useState(() => TenantRepository.getUsers(school.id));
 
   const [newUser, setNewUser] = useState({
     username: '',
@@ -29,20 +31,44 @@ export default function UserManager() {
     role: 'teacher'
   });
 
-  const handleAddUser = (e) => {
-    e.preventDefault();
-    const existing = TenantRepository.getUsers(school.id);
-    if (existing.some(u => u.username.toLowerCase() === newUser.username.toLowerCase())) {
-      showToast(`"${newUser.username}" ইউজারনেম ইতোমধ্যে বিদ্যমান রয়েছে।`, 'error');
-      return;
+  const roleLabels = {
+    school_superadmin: 'সুপার অ্যাডমিন',
+    headmaster: 'প্রধান শিক্ষক',
+    asst_headmaster: 'সহকারী প্রধান শিক্ষক',
+    teacher: 'সহকারী শিক্ষক',
+    office_assistant: 'অফিস সহকারী'
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!newUser.username.trim()) errs.username = 'ইউজারনেম দেওয়া আবশ্যক।';
+    if (!newUser.name.trim()) errs.name = 'ব্যবহারকারীর নাম লেখা আবশ্যক।';
+    
+    // D19: Password strength check
+    if (!newUser.password || newUser.password.length < 6 || !/(?=.*[A-Za-z])(?=.*\d)/.test(newUser.password)) {
+      errs.password = 'পাসওয়ার্ডে কমপক্ষে ৬টি অক্ষর, যার মধ্যে অন্তত ১টি বর্ণ এবং ১টি সংখ্যা থাকা আবশ্যক।';
     }
 
+    const existing = TenantRepository.getUsers(school.id);
+    if (existing.some(u => u.username.toLowerCase() === newUser.username.trim().toLowerCase())) {
+      errs.username = `"${newUser.username}" ইউজারনেমটি ইতোমধ্যে ব্যবহৃত হচ্ছে।`;
+    }
+
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleAddUser = (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    // D05: Hashed password
     const created = {
       id: `usr_${Date.now()}`,
       school_id: school.id,
-      username: newUser.username,
-      name: newUser.name,
-      password: newUser.password,
+      username: newUser.username.trim().toLowerCase(),
+      name: newUser.name.trim(),
+      password: hashPassword(newUser.password),
       role: newUser.role,
       active: true,
       failed_attempts: 0,
@@ -50,13 +76,38 @@ export default function UserManager() {
       must_change_password: false
     };
 
-    const allUsers = TenantRepository.getUsers(null).concat(TenantRepository.getUsers(school.id)); // get all
     const raw = JSON.parse(localStorage.getItem('sp_tenant_users') || '[]');
     raw.push(created);
     localStorage.setItem('sp_tenant_users', JSON.stringify(raw));
 
+    setUsers(TenantRepository.getUsers(school.id));
     showToast(`ইউজার "${created.username}" সফলভাবে তৈরি হয়েছে!`);
     setAddModalOpen(false);
+    setNewUser({ username: '', name: '', password: '', role: 'teacher' });
+    setFormErrors({});
+  };
+
+  const toggleUserActive = (user) => {
+    if (user.role === 'school_superadmin') {
+      showToast('সুপার অ্যাডমিন অ্যাকাউন্ট নিষ্ক্রিয় করা যাবে না।', 'error');
+      return;
+    }
+    const updated = TenantRepository.updateUser(user.id, { active: !user.active });
+    setUsers(TenantRepository.getUsers(school.id));
+    showToast(`ইউজার "${user.username}" ${updated.active ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে।`);
+  };
+
+  const handleDeleteUser = () => {
+    if (!deleteModalUser) return;
+    if (deleteModalUser.role === 'school_superadmin') {
+      showToast('সুপার অ্যাডমিন অ্যাকাউন্ট মুছে ফেলা যাবে না।', 'error');
+      setDeleteModalUser(null);
+      return;
+    }
+    TenantRepository.deleteUser(deleteModalUser.id);
+    setUsers(TenantRepository.getUsers(school.id));
+    showToast(`ইউজার "${deleteModalUser.username}" সফলভাবে মুছে ফেলা হয়েছে!`);
+    setDeleteModalUser(null);
   };
 
   const handleFactoryReset = (e) => {
@@ -99,7 +150,7 @@ export default function UserManager() {
             width: '150px',
             render: (val) => (
               <Badge variant={val === 'school_superadmin' ? 'indigo' : val === 'headmaster' ? 'primary' : 'muted'}>
-                {val}
+                {roleLabels[val] || val}
               </Badge>
             )
           },
@@ -112,10 +163,40 @@ export default function UserManager() {
                 {row.locked_until ? 'লকড (১৫ মিনিট)' : val ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
               </Badge>
             )
+          },
+          {
+            key: 'actions',
+            label: 'অ্যাকশন',
+            width: '120px',
+            align: 'right',
+            render: (_, row) => (
+              !supportMode && row.role !== 'school_superadmin' ? (
+                <div className="flex items-center justify-end gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={Power}
+                    title={row.active ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}
+                    onClick={() => toggleUserActive(row)}
+                    className={`p-1.5 h-8 ${row.active ? 'text-warning hover:bg-warning-soft' : 'text-success hover:bg-success-soft'}`}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={Trash2}
+                    title="ইউজার মুছুন"
+                    onClick={() => setDeleteModalUser(row)}
+                    className="p-1.5 h-8 text-danger hover:bg-danger-soft"
+                  />
+                </div>
+              ) : (
+                <span className="text-xs text-muted">—</span>
+              )
+            )
           }
         ]}
         data={users}
-        minWidth="620px"
+        minWidth="680px"
       />
 
       {/* Danger Zone: School-level Factory Reset */}
@@ -149,20 +230,38 @@ export default function UserManager() {
         subtitle="স্কুলের অনুমোদিত কর্মীদের জন্য রোলভিত্তিক অ্যাকাউন্ট"
       >
         <form onSubmit={handleAddUser} className="space-y-4">
-          <Input
-            label="ইউজারনেম (Login Username)"
-            placeholder="e.g. teacher_science"
-            value={newUser.username}
-            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-            required
-          />
-          <Input
-            label="পূর্ণ নাম"
-            placeholder="e.g. মোঃ নাঈম আহমেদ"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-            required
-          />
+          <div>
+            <Input
+              label="ইউজারনেম (Login Username) *"
+              placeholder="e.g. teacher_science"
+              value={newUser.username}
+              onChange={(e) => {
+                setNewUser({ ...newUser, username: e.target.value });
+                if (formErrors.username) setFormErrors({ ...formErrors, username: '' });
+              }}
+              required
+            />
+            {formErrors.username && (
+              <p className="text-danger text-xs mt-1">{formErrors.username}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              label="পূর্ণ নাম *"
+              placeholder="e.g. মোঃ নাঈম আহমেদ"
+              value={newUser.name}
+              onChange={(e) => {
+                setNewUser({ ...newUser, name: e.target.value });
+                if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
+              }}
+              required
+            />
+            {formErrors.name && (
+              <p className="text-danger text-xs mt-1">{formErrors.name}</p>
+            )}
+          </div>
+
           <Select
             label="রোল (Role & Permissions)"
             value={newUser.role}
@@ -174,63 +273,99 @@ export default function UserManager() {
               { value: 'office_assistant', label: 'অফিস সহকারী (Office Assistant)' }
             ]}
           />
-          <Input
-            label="পাসওয়ার্ড"
-            type="password"
-            placeholder="নিরাপদ পাসওয়ার্ড দিন"
-            value={newUser.password}
-            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-            required
-          />
+
+          <div>
+            <Input
+              label="পাসওয়ার্ড *"
+              type="password"
+              placeholder="নিরাপদ পাসওয়ার্ড দিন (কমপক্ষে ৬ অক্ষর, বর্ণ ও সংখ্যা)"
+              value={newUser.password}
+              onChange={(e) => {
+                setNewUser({ ...newUser, password: e.target.value });
+                if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
+              }}
+              required
+            />
+            <span className="text-[10px] text-muted block mt-1">কমপক্ষে ৬টি অক্ষর, যার মধ্যে অন্তত ১টি বর্ণ এবং ১টি সংখ্যা আবশ্যক।</span>
+            {formErrors.password && (
+              <p className="text-danger text-xs mt-1">{formErrors.password}</p>
+            )}
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" onClick={() => setAddModalOpen(false)}>
               বাতিল
             </Button>
             <Button type="submit" variant="primary">
-              ইউজার তৈরি করুন
+              তৈরি করুন
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* D13: Delete User Confirmation Modal */}
+      {deleteModalUser && (
+        <Modal
+          isOpen={!!deleteModalUser}
+          onClose={() => setDeleteModalUser(null)}
+          title="ইউজার ডিলিট নিশ্চিতকরণ"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-text leading-relaxed">
+              আপনি কি নিশ্চিত যে ইউজার <strong>"{deleteModalUser.username}"</strong> ({deleteModalUser.name})-কে সিস্টেম থেকে মুছে ফেলতে চান?
+            </p>
+            <p className="text-xs text-muted">
+              এই ইউজার আর কোনো ড্যাশবোর্ডে প্রবেশ করতে পারবেন না।
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setDeleteModalUser(null)}>
+                বাতিল
+              </Button>
+              <Button variant="dangerSolid" size="sm" onClick={handleDeleteUser}>
+                হ্যাঁ, মুছে ফেলুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Factory Reset Modal */}
-      <Modal
-        isOpen={resetModalOpen}
-        onClose={() => setResetModalOpen(false)}
-        title="ফ্যাক্টরি রিসেট নিশ্চিতকরণ"
-        subtitle={`স্কুল: ${school.name_bn}`}
-      >
-        <form onSubmit={handleFactoryReset} className="space-y-4">
-          <div className="p-3.5 rounded-lg bg-danger text-white text-xs font-semibold">
-            সতর্কতা: নিশ্চিত করতে নিচের বক্সে বড় হাতের অক্ষরে "RESET" লিখুন।
-          </div>
-
-          {resetError && (
-            <div className="p-2.5 rounded bg-danger-soft text-danger text-xs font-bold">
-              {resetError}
+      {resetModalOpen && (
+        <Modal
+          isOpen={resetModalOpen}
+          onClose={() => setResetModalOpen(false)}
+          title="ফ্যাক্টরি রিসেট নিশ্চিতকরণ"
+          subtitle="স্কুলের সকল ডেটা রিসেট করার জন্য অনুমতি কোড লিখুন"
+        >
+          <form onSubmit={handleFactoryReset} className="space-y-4">
+            <div className="p-3 rounded-lg bg-danger-soft border border-danger/30 text-xs text-danger font-semibold">
+              ⚠️ সতর্কবার্তা: এটি অপরিবর্তনীয়! এই স্কুলের ডাটাবেস সম্পূর্ণ খালি হয়ে যাবে। নিশ্চিত করতে নিচের ঘরে <strong>RESET-{school.code_prefix}</strong> লিখুন।
             </div>
-          )}
 
-          <Input
-            label='নিশ্চিতকরণ কোড ("RESET" টাইপ করুন):'
-            placeholder="RESET"
-            value={resetCode}
-            onChange={(e) => setResetCode(e.target.value)}
-            required
-          />
+            {resetError && (
+              <p className="text-xs text-danger font-semibold">{resetError}</p>
+            )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-            <Button variant="secondary" onClick={() => setResetModalOpen(false)}>
-              বাতিল
-            </Button>
-            <Button type="submit" variant="dangerSolid">
-              স্থায়ীভাবে রিসেট করুন
-            </Button>
-          </div>
-        </form>
-      </Modal>
+            <Input
+              label="কনফার্মেশন কোড"
+              placeholder={`RESET-${school.code_prefix}`}
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value)}
+              required
+            />
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setResetModalOpen(false)}>
+                বাতিল
+              </Button>
+              <Button type="submit" variant="dangerSolid">
+                স্থায়ীভাবে রিসেট সম্পন্ন করুন
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }
-

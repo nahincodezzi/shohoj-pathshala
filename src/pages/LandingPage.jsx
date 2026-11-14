@@ -350,8 +350,8 @@ export default function LandingPage() {
               <div className="p-4 rounded-xl bg-surface-2 border border-border flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-text mb-0.5">মেয়াদ শেষেও ডেটা নিরাপদ</h4>
-                  <p className="text-xs text-muted">প্ল্যান মেয়াদোত্তীর্ণ হলেও ৭ দিন গ্রেস পিরিয়ড পাওয়া যাবে। কোনো অবস্থাতেই স্কুলের ডেটা মোছা হবে না।</p>
+                  <h4 className="text-sm font-bold text-text mb-0.5">৩০ দিন নবায়ন ও গ্রেস সুরক্ষা</h4>
+                  <p className="text-xs text-muted">মেয়াদ শেষ হওয়ার শেষ ৩০ দিন নবায়ন পিরিয়ড এবং মেয়াদোত্তীর্ণ হলেও গ্রেস পিরিয়ড পাওয়া যাবে। কোনো অবস্থাতেই স্কুলের ডেটা মোছা হবে না।</p>
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { TenantRepository } from '../../../services/tenantStorage';
 import Card from '../../../components/ui/Card';
@@ -9,7 +9,8 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { FileText, Plus, CheckCircle2, AlertTriangle, Eye, Printer } from 'lucide-react';
+import { toBengaliOrdinal, toBengaliNumber } from '../../../utils/dateFormatter';
+import { FileText, Plus, CheckCircle2, AlertTriangle, Eye, Printer, Trash2 } from 'lucide-react';
 
 export default function ResultManager() {
   const { school, currentUser, supportMode } = useOutletContext();
@@ -17,31 +18,91 @@ export default function ResultManager() {
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
+  const [deleteModalResult, setDeleteModalResult] = useState(null);
+  const [duplicateConfirm, setDuplicateConfirm] = useState(null);
 
   const results = TenantRepository.getResults(school.id);
+  const students = TenantRepository.getStudents(school.id);
 
   // New Result Entry State
   const [entryClass, setEntryClass] = useState('10');
+  const [entryGroup, setEntryGroup] = useState('Science');
   const [entryRoll, setEntryRoll] = useState('');
   const [entryExam, setEntryExam] = useState('Annual');
   const [entryYear, setEntryYear] = useState('2026');
-  const [subjectMarks, setSubjectMarks] = useState({
-    '101': 85, // বাংলা
-    '107': 78, // ইংরেজি
-    '109': 92, // গণিত
-    '136': 80, // পদার্থবিজ্ঞান
-    '137': 84, // রসায়ন
-    '138': 75, // জীববিজ্ঞান
-  });
 
-  const subjectNames = {
-    '101': 'বাংলা',
-    '107': 'ইংরেজি',
-    '109': 'গণিত',
-    '136': 'পদার্থবিজ্ঞান',
-    '137': 'রসায়ন',
-    '138': 'জীববিজ্ঞান'
+  // Exam Types (Unified with Public Search - D12)
+  const examOptions = [
+    { value: 'First-Term', label: '১ম সাময়িক পরীক্ষা' },
+    { value: 'Half-Yearly', label: 'অর্ধবার্ষিক পরীক্ষা' },
+    { value: 'Annual', label: 'বার্ষিক পরীক্ষা' },
+    { value: 'Pre-Test', label: 'প্রাক-নির্বাচনী পরীক্ষা' },
+    { value: 'Test', label: 'নির্বাচনী পরীক্ষা (Test)' }
+  ];
+
+  // Subject Configurations per Class & Group (D12)
+  const getSubjectList = (cls, grp) => {
+    if (['6', '7', '8'].includes(cls)) {
+      return [
+        { code: '101', name: 'বাংলা' },
+        { code: '107', name: 'ইংরেজি' },
+        { code: '109', name: 'গণিত' },
+        { code: '127', name: 'সাধারণ বিজ্ঞান' },
+        { code: '150', name: 'বাংলাদেশ ও বিশ্বপরিচয়' },
+        { code: '111', name: 'ধর্ম ও নৈতিক শিক্ষা' }
+      ];
+    }
+    // Classes 9 & 10
+    if (grp === 'Business Studies') {
+      return [
+        { code: '101', name: 'বাংলা' },
+        { code: '107', name: 'ইংরেজি' },
+        { code: '109', name: 'গণিত' },
+        { code: '141', name: 'ব্যবসায় উদ্যোগ' },
+        { code: '146', name: 'হিসাববিজ্ঞান' },
+        { code: '152', name: 'ফিন্যান্স ও ব্যাংকিং' },
+        { code: '111', name: 'ইসলাম ও নৈতিক শিক্ষা' }
+      ];
+    }
+    if (grp === 'Humanities') {
+      return [
+        { code: '101', name: 'বাংলা' },
+        { code: '107', name: 'ইংরেজি' },
+        { code: '109', name: 'গণিত' },
+        { code: '140', name: 'পৌরনীতি ও নাগরিকতা' },
+        { code: '153', name: 'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা' },
+        { code: '110', name: 'ভূগোল ও পরিবেশ' },
+        { code: '111', name: 'ইসলাম ও নৈতিক শিক্ষা' }
+      ];
+    }
+    // Default: Science
+    return [
+      { code: '101', name: 'বাংলা' },
+      { code: '107', name: 'ইংরেজি' },
+      { code: '109', name: 'গণিত' },
+      { code: '136', name: 'পদার্থবিজ্ঞান' },
+      { code: '137', name: 'রসায়ন' },
+      { code: '138', name: 'জীববিজ্ঞান' },
+      { code: '111', name: 'ইসলাম ও নৈতিক শিক্ষা' }
+    ];
   };
+
+  const currentSubjects = getSubjectList(entryClass, entryGroup);
+  const [subjectMarks, setSubjectMarks] = useState({});
+
+  // Reset marks template whenever class or group changes
+  useEffect(() => {
+    const defaultMarks = {};
+    currentSubjects.forEach(s => {
+      defaultMarks[s.code] = subjectMarks[s.code] || 75;
+    });
+    setSubjectMarks(defaultMarks);
+  }, [entryClass, entryGroup]);
+
+  // Match Student (D11: Ghost Student Check)
+  const matchedStudent = students.find(
+    s => s.class === entryClass && Number(s.roll) === Number(entryRoll)
+  );
 
   // Comilla Board GPA Calculator
   const calculateGradeAndGpa = (marks) => {
@@ -57,27 +118,32 @@ export default function ResultManager() {
 
   const handleSaveResult = (e) => {
     e.preventDefault();
-    const subjectsArray = Object.entries(subjectMarks).map(([code, marks]) => {
+
+    if (!matchedStudent) {
+      showToast('এই শ্রেণি ও রোলের কোনো শিক্ষার্থী পাওয়া যায়নি!', 'error');
+      return;
+    }
+
+    const subjectsArray = currentSubjects.map(s => {
+      const marks = subjectMarks[s.code] || 0;
       const calc = calculateGradeAndGpa(marks);
       return {
-        code,
-        name: subjectNames[code],
+        code: s.code,
+        name: s.name,
         marks: Number(marks),
         grade: calc.grade,
         gpa: calc.gpa
       };
     });
 
-    // Check Fail Guard: if any subject has F, GPA is 0.00 and FAILED
     const hasFail = subjectsArray.some(s => s.grade === 'F');
     const totalGp = subjectsArray.reduce((acc, s) => acc + s.gpa, 0);
     const avgGpa = hasFail ? 0.00 : Math.min(5.00, parseFloat((totalGp / subjectsArray.length).toFixed(2)));
     const status = hasFail ? 'FAILED' : 'PASSED';
 
-    const newResult = {
-      id: `res_${Date.now()}`,
-      school_id: school.id,
+    const resultPayload = {
       class: entryClass,
+      group: ['9', '10'].includes(entryClass) ? entryGroup : 'General',
       roll: Number(entryRoll),
       exam: entryExam,
       year: entryYear,
@@ -87,13 +153,43 @@ export default function ResultManager() {
       subjects: subjectsArray
     };
 
-    // Save
-    const existing = TenantRepository.getResults(school.id);
-    existing.unshift(newResult);
-    localStorage.setItem(`sp_tenant_results`, JSON.stringify(existing));
+    // D06: Check if already exists
+    const existing = results.find(
+      r => r.class === entryClass && 
+           Number(r.roll) === Number(entryRoll) && 
+           r.exam === entryExam && 
+           String(r.year) === String(entryYear)
+    );
 
-    showToast(`ফলাফল এন্ট্রি সম্পন্ন! জিপিএ: ${newResult.total_gpa} (${status})`);
-    setAddModalOpen(false);
+    if (existing) {
+      setDuplicateConfirm({ payload: resultPayload, existing });
+      return;
+    }
+
+    executeSaveResult(resultPayload);
+  };
+
+  const executeSaveResult = (payload) => {
+    try {
+      const res = TenantRepository.addResult(school.id, payload, currentUser?.name);
+      showToast(
+        res.isUpdate 
+          ? `ফলাফল সফলভাবে আপডেট করা হয়েছে! নতুন জিপিএ: ${payload.total_gpa}` 
+          : `ফলাফল এন্ট্রি সম্পন্ন! জিপিএ: ${payload.total_gpa} (${payload.status})`
+      );
+      setAddModalOpen(false);
+      setDuplicateConfirm(null);
+      setEntryRoll('');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteModalResult) return;
+    TenantRepository.deleteResult(school.id, deleteModalResult.id, currentUser?.name);
+    showToast('ফলাফল সফলভাবে মুছে ফেলা হয়েছে!');
+    setDeleteModalResult(null);
   };
 
   return (
@@ -113,15 +209,40 @@ export default function ResultManager() {
 
       <GridTable
         columns={[
-          { key: 'class', label: 'শ্রেণি', width: '80px', render: (val) => `${val}ম` },
-          { key: 'roll', label: 'রোল', width: '70px', fontMono: true, align: 'center' },
-          { key: 'exam', label: 'পরীক্ষা', width: '120px' },
-          { key: 'year', label: 'বছর', width: '80px', fontMono: true },
-          { key: 'total_gpa', label: 'GPA', width: '90px', fontMono: true },
+          { key: 'class', label: 'শ্রেণি', width: '90px', render: (val) => toBengaliOrdinal(val) },
+          { key: 'roll', label: 'রোল', width: '80px', fontMono: true, align: 'center', render: (val) => toBengaliNumber(val) },
+          { 
+            key: 'student_name_bn', 
+            label: 'শিক্ষার্থীর নাম', 
+            width: '1.5fr',
+            render: (val, row) => (
+              <div>
+                <strong className="text-text block">{val || 'শিক্ষার্থী'}</strong>
+                <span className="text-[10px] text-muted font-mono">{row.group || 'General'}</span>
+              </div>
+            )
+          },
+          { 
+            key: 'exam', 
+            label: 'পরীক্ষা', 
+            width: '130px',
+            render: (val) => {
+              const matched = examOptions.find(e => e.value === val);
+              return matched ? matched.label : val;
+            }
+          },
+          { key: 'year', label: 'বছর', width: '80px', fontMono: true, render: (val) => toBengaliNumber(val) },
+          { 
+            key: 'total_gpa', 
+            label: 'GPA', 
+            width: '90px', 
+            fontMono: true,
+            render: (val) => <span className="font-bold text-primary">{val}</span>
+          },
           {
             key: 'status',
             label: 'অবস্থা',
-            width: '120px',
+            width: '110px',
             render: (val) => (
               <Badge variant={val === 'PASSED' ? 'success' : 'danger'}>
                 {val}
@@ -129,29 +250,31 @@ export default function ResultManager() {
             )
           },
           {
-            key: 'published',
-            label: 'পাবলিশড',
-            width: '100px',
-            render: (val) => (
-              <Badge variant={val ? 'primary' : 'muted'}>
-                {val ? 'অনুমোদিত' : 'ড্রাফট'}
-              </Badge>
-            )
-          },
-          {
             key: 'actions',
-            label: 'মার্কশিট',
-            width: '90px',
+            label: 'অ্যাকশন',
+            width: '120px',
             align: 'right',
             render: (_, row) => (
-              <Button variant="secondary" size="sm" icon={Eye} onClick={() => setSelectedResult(row)}>
-                দেখুন
-              </Button>
+              <div className="flex items-center justify-end gap-1.5">
+                <Button variant="secondary" size="sm" icon={Eye} onClick={() => setSelectedResult(row)}>
+                  দেখুন
+                </Button>
+                {!supportMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={Trash2}
+                    title="মুছে ফেলুন"
+                    onClick={() => setDeleteModalResult(row)}
+                    className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft"
+                  />
+                )}
+              </div>
             )
           }
         ]}
         data={results}
-        minWidth="720px"
+        minWidth="840px"
       />
 
       {/* ================= ADD RESULT MODAL ================= */}
@@ -160,6 +283,7 @@ export default function ResultManager() {
         onClose={() => setAddModalOpen(false)}
         title="শ্রেণিভিত্তিক নম্বর এন্ট্রি"
         subtitle="বোর্ড পলিসি অনুসারে জিপিএ ও গ্রেড স্বয়ংক্রিয় গণিত হবে"
+        maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSaveResult} className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -167,43 +291,86 @@ export default function ResultManager() {
               label="শ্রেণি"
               value={entryClass}
               onChange={(e) => setEntryClass(e.target.value)}
-              options={['6', '7', '8', '9', '10'].map(c => ({ value: c, label: `${c}ম শ্রেণি` }))}
+              options={['6', '7', '8', '9', '10'].map(c => ({ value: c, label: `${toBengaliOrdinal(c)} শ্রেণি` }))}
             />
-            <Input
-              label="রোল"
-              type="number"
-              placeholder="e.g. 5"
-              value={entryRoll}
-              onChange={(e) => setEntryRoll(e.target.value)}
-              required
-            />
+
+            {['9', '10'].includes(entryClass) && (
+              <Select
+                label="বিভাগ (Group)"
+                value={entryGroup}
+                onChange={(e) => setEntryGroup(e.target.value)}
+                options={[
+                  { value: 'Science', label: 'বিজ্ঞান (Science)' },
+                  { value: 'Business Studies', label: 'ব্যবসায় শিক্ষা' },
+                  { value: 'Humanities', label: 'মানবিক' }
+                ]}
+              />
+            )}
+
+            <div>
+              <Input
+                label="রোল নম্বর *"
+                type="number"
+                placeholder="যেমন: 1"
+                value={entryRoll}
+                onChange={(e) => setEntryRoll(e.target.value)}
+                required
+              />
+            </div>
+
             <Select
               label="পরীক্ষা"
               value={entryExam}
               onChange={(e) => setEntryExam(e.target.value)}
-              options={['Annual', 'Pre-Test', 'Test']}
+              options={examOptions}
             />
+
             <Select
               label="বছর"
               value={entryYear}
               onChange={(e) => setEntryYear(e.target.value)}
-              options={['2026', '2025']}
+              options={['2026', '2025', '2024'].map(y => ({ value: y, label: toBengaliNumber(y) }))}
             />
           </div>
 
+          {/* D11: Ghost Student Feedback */}
+          {entryRoll && (
+            matchedStudent ? (
+              <div className="p-3 rounded-xl bg-success-soft border border-success/30 text-xs text-success flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>
+                  শিক্ষার্থী শনাক্তকরণ: <strong>{matchedStudent.name_bn}</strong> (আইডি: {matchedStudent.student_id}, পিতা: {matchedStudent.father_name})
+                </span>
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-danger-soft border border-danger/30 text-xs text-danger flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>
+                  শ্রেণি {toBengaliOrdinal(entryClass)}-এ রোল <strong>{entryRoll}</strong> নম্বরের কোনো নিবন্ধিত শিক্ষার্থী পাওয়া যায়নি!
+                </span>
+              </div>
+            )
+          )}
+
+          {/* Dynamic Subject Marks Form */}
           <div className="pt-2 border-t border-border">
-            <h4 className="text-xs font-bold text-text mb-3">বিষয়ভিত্তিক নম্বর (১০০ এর মধ্যে):</h4>
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(subjectNames).map(([code, name]) => (
-                <div key={code} className="flex items-center justify-between p-2 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-xs font-medium text-text">{name}</span>
+            <h4 className="text-xs font-bold text-text mb-3">
+              বিষয়ভিত্তিক নম্বর (১০০ এর মধ্যে) — {entryClass}ম শ্রেণি ({['9', '10'].includes(entryClass) ? entryGroup : 'সাধারণ'}):
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1">
+              {currentSubjects.map((s) => (
+                <div key={s.code} className="flex items-center justify-between p-2.5 rounded-lg bg-surface-2 border border-border">
+                  <div>
+                    <span className="text-xs font-semibold text-text block">{s.name}</span>
+                    <span className="text-[10px] text-muted font-mono">কোড: {s.code}</span>
+                  </div>
                   <input
                     type="number"
                     min="0"
                     max="100"
-                    value={subjectMarks[code] || 0}
-                    onChange={(e) => setSubjectMarks({ ...subjectMarks, [code]: e.target.value })}
-                    className="w-16 h-8 text-center text-xs font-mono font-bold rounded bg-surface border border-border text-primary"
+                    value={subjectMarks[s.code] || ''}
+                    onChange={(e) => setSubjectMarks({ ...subjectMarks, [s.code]: e.target.value })}
+                    className="w-16 h-8 text-center text-xs font-mono font-bold rounded bg-surface border border-border text-primary focus:border-primary outline-none"
                     required
                   />
                 </div>
@@ -212,55 +379,176 @@ export default function ResultManager() {
           </div>
 
           <div className="p-3 rounded-lg bg-warning-soft border border-warning-line text-xs text-warning">
-            ⚠️ কোনো বিষয়ে ৩৩ এর নিচে পেলে কুমিল্লা বোর্ড নিয়ম অনুযায়ী চূড়ান্ত ফল <strong>FAILED (GPA 0.00)</strong> হবে।
+            ⚠️ কুমিল্লা বোর্ড নিয়ম অনুসারে কোনো বিষয়ে ৩৩ এর নিচে পেলে সামগ্রিক ফল <strong>FAILED (GPA 0.00)</strong> হবে।
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" onClick={() => setAddModalOpen(false)}>
               বাতিল
             </Button>
-            <Button type="submit" variant="primary">
-              ফলাফল প্রকাশ করুন
+            <Button type="submit" variant="primary" disabled={!matchedStudent}>
+              ফলাফল সংরক্ষণ করুন
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Marksheet View Modal */}
+      {/* D06: Duplicate Result Confirmation Modal */}
+      {duplicateConfirm && (
+        <Modal
+          isOpen={!!duplicateConfirm}
+          onClose={() => setDuplicateConfirm(null)}
+          title="ফলাফল প্রতিস্থাপন নিশ্চিতকরণ"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <div className="p-3 rounded-xl bg-warning-soft border border-warning-line text-xs text-warning flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <span>
+                এই শিক্ষার্থীর (শ্রেণি: {toBengaliOrdinal(duplicateConfirm.payload.class)}, রোল: {duplicateConfirm.payload.roll}) {duplicateConfirm.payload.exam} {duplicateConfirm.payload.year}-এর ফলাফল ইতোমধ্যে বিদ্যমান!
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-surface-2 border border-border text-xs space-y-1">
+              <div className="flex justify-between text-muted">
+                <span>পূর্ববর্তী ফলাফল:</span>
+                <span className="font-bold text-text">GPA {duplicateConfirm.existing.total_gpa} ({duplicateConfirm.existing.status})</span>
+              </div>
+              <div className="flex justify-between text-muted">
+                <span>নতুন নম্বর অনুযায়ী ফলাফল:</span>
+                <span className="font-bold text-primary">GPA {duplicateConfirm.payload.total_gpa} ({duplicateConfirm.payload.status})</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted">
+              আপনি কি বিদ্যমান ফলাফলটি নতুন নম্বর দিয়ে আপডেট করতে চান?
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setDuplicateConfirm(null)}>
+                বাতিল
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => executeSaveResult(duplicateConfirm.payload)}>
+                হ্যাঁ, ফলাফল আপডেট করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* D26: Marksheet View & Print Modal */}
       {selectedResult && (
         <Modal
           isOpen={!!selectedResult}
           onClose={() => setSelectedResult(null)}
-          title="মার্কশিট প্রিভিউ"
-          subtitle={`শ্রেণি: ${selectedResult.class}ম | রোল: ${selectedResult.roll} | পরীক্ষা: ${selectedResult.exam}`}
+          title="একাডেমিক মার্কশিট ও রেজাল্ট ট্রান্সক্রিপ্ট"
+          subtitle={`${school.name_bn} · অফিশিয়াল শিক্ষাবোর্ড গ্রেডিং`}
+          maxWidth="max-w-2xl"
         >
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-primary-soft border border-primary/25 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-muted">মোট ফলাফল:</span>
-                <div className="text-2xl font-mono font-extrabold text-primary">
-                  GPA {selectedResult.total_gpa}
+            {/* Printable Marksheet Container */}
+            <div className="printable-document p-6 rounded-2xl bg-surface border border-border space-y-4">
+              {/* Header Letterhead */}
+              <div className="text-center pb-4 border-b border-border space-y-1">
+                <h3 className="text-lg font-heading font-bold text-text">{school.name_bn}</h3>
+                <p className="text-xs text-muted">
+                  EIIN: {school.eiin} • বোর্ড: {school.board} • কোড: {school.school_code}
+                </p>
+                <span className="inline-block px-3 py-1 rounded-full bg-primary-soft text-primary font-bold text-xs">
+                  একাডেমিক ট্রান্সক্রিপ্ট — {selectedResult.exam} {toBengaliNumber(selectedResult.year)}
+                </span>
+              </div>
+
+              {/* Student Info Box */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-xl bg-surface-2 border border-border text-xs">
+                <div>
+                  <span className="text-muted block text-[10px]">শিক্ষার্থীর নাম:</span>
+                  <strong className="text-text block truncate">{selectedResult.student_name_bn || '—'}</strong>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">শ্রেণি:</span>
+                  <span className="font-semibold text-text">{toBengaliOrdinal(selectedResult.class)}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">রোল নম্বর:</span>
+                  <span className="font-mono font-bold text-text">{toBengaliNumber(selectedResult.roll)}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">বিভাগ:</span>
+                  <span className="font-semibold text-text">{selectedResult.group || 'General'}</span>
                 </div>
               </div>
-              <Badge variant={selectedResult.status === 'PASSED' ? 'success' : 'danger'}>
-                {selectedResult.status}
-              </Badge>
+
+              {/* Subject Table */}
+              <GridTable
+                columns={[
+                  { key: 'code', label: 'কোড', width: '70px', fontMono: true },
+                  { key: 'name', label: 'বিষয়ের নাম', width: '2fr' },
+                  { key: 'marks', label: 'পূর্ণমান / প্রাপ্ত', width: '100px', align: 'center', fontMono: true, render: (val) => `১০০ / ${toBengaliNumber(val)}` },
+                  { key: 'grade', label: 'গ্রেড', width: '70px', align: 'center', fontMono: true, render: (val) => <span className="font-bold">{val}</span> },
+                  { key: 'gpa', label: 'পয়েন্ট', width: '70px', align: 'right', fontMono: true, render: (val) => toBengaliNumber(val) }
+                ]}
+                data={selectedResult.subjects || []}
+                zebra
+              />
+
+              {/* Final Summary Card */}
+              <div className="p-4 rounded-xl bg-primary-soft border border-primary/25 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-muted block">চূড়ান্ত গ্রেড পয়েন্ট (GPA):</span>
+                  <div className="text-2xl font-mono font-extrabold text-primary">
+                    {selectedResult.total_gpa}
+                  </div>
+                </div>
+                <Badge variant={selectedResult.status === 'PASSED' ? 'success' : 'danger'}>
+                  {selectedResult.status}
+                </Badge>
+              </div>
+
+              {/* Signatures */}
+              <div className="pt-8 flex items-center justify-between text-xs text-muted border-t border-border">
+                <div className="text-center">
+                  <div className="w-32 border-b border-border-strong mb-1"></div>
+                  <span>শ্রেণি শিক্ষকের স্বাক্ষর</span>
+                </div>
+                <div className="text-center">
+                  <div className="w-32 border-b border-border-strong mb-1"></div>
+                  <span>প্রধান শিক্ষকের স্বাক্ষর ও সিল</span>
+                </div>
+              </div>
             </div>
 
-            <GridTable
-              columns={[
-                { key: 'name', label: 'বিষয়', width: '2fr' },
-                { key: 'marks', label: 'প্রাপ্ত নম্বর', width: '90px', align: 'right', fontMono: true },
-                { key: 'grade', label: 'গ্রেড', width: '70px', align: 'center', fontMono: true },
-                { key: 'gpa', label: 'পয়েন্ট', width: '70px', align: 'right', fontMono: true }
-              ]}
-              data={selectedResult.subjects}
-              zebra
-            />
-
-            <div className="flex justify-end pt-4 border-t border-border">
+            {/* Modal Action Buttons */}
+            <div className="flex items-center justify-between pt-3 border-t border-border no-print">
               <Button variant="secondary" size="sm" onClick={() => setSelectedResult(null)}>
                 বন্ধ করুন
+              </Button>
+              <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
+                মার্কশিট প্রিন্ট করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* D13: Delete Result Confirmation Modal */}
+      {deleteModalResult && (
+        <Modal
+          isOpen={!!deleteModalResult}
+          onClose={() => setDeleteModalResult(null)}
+          title="ফলাফল ডিলিট নিশ্চিতকরণ"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-text leading-relaxed">
+              আপনি কি নিশ্চিত যে শ্রেণি {toBengaliOrdinal(deleteModalResult.class)}, রোল {deleteModalResult.roll} ({deleteModalResult.exam} {deleteModalResult.year})-এর ফলাফল মুছে ফেলতে চান?
+            </p>
+            <p className="text-xs text-muted">
+              একবার মুছে ফেললে এটি পাবলিক রেজাল্ট সার্চ এবং শিক্ষার্থীর গ্রেডশিট থেকে অপসারিত হবে।
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setDeleteModalResult(null)}>
+                বাতিল
+              </Button>
+              <Button variant="dangerSolid" size="sm" onClick={handleDelete}>
+                হ্যাঁ, মুছে ফেলুন
               </Button>
             </div>
           </div>
@@ -269,4 +557,3 @@ export default function ResultManager() {
     </div>
   );
 }
-
