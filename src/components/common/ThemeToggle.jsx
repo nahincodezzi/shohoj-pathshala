@@ -35,3 +35,4 @@ export default function ThemeToggle({ mode, toggleMode, lang = 'bn' }) {
     </button>
   );
 }
+
