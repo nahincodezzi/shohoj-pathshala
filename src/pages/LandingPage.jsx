@@ -23,6 +23,10 @@ import {
   ExternalLink, 
   Sparkles, 
   ChevronRight, 
+  ChevronDown,
+  Check,
+  Star,
+  Quote,
   Search,
   Building2,
   Menu,
@@ -36,6 +40,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [openFaq, setOpenFaq] = useState(null);
   const schools = TenantRepository.getSchools();
 
   const filteredSchools = schools.filter(s => 
@@ -62,6 +67,83 @@ export default function LandingPage() {
     { step: '৪', title: 'সাইট লাইভ', desc: 'তাত্ক্ষণিকভাবে পাবলিক পোর্টাল ও অ্যাডমিন প্যানেল সক্রিয়।' },
   ];
 
+  const pricingPlans = [
+    {
+      id: 'basic',
+      name: 'বেসিক প্ল্যান',
+      tagline: 'ছোট শিক্ষাপ্রতিষ্ঠান ও প্রাথমিক বিদ্যালয়ের জন্য',
+      price: 'ফ্রি ট্রায়াল',
+      subtext: 'বাৎসরিক ৳২,৯৯৯',
+      features: [
+        'সর্বোচ্চ ১,০০০ শিক্ষার্থী নিবন্ধন',
+        'পাবলিক ওয়েবসাইট ও হিরো ব্যানার',
+        'নোটিশ বোর্ড ও রুটিন প্রকাশ',
+        'শিক্ষক ও কর্মচারী পরিষদ তালিকা',
+        'স্ট্যান্ডার্ড ক্লাউড ডেটা ব্যাকআপ'
+      ],
+      isPopular: false,
+      cta: 'বিনামূল্যে পরখ করুন'
+    },
+    {
+      id: 'standard',
+      name: 'স্ট্যান্ডার্ড প্ল্যান',
+      tagline: 'মাধ্যমিক বিদ্যালয়ের জন্য সর্বাধিক জনপ্রিয় সমাধান',
+      price: '৳৭,৯৯৯',
+      subtext: 'প্রতি বছর (সব ফিচার উন্মুক্ত)',
+      features: [
+        'সর্বোচ্চ ২,৫০০ শিক্ষার্থী ধারণক্ষমতা',
+        'সম্পূর্ণ অনলাইন ভর্তি ও ডিজিটাল ট্র্যাকিং কোড',
+        'বিষয়ভিত্তিক রেজাল্ট, GPA ও মার্কশিট জেনারেশন',
+        'ফি কালেকশন ও স্বয়ংক্রিয় ২-কপি মানি রিসিট',
+        'রোলভিত্তিক ইউজার পারমিশন (RBAC)',
+        'পূর্ণাঙ্গ অডিট ট্রেইল ও নিরাপত্তা সুরক্ষা',
+        'কাস্টম ব্র্যান্ডিং ও ডার্ক/লাইট মোড'
+      ],
+      isPopular: true,
+      cta: 'জনপ্রিয় চয়েস বেছে নিন'
+    },
+    {
+      id: 'premium',
+      name: 'প্রিমিয়াম প্ল্যান',
+      tagline: 'বৃহৎ মডেল স্কুল, কলেজ ও মাদ্রাসার জন্য',
+      price: '৳১৪,৯৯৯',
+      subtext: 'প্রতি বছর (ডেডিকেটেড সহায়তা)',
+      features: [
+        'সর্বোচ্চ ৫,০০০+ শিক্ষার্থী ধারণক্ষমতা',
+        'নিজস্ব কাস্টম ডোমেইন (যেমন: school.edu.bd)',
+        'এসএমএস গেটওয়ে ইন্টিগ্রেশন সুবিধা',
+        'মাল্টি-শিফট ক্লাস ও পরীক্ষার রুটিন',
+        'ডেডিকেটেড অনবোর্ডিং ম্যানেজার',
+        '২৪/৭ প্রায়োরিটি ফোন ও হোয়াটসঅ্যাপ হেল্পলাইন'
+      ],
+      isPopular: false,
+      cta: 'প্রিমিয়াম অনবোর্ডিং'
+    }
+  ];
+
+  const faqs = [
+    {
+      q: 'সহজ পাঠশালায় স্কুল অনবোর্ড করতে কত সময় লাগে?',
+      a: 'মাত্র ২৪ ঘণ্টার মধ্যে! আপনার প্রতিষ্ঠানের EIIN নম্বর, নাম এবং প্রধান শিক্ষকের তথ্য জমা দিলেই আমাদের ইঞ্জিনিয়ারিং টিম সম্পূর্ণ সুরক্ষিত টেন্যান্ট প্রস্তুত করে লাইভ করে দেয়।'
+    },
+    {
+      q: 'আমাদের কি আলাদা সার্ভার বা সফটওয়্যার ইন্সটল করতে হবে?',
+      a: 'না, কোনো সার্ভার কিনতে হবে না। সহজ পাঠশালা একটি ১০০% ক্লাউডভিত্তিক আধুনিক ওয়েব অ্যাপ্লিকেশন। যেকোনো মোবাইল বা কম্পিউটারের ব্রাউজার থেকেই সবকিছু নিয়ন্ত্রণ করা যায়।'
+    },
+    {
+      q: 'এক স্কুলের তথ্য বা শিক্ষার্থীদের গোপনীয়তা অন্য স্কুল দেখতে পারবে কি?',
+      a: 'কখনোই না! সহজ পাঠশালা কঠোর মাল্টি-টেন্যান্ট ডেটাবেজ আইসোলেশনে চলে। প্রতিটি স্কুলের ডেটা অন্য স্কুল থেকে সম্পূর্ণ পৃথক ও সুরক্ষিত থাকে।'
+    },
+    {
+      q: 'আমরা কি আমাদের নিজস্ব ডোমেইন (যেমন: bdhs.edu.bd) ব্যবহার করতে পারব?',
+      a: 'হ্যাঁ! প্রিমিয়াম প্ল্যানে যেকোনো অফিশিয়াল বা কাস্টম ডোমেইন সম্পূর্ণ নিরাপদে সরাসরি প্ল্যাটফর্মের সাথে কানেক্ট করা সম্ভব।'
+    },
+    {
+      q: 'কম গতির ইন্টারনেটেও কি সফটওয়্যারটি দ্রুত কাজ করবে?',
+      a: 'হ্যাঁ, সম্পূর্ণ সিস্টেমটি উচ্চগতির প্রতিক্রিয়াশীল আর্কিটেকচারে তৈরি, যাতে মোবাইল নেটওয়ার্কেও খুব দ্রুত লোড হয়।'
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
       {/* ================= 1. STICKY HEADER ================= */}
@@ -79,11 +161,13 @@ export default function LandingPage() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-muted">
             <a href="#modules" className="hover:text-primary transition-colors">মডিউল</a>
-            <a href="#flow" className="hover:text-primary transition-colors">কীভাবে কাজ করে</a>
+            <a href="#flow" className="hover:text-primary transition-colors">পদ্ধতি</a>
             <a href="#security" className="hover:text-primary transition-colors">নিরাপত্তা</a>
             <a href="#schools" className="hover:text-primary transition-colors">স্কুলসমূহ</a>
+            <a href="#pricing" className="hover:text-primary transition-colors">প্ল্যান ও মূল্য</a>
+            <a href="#faq" className="hover:text-primary transition-colors">প্রশ্নোত্তর</a>
           </nav>
 
           {/* Right Action Controls */}
@@ -109,9 +193,11 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-border bg-surface px-4 py-4 space-y-3">
             <a href="#modules" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">মডিউল</a>
-            <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">কীভাবে কাজ করে</a>
+            <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">পদ্ধতি</a>
             <a href="#security" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">নিরাপত্তা</a>
             <a href="#schools" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">স্কুলসমূহ</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">প্ল্যান ও মূল্য</a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-text py-1">প্রশ্নোত্তর</a>
             <div className="pt-2 border-t border-border">
               <Link to="/bdhs/login">
                 <Button variant="primary" size="md" className="w-full">
@@ -430,7 +516,151 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ================= 7. CTA SECTION ================= */}
+      {/* ================= 7. PRICING & PLANS SECTION ================= */}
+      <section id="pricing" className="py-20 border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">PRICING & PLANS</span>
+            <h2 className="text-3xl sm:text-4xl font-heading font-bold text-text mt-1.5 mb-3">
+              সহজ ও স্বচ্ছ মূল্যতালিকা
+            </h2>
+            <p className="text-sm sm:text-base text-muted">
+              স্কুলের আকার ও সামর্থ্য অনুযায়ী উপযুক্ত প্ল্যান বেছে নিন। কোনো লুকানো চার্জ বা জটিলতা নেই।
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {pricingPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className={`rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 relative ${
+                  plan.isPopular
+                    ? 'bg-surface border-2 border-primary shadow-xl ring-4 ring-primary/10'
+                    : 'bg-surface border border-border shadow-xs hover:border-border-strong'
+                }`}
+              >
+                {plan.isPopular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-on-primary font-bold text-xs px-4 py-1 rounded-full shadow-md">
+                    সর্বাধিক জনপ্রিয়
+                  </div>
+                )}
+
+                <div>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-heading font-bold text-text">{plan.name}</h3>
+                    <p className="text-xs text-muted mt-1">{plan.tagline}</p>
+                  </div>
+
+                  <div className="my-6 pb-6 border-b border-border">
+                    <span className="text-3xl sm:text-4xl font-mono font-extrabold text-text">{plan.price}</span>
+                    <span className="text-xs text-muted block mt-1">{plan.subtext}</span>
+                  </div>
+
+                  <div className="space-y-3 mb-8">
+                    <span className="text-xs font-bold text-text block uppercase tracking-wider">প্ল্যানে যা যা থাকছে:</span>
+                    {plan.features.map((feat, fi) => (
+                      <div key={fi} className="flex items-start gap-2.5 text-xs text-muted">
+                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  variant={plan.isPopular ? 'primary' : 'secondary'}
+                  size="lg"
+                  className="w-full"
+                  onClick={() => setContactModalOpen(true)}
+                >
+                  {plan.cta}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 8. PRINCIPAL TESTIMONIAL / SOCIAL PROOF ================= */}
+      <section className="py-20 bg-bg-alt border-b border-border">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="bg-surface rounded-3xl border border-border p-8 sm:p-12 shadow-md relative overflow-hidden">
+            <Quote className="w-20 h-20 text-primary/10 absolute -right-2 -bottom-2 pointer-events-none" />
+            
+            <div className="flex items-center gap-1 mb-6 text-accent">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-accent" />
+              ))}
+            </div>
+
+            <blockquote className="text-base sm:text-xl text-text font-medium leading-relaxed italic mb-8">
+              "সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ভর্তি আবেদন গ্রহণ, পরীক্ষার ফলাফল প্রকাশ এবং শিক্ষার্থীদের ফি আদায় প্রক্রিয়া কয়েক ঘণ্টার মধ্যে শতভাগ নির্ভুলভাবে সম্পন্ন হচ্ছে। শিক্ষক ও অভিভাবক উভয়েই এই ডিজিটাল রূপান্তরে অত্যন্ত সন্তুষ্ট।"
+            </blockquote>
+
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
+                বূ
+              </div>
+              <div>
+                <h4 className="text-base font-heading font-bold text-text">মো. বাহার উদ্দিন ভূঁইয়া</h4>
+                <p className="text-xs text-primary font-semibold">প্রধান শিক্ষক • বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS)</p>
+                <p className="text-[11px] text-muted font-mono">EIIN: ১০৫৮৬৫ • ফেনী সদর, ফেনী</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 9. FAQ ACCORDION SECTION ================= */}
+      <section id="faq" className="py-20 border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">FAQS</span>
+            <h2 className="text-3xl sm:text-4xl font-heading font-bold text-text mt-1.5 mb-3">
+              সাধারণ জিজ্ঞাসা (FAQ)
+            </h2>
+            <p className="text-sm text-muted">
+              সহজ পাঠশালা ব্যবহারের নিয়মাবলী ও সচরাচর জিজ্ঞাসিত প্রশ্নাবলির উত্তর
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-border bg-surface overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-surface-2/60 transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="text-sm sm:text-base font-bold text-text">
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-muted shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-primary' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-5 pb-5 text-xs sm:text-sm text-muted leading-relaxed border-t border-border/50 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 10. CTA SECTION ================= */}
       <section id="cta" className="py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="p-8 sm:p-12 rounded-3xl bg-primary-soft border border-primary/20 text-center space-y-4">

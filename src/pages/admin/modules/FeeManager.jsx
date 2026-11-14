@@ -124,24 +124,33 @@ export default function FeeManager() {
 
       <GridTable
         columns={[
-          { key: 'receipt_no', label: 'রসিদ নম্বর', width: '170px', fontMono: true },
-          { key: 'student_name', label: 'শিক্ষার্থীর নাম', width: '1.5fr' },
-          { key: 'class', label: 'শ্রেণি', width: '70px', render: (val) => `${val}ম` },
+          { key: 'receipt_no', label: 'রসিদ নম্বর', width: '160px', fontMono: true },
+          { key: 'student_name', label: 'শিক্ষার্থীর নাম', width: '180px' },
+          { key: 'class', label: 'শ্রেণি', width: '65px', render: (val) => `${val}ম` },
           { key: 'roll', label: 'রোল', width: '60px', fontMono: true },
           { key: 'category', label: 'খাত', width: '1.2fr' },
           { 
             key: 'amount', 
             label: 'টাকা (৳)', 
-            width: '100px', 
+            width: '110px', 
             align: 'right', 
             fontMono: true,
             render: (val, row) => (
-              <span className={`font-bold ${row.status === 'voided' ? 'line-through text-danger' : 'text-text'}`}>
-                ৳{val.toLocaleString('bn-BD')}
+              <span className={`tabular-nums font-bold ${row.status === 'voided' ? 'line-through text-danger' : 'text-text'}`}>
+                ৳{Number(val).toLocaleString('bn-BD')}
               </span>
             )
           },
-          { key: 'payment_method', label: 'মাধ্যম', width: '90px' },
+          { 
+            key: 'payment_method', 
+            label: 'মাধ্যম', 
+            width: '95px',
+            render: (val) => (
+              <span className="px-2 py-0.5 rounded-full bg-surface-2 border border-border text-[11px] font-medium text-text">
+                {val}
+              </span>
+            )
+          },
           {
             key: 'status',
             label: 'অবস্থা',
@@ -172,7 +181,7 @@ export default function FeeManager() {
           }
         ]}
         data={receipts}
-        minWidth="840px"
+        minWidth="960px"
       />
 
       {/* ================= CREATE RECEIPT MODAL ================= */}

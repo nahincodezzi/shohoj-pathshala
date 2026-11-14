@@ -99,6 +99,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   font-family: 'Noto Sans Bengali', system-ui, sans-serif;
+  line-height: 1.7;
   transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out;
 }
 

@@ -5,6 +5,7 @@ import Card from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import GridTable from '../../../components/ui/GridTable';
+import { toBengaliNumber } from '../../../utils/dateFormatter';
 import { 
   Users, 
   GraduationCap, 
@@ -15,7 +16,11 @@ import {
   Clock, 
   ArrowRight,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  Wallet,
+  Sparkles,
+  BarChart3
 } from 'lucide-react';
 
 export default function DashboardOverview() {
@@ -30,10 +35,52 @@ export default function DashboardOverview() {
   const paidReceipts = receipts.filter(r => r.status === 'paid');
   const totalFees = paidReceipts.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
+  // Class-wise student distribution
+  const classesList = ['6', '7', '8', '9', '10'];
+  const classStats = classesList.map(c => {
+    const count = students.filter(s => String(s.class) === c).length;
+    return {
+      className: `${toBengaliNumber(c)}ম শ্রেণি`,
+      count,
+      pct: students.length > 0 ? Math.round((count / students.length) * 100) : 0
+    };
+  });
+
+  // Fee collection methods breakdown
+  const methodStats = {
+    cash: paidReceipts.filter(r => r.method === 'cash').reduce((sum, r) => sum + (Number(r.amount) || 0), 0),
+    bkash: paidReceipts.filter(r => r.method === 'bkash').reduce((sum, r) => sum + (Number(r.amount) || 0), 0),
+    nagad: paidReceipts.filter(r => r.method === 'nagad').reduce((sum, r) => sum + (Number(r.amount) || 0), 0),
+  };
+
   const isTeacher = currentUser?.role === 'teacher';
 
   return (
     <div className="space-y-8">
+      {/* ================= TODAY'S ACTION ITEMS ================= */}
+      {!isTeacher && pendingAdmissions.length > 0 && (
+        <div className="bg-warning-soft border border-warning-line rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-warning/20 text-warning flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-text">
+                {toBengaliNumber(pendingAdmissions.length)} টি নতুন ভর্তি আবেদন অপেক্ষমাণ রয়েছে
+              </h4>
+              <p className="text-xs text-muted mt-0.5">
+                শিক্ষার্থীদের রোল ও শ্রেণি বরাদ্দের জন্য অবিলম্বে আবেদনগুলো পর্যালোচনা করুন।
+              </p>
+            </div>
+          </div>
+          <Link to={`/${school.slug}/admin/admissions`} className="shrink-0">
+            <Button variant="primary" size="sm" iconRight={ArrowRight}>
+              আবেদনগুলো দেখুন
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* ================= 4 STAT CARDS (Section 7.6) ================= */}
       {!isTeacher ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -98,6 +145,79 @@ export default function DashboardOverview() {
           <h3 className="text-lg font-heading font-bold text-text mb-1">শিক্ষক পোর্টালে স্বাগতম, {currentUser?.name}</h3>
           <p className="text-xs text-muted">আপনার জন্য নির্ধারিত শ্রেণির ফলাফল এন্ট্রি ও একাডেমিক নোটিশ প্রদানের অপশনগুলো বাম মেনুতে উপলব্ধ।</p>
         </Card>
+      )}
+
+      {/* ================= VISUAL ANALYTICS (Class distribution & Payment methods) ================= */}
+      {!isTeacher && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Class-wise Student Distribution */}
+          <Card surface="surface" className="lg:col-span-7 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-bold text-text">শ্রেণিভিত্তিক শিক্ষার্থী বণ্টন</h4>
+              </div>
+              <span className="text-xs text-muted font-mono">মোট {toBengaliNumber(students.length)} জন</span>
+            </div>
+            <div className="space-y-3 pt-1">
+              {classStats.map(stat => (
+                <div key={stat.className} className="space-y-1">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-text">{stat.className}</span>
+                    <span className="text-muted font-mono">{toBengaliNumber(stat.count)} জন ({toBengaliNumber(stat.pct)}%)</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-surface-2 overflow-hidden border border-border">
+                    <div 
+                      className="h-full bg-primary rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.max(stat.pct, 4)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Payment Method Breakdown */}
+          <Card surface="surface" className="lg:col-span-5 p-5 space-y-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Wallet className="w-4 h-4 text-info" />
+                <h4 className="text-sm font-bold text-text">ফি আদায় মাধ্যম বিশ্লেষণ</h4>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-surface-2 border border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-success" />
+                    <span className="text-xs font-semibold text-text">ক্যাশ (Cash)</span>
+                  </div>
+                  <span className="text-xs font-bold font-mono text-text">৳{methodStats.cash.toLocaleString('bn-BD')}</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-2 border border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-pink-500" />
+                    <span className="text-xs font-semibold text-text">বিকাশ (bKash)</span>
+                  </div>
+                  <span className="text-xs font-bold font-mono text-text">৳{methodStats.bkash.toLocaleString('bn-BD')}</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-2 border border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-500" />
+                    <span className="text-xs font-semibold text-text">নগদ (Nagad)</span>
+                  </div>
+                  <span className="text-xs font-bold font-mono text-text">৳{methodStats.nagad.toLocaleString('bn-BD')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-border flex items-center justify-between text-xs">
+              <span className="text-muted font-medium">মোট সংগৃহীত ফি</span>
+              <span className="text-primary font-bold font-mono text-sm">৳{totalFees.toLocaleString('bn-BD')}</span>
+            </div>
+          </Card>
+        </div>
       )}
 
       {/* ================= QUICK ACTIONS ================= */}

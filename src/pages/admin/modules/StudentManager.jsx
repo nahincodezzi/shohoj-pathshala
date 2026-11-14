@@ -257,7 +257,7 @@ export default function StudentManager() {
           { 
             key: 'name_bn', 
             label: 'শিক্ষার্থীর নাম', 
-            width: '2fr',
+            width: '200px',
             render: (val, row) => (
               <div className="flex items-center gap-2.5">
                 {row.photo ? (
@@ -319,7 +319,7 @@ export default function StudentManager() {
           }
         ]}
         data={filteredStudents}
-        minWidth="760px"
+        minWidth="860px"
       />
 
       {/* ================= ADD / EDIT STUDENT MODAL ================= */}

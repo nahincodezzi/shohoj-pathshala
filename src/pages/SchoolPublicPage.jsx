@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { TenantRepository } from '../services/tenantStorage';
@@ -39,6 +40,9 @@ import {
   Award, 
   Download, 
   Copy, 
+  Share2,
+  QrCode,
+  MessageSquare,
   ChevronRight,
   ChevronLeft,
   ChevronDown,
@@ -145,6 +149,17 @@ export default function SchoolPublicPage() {
 
   // Notice Read Modal
   const [readingNotice, setReadingNotice] = useState(null);
+
+  // Teacher Initials Helper (UI/UX Phase 2)
+  const getTeacherInitials = (name) => {
+    if (!name) return 'শি';
+    const clean = name.replace(/^(মো\.|মোঃ|জনাব|শ্রী|মুহাম্মদ|ড\.|ডঃ)\s*/i, '').trim();
+    const parts = clean.split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] || '') + (parts[1][0] || '');
+    }
+    return clean.slice(0, 2);
+  };
 
   // Mobile menu
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -299,6 +314,20 @@ export default function SchoolPublicPage() {
 
     setStep2Errors(errs);
     return Object.keys(errs).length === 0;
+  };
+
+  const handleStep1Next = () => {
+    if (validateStep1()) {
+      setAdmissionStep(2);
+      window.scrollTo({ top: 250, behavior: 'smooth' });
+    }
+  };
+
+  const handleStep2Next = () => {
+    if (validateStep2()) {
+      setAdmissionStep(3);
+      window.scrollTo({ top: 250, behavior: 'smooth' });
+    }
   };
 
   // Handle Admission Submit (D09)
@@ -529,6 +558,13 @@ export default function SchoolPublicPage() {
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
+      {/* Accessible Skip Link */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-on-primary focus:font-bold focus:rounded-lg focus:shadow-xl"
+      >
+        মূল কনটেন্টে যান (Skip to content)
+      </a>
       
       {/* ================= 1. INSTITUTIONAL TOP BAR ================= */}
       <div className="bg-surface-2 border-b border-border py-1.5 text-xs text-muted">
@@ -541,7 +577,36 @@ export default function SchoolPublicPage() {
             <span>জেলা: <strong className="text-text">{school.district}</strong></span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 text-[11px]">
+            {/* Font Scaler */}
+            <div className="hidden sm:flex items-center gap-1 bg-surface px-2 py-0.5 rounded-md border border-border" aria-label="ফন্ট সাইজ পরিবর্তন">
+              <span className="text-[10px] text-muted mr-1 font-mono">ফন্ট:</span>
+              <button
+                type="button"
+                onClick={() => { document.documentElement.style.fontSize = '14px'; }}
+                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
+                title="ছোট ফন্ট"
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                onClick={() => { document.documentElement.style.fontSize = '16px'; }}
+                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
+                title="স্বাভাবিক ফন্ট"
+              >
+                স্বাভাবিক
+              </button>
+              <button
+                type="button"
+                onClick={() => { document.documentElement.style.fontSize = '18px'; }}
+                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
+                title="বড় ফন্ট"
+              >
+                A+
+              </button>
+            </div>
+
             <Link to={`/${school.slug}/login`} className="hover:text-primary transition-colors flex items-center gap-1 font-semibold text-[11px]">
               <Users className="w-3.5 h-3.5 text-primary" />
               <span>অ্যাডমিন পোর্টাল লগইন</span>
@@ -763,8 +828,8 @@ export default function SchoolPublicPage() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer / Backdrop */}
-        {mobileNavOpen && (
+        {/* Mobile Navigation Drawer / Backdrop (Rendered via createPortal to prevent header clipping) */}
+        {mobileNavOpen && typeof document !== 'undefined' && createPortal(
           <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-fade-in no-print">
             <div className="w-4/5 max-w-sm h-full bg-surface border-l border-border p-5 flex flex-col justify-between overflow-y-auto">
               <div>
@@ -935,7 +1000,8 @@ export default function SchoolPublicPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </header>
 
@@ -968,7 +1034,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 1: HOME TAB (FULL FEATURED HOMEPAGE) ============== */}
       {/* ========================================================================= */}
       {activeTab === 'home' && (
-        <div className="flex-1 space-y-12 pb-16 animate-fade-in">
+        <main id="main" className="flex-1 space-y-12 pb-16 animate-fade-in">
           
           {/* Dynamic Hero Slider */}
           <section className="relative overflow-hidden bg-surface-2 border-b border-border">
@@ -978,7 +1044,7 @@ export default function SchoolPublicPage() {
                   <div
                     key={slide.id || idx}
                     className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                      idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                      idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none invisible'
                     }`}
                   >
                     <img
@@ -986,22 +1052,22 @@ export default function SchoolPublicPage() {
                       alt={slide.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/75 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/35" />
 
                     <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
                       <div className="max-w-3xl mx-auto space-y-4">
                         {slide.tag && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold backdrop-blur-md">
-                            <Sparkles className="w-3.5 h-3.5" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold backdrop-blur-md">
+                            <Sparkles className="w-3.5 h-3.5 text-accent" />
                             {slide.tag}
                           </span>
                         )}
 
-                        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-text leading-tight drop-shadow-md">
+                        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-white leading-tight drop-shadow-lg">
                           {slide.title}
                         </h2>
 
-                        <p className="text-xs sm:text-base text-muted max-w-2xl mx-auto drop-shadow-sm leading-relaxed">
+                        <p className="text-xs sm:text-base text-white/90 max-w-2xl mx-auto drop-shadow-md leading-relaxed font-medium">
                           {slide.subtitle}
                         </p>
 
@@ -1019,6 +1085,7 @@ export default function SchoolPublicPage() {
                           <Button 
                             variant="secondary" 
                             size="lg"
+                            className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-xs"
                             onClick={() => {
                               setActiveTab('results');
                               window.location.hash = 'results';
@@ -1027,8 +1094,9 @@ export default function SchoolPublicPage() {
                             রেজাল্ট অনুসন্ধান
                           </Button>
                           <Button 
-                            variant="glass" 
+                            variant="secondary" 
                             size="lg"
+                            className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-xs"
                             onClick={() => {
                               setActiveTab('uniform');
                               window.location.hash = 'uniform';
@@ -1048,7 +1116,7 @@ export default function SchoolPublicPage() {
                     <button
                       type="button"
                       onClick={() => setCurrentSlide(prev => (prev === 0 ? sliders.length - 1 : prev - 1))}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface/80 border border-border backdrop-blur-md text-text flex items-center justify-center hover:bg-surface transition-colors cursor-pointer shadow-md"
+                      className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-black/60 transition-colors cursor-pointer shadow-md"
                       aria-label="আগের স্লাইড"
                     >
                       <ChevronLeft className="w-5 h-5" />
@@ -1056,7 +1124,7 @@ export default function SchoolPublicPage() {
                     <button
                       type="button"
                       onClick={() => setCurrentSlide(prev => (prev + 1) % sliders.length)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface/80 border border-border backdrop-blur-md text-text flex items-center justify-center hover:bg-surface transition-colors cursor-pointer shadow-md"
+                      className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-black/60 transition-colors cursor-pointer shadow-md"
                       aria-label="পরের স্লাইড"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -1116,6 +1184,203 @@ export default function SchoolPublicPage() {
                 </span>
                 <span className="text-xs text-muted font-medium mt-1 block">বিভাগ (বিজ্ঞান, ব্যবসা, মানবিক)</span>
               </Card>
+            </div>
+          </section>
+
+          {/* ================= BENTO GRID (UI/UX Phase 3) ================= */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Bento 1: Latest Notice (col-span-7) */}
+              <div className="md:col-span-7 bg-surface rounded-2xl border border-border p-6 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-xs font-bold border border-primary/20">
+                      <Bell className="w-3.5 h-3.5" />
+                      <span>সর্বশেষ নোটিশ</span>
+                    </div>
+                    {filteredNotices[0] && (
+                      <span className="text-xs text-muted font-mono">
+                        {filteredNotices[0].date}
+                      </span>
+                    )}
+                  </div>
+
+                  {filteredNotices[0] ? (
+                    <div className="space-y-2">
+                      <h4 className="text-lg sm:text-xl font-heading font-bold text-text line-clamp-2">
+                        {filteredNotices[0].title}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted line-clamp-2 leading-relaxed">
+                        {filteredNotices[0].desc || 'জরুরি প্রাতিষ্ঠানিক নির্দেশনাবলি দেখতে সম্পূর্ণ নোটিশটি পড়ুন বা ডাউনলোড করুন।'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted">বর্তমানে কোনো নতুন নোটিশ প্রকাশিত নেই।</p>
+                  )}
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
+                  {filteredNotices[0] ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setReadingNotice(filteredNotices[0])}
+                      >
+                        নোটিশ পড়ুন
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          showToast('নোটিশ পিডিএফ ডাউনলোড শুরু হয়েছে...', 'info');
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-surface-2 text-muted hover:text-text hover:bg-surface cursor-pointer text-xs flex items-center gap-1.5 font-semibold"
+                        title="পিডিএফ ডাউনলোড"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>পিডিএফ</span>
+                      </button>
+                    </div>
+                  ) : <div />}
+
+                  <button
+                    type="button"
+                    onClick={() => navigateToTab('notices')}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    সকল নোটিশ দেখুন ({notices.length}) <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Bento 2: Quick Result Search (col-span-5) */}
+              <div className="md:col-span-5 bg-surface rounded-2xl border border-border p-6 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft text-accent text-xs font-bold border border-accent/25 mb-3">
+                    <Search className="w-3.5 h-3.5" />
+                    <span>দ্রুত রেজাল্ট অনুসন্ধান</span>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-heading font-bold text-text mb-1">
+                    অনলাইনে ফলাফল জানুন
+                  </h4>
+                  <p className="text-xs text-muted mb-4">
+                    শ্রেণি ও রোল নম্বর দিয়ে তাৎক্ষণিক মার্কশিট ও জিপিএ দেখুন।
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-muted block mb-1">শ্রেণি</label>
+                      <select
+                        value={resultQuery.classVal}
+                        onChange={(e) => setResultQuery(prev => ({ ...prev, classVal: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-xl border border-border bg-surface text-xs font-medium text-text focus:ring-2 focus:ring-primary/40 focus:outline-none"
+                      >
+                        <option value="6">৬ষ্ঠ শ্রেণি</option>
+                        <option value="7">৭ম শ্রেণি</option>
+                        <option value="8">৮ম শ্রেণি</option>
+                        <option value="9">৯ম শ্রেণি</option>
+                        <option value="10">১০ম শ্রেণি</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-muted block mb-1">রোল নম্বর</label>
+                      <input
+                        type="text"
+                        placeholder="যেমন: ১"
+                        value={resultQuery.rollVal}
+                        onChange={(e) => setResultQuery(prev => ({ ...prev, rollVal: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-xl border border-border bg-surface text-xs font-medium text-text focus:ring-2 focus:ring-primary/40 focus:outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                  onClick={(e) => {
+                    handleResultSearch(e);
+                    navigateToTab('results');
+                  }}
+                >
+                  ফলাফল দেখুন
+                </Button>
+              </div>
+
+              {/* Bento 3: Admission Callout & Track (col-span-6) */}
+              <div className="md:col-span-6 bg-primary-soft border border-primary/25 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ADMISSION 2026</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-success text-on-primary">ভর্তি চলছে</span>
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-heading font-bold text-text mb-1">
+                    ২০২৬ শিক্ষাবর্ষে অনলাইনে ভর্তি আবেদন
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted leading-relaxed mb-4">
+                    ৬ষ্ঠ থেকে ১০ম শ্রেণিতে নতুন শিক্ষার্থী ভর্তি কার্যক্রম চলমান। ঘরে বসেই ৩টি সহজ ধাপে আবেদন করুন এবং ডিজিটাল প্রবেশপত্র ডাউনলোড করুন।
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigateToTab('admission')}
+                  >
+                    আবেদন ফরম পূরণ
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => setTrackingModalOpen(true)}
+                  >
+                    আবেদন ট্র্যাক ও প্রবেশপত্র
+                  </Button>
+                </div>
+              </div>
+
+              {/* Bento 4: Timetable & Direct Contact (col-span-6) */}
+              <div className="md:col-span-6 bg-surface border border-border rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider block mb-2">SCHEDULE & SUPPORT</span>
+                  <h4 className="text-lg sm:text-xl font-heading font-bold text-text mb-1">
+                    সময়সূচি ও অফিশিয়াল হেল্পলাইন
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted leading-relaxed mb-4">
+                    ক্লাস ও অফিসের সময়সূচিতে সরাসরি যোগাযোগ করতে পারেন অথবা যেকোনো প্রয়োজনে আমাদের হেল্পলাইনে কল করুন।
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-0.5">
+                      <span className="text-[10px] text-muted font-bold block">শ্রেণি পাঠদান</span>
+                      <span className="font-bold text-text font-mono">সকাল ৯:০০ - বিকাল ৪:০০</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-0.5">
+                      <span className="text-[10px] text-muted font-bold block">অফিসিয়াল কার্যক্রম</span>
+                      <span className="font-bold text-text font-mono">সকাল ৮:৩০ - বিকাল ৪:৩০</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border mt-4">
+                  <a href={`tel:${settings?.phone || '01812345678'}`} className="flex-1">
+                    <Button variant="secondary" size="sm" className="w-full" icon={Phone}>
+                      সরাসরি কল
+                    </Button>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => navigateToTab('contact')}
+                    className="flex-1 cursor-pointer"
+                  >
+                    <Button variant="secondary" size="sm" className="w-full" icon={Mail}>
+                      বার্তা পাঠান
+                    </Button>
+                  </button>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -1431,7 +1696,7 @@ export default function SchoolPublicPage() {
               </div>
             </div>
           </section>
-        </div>
+        </main>
       )}
 
       {/* ========================================================================= */}
@@ -1680,34 +1945,50 @@ export default function SchoolPublicPage() {
                       }`}
                     >
                       {/* Visual Header */}
-                      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-deep via-deep to-primary flex flex-col items-center justify-center pb-5 select-none">
+                      <div className={`relative h-48 w-full overflow-hidden flex flex-col items-center justify-center pb-5 select-none ${
+                        isHeadmaster
+                          ? 'bg-gradient-to-br from-amber-950 via-slate-900 to-amber-900'
+                          : isAsstHeadmaster
+                          ? 'bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-900'
+                          : t.category === 'staff'
+                          ? 'bg-gradient-to-br from-slate-900 via-neutral-900 to-zinc-800'
+                          : 'bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950'
+                      }`}>
                         {/* Glow & Rings */}
                         <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_40%,var(--accent),transparent_70%)]" />
-                        <div className="absolute w-40 h-40 rounded-full border border-dashed border-accent/20 pointer-events-none" />
-                        <div className="absolute w-28 h-28 rounded-full border border-accent/25 pointer-events-none" />
+                        <div className="absolute w-40 h-40 rounded-full border border-dashed border-white/10 pointer-events-none" />
+                        <div className="absolute w-28 h-28 rounded-full border border-white/15 pointer-events-none" />
 
                         {/* Serial Badge */}
-                        <span className="absolute top-3 left-3 z-20 bg-deep/90 text-white border border-white/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono backdrop-blur-xs">
+                        <span className="absolute top-3 left-3 z-20 bg-black/60 text-white border border-white/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono backdrop-blur-xs">
                           #{t.order}
                         </span>
 
                         {/* Star for Head / Asst Head */}
                         {(isHeadmaster || isAsstHeadmaster) && (
-                          <div className="relative z-10 mb-1 opacity-90 w-5 h-5 rounded-full border border-accent/40 bg-deep/60 flex items-center justify-center shadow-xs">
+                          <div className="relative z-10 mb-1 opacity-90 w-5 h-5 rounded-full border border-accent/40 bg-black/60 flex items-center justify-center shadow-xs">
                             <Star className="w-2.5 h-2.5 text-accent fill-accent" />
                           </div>
                         )}
 
                         {/* Avatar */}
-                        <div className={`relative z-10 w-20 h-20 rounded-full border-[3px] shadow-inner flex items-center justify-center transition-transform group-hover:scale-105 ${
+                        <div className={`relative z-10 w-20 h-20 rounded-full border-[3px] shadow-lg flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 ${
                           isHeadmaster 
-                            ? 'border-accent ring-4 ring-accent/20 bg-deep/90' 
-                            : 'border-white/40 ring-4 ring-white/10 bg-deep/90'
+                            ? 'border-accent ring-4 ring-accent/20 bg-amber-950' 
+                            : isAsstHeadmaster
+                            ? 'border-primary ring-4 ring-primary/20 bg-emerald-950'
+                            : 'border-white/30 ring-4 ring-white/10 bg-slate-800'
                         }`}>
-                          {t.category === 'staff' ? (
-                            <Briefcase className="w-8 h-8 text-accent/90" />
+                          {t.photo ? (
+                            <img src={t.photo} alt={t.name} className="w-full h-full object-cover" />
+                          ) : t.category === 'staff' ? (
+                            <span className="font-heading font-extrabold text-xl text-accent drop-shadow-xs">
+                              {getTeacherInitials(t.name)}
+                            </span>
                           ) : (
-                            <GraduationCap className="w-8 h-8 text-accent drop-shadow-xs" />
+                            <span className={`font-heading font-extrabold text-2xl drop-shadow-xs ${isHeadmaster ? 'text-accent' : isAsstHeadmaster ? 'text-primary' : 'text-white'}`}>
+                              {getTeacherInitials(t.name)}
+                            </span>
                           )}
                         </div>
 
@@ -2483,11 +2764,56 @@ export default function SchoolPublicPage() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-between pt-4 border-t border-border no-print">
-                    <Button variant="secondary" size="sm" onClick={() => setSearchOutput(null)}>
-                      আবার খুঁজুন
-                    </Button>
+                  {/* Digital QR Verification Stamp */}
+                  <div className="mt-6 p-3 rounded-xl bg-surface-2 border border-border flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-primary shrink-0">
+                        <QrCode className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-text block">ডিজিটাল ভেরিফিকেশন সিস্টেম</span>
+                        <span className="text-[10px] text-muted font-mono">আইডি: {school.eiin}-{searchOutput.year}-{searchOutput.class}-{searchOutput.roll} • অফিশিয়াল রেকর্ড সংরক্ষিত</span>
+                      </div>
+                    </div>
+                    <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-success font-mono">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      যাচাইকৃত
+                    </span>
+                  </div>
+
+                  {/* Action & Share Buttons */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-5 border-t border-border no-print">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="secondary" size="sm" onClick={() => setSearchOutput(null)}>
+                        আবার খুঁজুন
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const shareText = `${school.name_bn}\nশিক্ষার্থী: ${studentName}\nশ্রেণি: ${searchOutput.class}ম (রোল: ${searchOutput.roll})\nপরীক্ষা: ${searchOutput.exam} (${searchOutput.year})\nপ্রাপ্ত GPA: ${searchOutput.total_gpa} (${searchOutput.status === 'PASSED' ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ'})\nফলাফল দেখুন: ${window.location.origin}/${school.slug}#results`;
+                          const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                          window.open(url, '_blank');
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                        title="হোয়াটসঅ্যাপে শেয়ার করুন"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>হোয়াটসঅ্যাপ</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.href);
+                          showToast('রেজাল্ট পেজের লিংক কপি করা হয়েছে!', 'success');
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-surface-2 text-muted hover:text-text text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                        title="রেজাল্ট লিংক কপি করুন"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>লিংক কপি</span>
+                      </button>
+                    </div>
+
                     <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
                       প্রিন্ট / সেভ PDF
                     </Button>

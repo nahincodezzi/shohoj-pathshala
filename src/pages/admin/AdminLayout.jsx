@@ -8,6 +8,7 @@ import Banner from '../../components/ui/Banner';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import { toBengaliNumber } from '../../utils/dateFormatter';
 import { 
   LayoutDashboard, 
   Users, 
@@ -157,29 +158,55 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
   const daysLeft = Math.ceil((expiresDate - new Date()) / (1000 * 60 * 60 * 24));
   const isExpiringSoon = daysLeft <= 30;
 
-  // Navigation Items with RBAC permissions
-  const menuItems = [
-    { key: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard, path: `/${school.slug}/admin` },
-    { key: 'students', label: 'শিক্ষার্থী', icon: Users, path: `/${school.slug}/admin/students` },
-    { key: 'admissions', label: 'ভর্তি আবেদন', icon: GraduationCap, path: `/${school.slug}/admin/admissions` },
-    { key: 'results', label: 'রেজাল্ট ও মার্কস', icon: FileText, path: `/${school.slug}/admin/results` },
-    { key: 'fees', label: 'ফি ও রসিদ', icon: CreditCard, path: `/${school.slug}/admin/fees`, hideForTeacher: true },
-    { key: 'teachers', label: 'শিক্ষক ও কর্মচারী', icon: UserCheck, path: `/${school.slug}/admin/teachers` },
-    { key: 'committee', label: 'পরিচালনা পর্ষদ', icon: Award, path: `/${school.slug}/admin/committee`, requireAdmin: true },
-    { key: 'routines', label: 'রুটিন ও সিলেবাস', icon: Calendar, path: `/${school.slug}/admin/routines` },
-    { key: 'gallery', label: 'ফটো গ্যালারি', icon: Image, path: `/${school.slug}/admin/gallery` },
-    { key: 'notices', label: 'নোটিশ বোর্ড', icon: Bell, path: `/${school.slug}/admin/notices` },
-    { key: 'cms', label: 'ওয়েবসাইট (CMS)', icon: Globe, path: `/${school.slug}/admin/cms`, requireAdmin: true },
-    { key: 'users', label: 'ইউজার ও সিকিউরিটি', icon: ShieldCheck, path: `/${school.slug}/admin/users`, requireSuperAdmin: true },
-    { key: 'settings', label: 'স্কুল সেটিংস', icon: Settings, path: `/${school.slug}/admin/settings`, requireAdmin: true },
+  // Pending Admissions Count for Badge
+  const allAdmissions = TenantRepository.getAdmissions(school.id);
+  const pendingAdmissionCount = allAdmissions.filter(a => a.status === 'pending').length;
+
+  // Grouped Navigation Sections (UI/UX Phase 3)
+  const menuSections = [
+    {
+      id: 'daily',
+      title: 'প্রতিদিনের কাজ',
+      items: [
+        { key: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard, path: `/${school.slug}/admin` },
+        { key: 'students', label: 'শিক্ষার্থী', icon: Users, path: `/${school.slug}/admin/students` },
+        { key: 'admissions', label: 'ভর্তি আবেদন', icon: GraduationCap, path: `/${school.slug}/admin/admissions`, badge: pendingAdmissionCount },
+        { key: 'results', label: 'রেজাল্ট ও মার্কস', icon: FileText, path: `/${school.slug}/admin/results` },
+        { key: 'fees', label: 'ফি ও রসিদ', icon: CreditCard, path: `/${school.slug}/admin/fees`, hideForTeacher: true },
+        { key: 'teachers', label: 'শিক্ষক ও কর্মচারী', icon: UserCheck, path: `/${school.slug}/admin/teachers` },
+      ]
+    },
+    {
+      id: 'content',
+      title: 'ওয়েবসাইট ও কনটেন্ট',
+      items: [
+        { key: 'notices', label: 'নোটিশ বোর্ড', icon: Bell, path: `/${school.slug}/admin/notices` },
+        { key: 'routines', label: 'রুটিন ও সিলেবাস', icon: Calendar, path: `/${school.slug}/admin/routines` },
+        { key: 'gallery', label: 'ফটো গ্যালারি', icon: Image, path: `/${school.slug}/admin/gallery` },
+        { key: 'committee', label: 'পরিচালনা পর্ষদ', icon: Award, path: `/${school.slug}/admin/committee`, requireAdmin: true },
+        { key: 'cms', label: 'ওয়েবসাইট (CMS)', icon: Globe, path: `/${school.slug}/admin/cms`, requireAdmin: true },
+      ]
+    },
+    {
+      id: 'settings',
+      title: 'প্রশাসনিক সেটিংস',
+      items: [
+        { key: 'users', label: 'ইউজার ও সিকিউরিটি', icon: ShieldCheck, path: `/${school.slug}/admin/users`, requireSuperAdmin: true },
+        { key: 'settings', label: 'স্কুল সেটিংস', icon: Settings, path: `/${school.slug}/admin/settings`, requireAdmin: true },
+      ]
+    }
   ];
 
-  const visibleMenuItems = menuItems.filter(item => {
+  const menuItems = menuSections.flatMap(section => section.items);
+
+  const canShowItem = (item) => {
     if (currentUser?.role === 'teacher' && item.hideForTeacher) return false;
     if (item.requireSuperAdmin && currentUser?.role !== 'school_superadmin' && !supportMode) return false;
     if (item.requireAdmin && !['school_superadmin', 'headmaster'].includes(currentUser?.role) && !supportMode) return false;
     return true;
-  });
+  };
+
+  const visibleMenuItems = menuItems.filter(canShowItem);
 
   const roleNameMap = {
     platform_owner: 'প্ল্যাটফর্ম Owner',
@@ -240,58 +267,93 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
       )}
 
       <div className="flex flex-1">
+        {/* Mobile Backdrop Overlay */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-xs lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         {/* ================= LEFT SIDEBAR (240px, Section 7.6) ================= */}
         <aside className={`fixed inset-y-0 left-0 z-40 w-60 bg-surface border-r border-border flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
-          <div>
+          <div className="flex-1 overflow-y-auto">
             {/* School Profile in Sidebar */}
-            <div className="p-4 border-b border-border flex items-center gap-3">
-              {school.logo ? (
-                <img
-                  src={school.logo}
-                  alt={school.name_bn}
-                  className="w-10 h-10 rounded-xl object-contain bg-surface-2 p-0.5 border border-border shrink-0 shadow-xs"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary font-heading font-bold text-base flex items-center justify-center shrink-0 border border-primary/25">
-                  {school.name_bn[0] || 'সপ'}
+            <div className="p-4 border-b border-border flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                {school.logo ? (
+                  <img
+                    src={school.logo}
+                    alt={school.name_bn}
+                    className="w-10 h-10 rounded-xl object-contain bg-surface-2 p-0.5 border border-border shrink-0 shadow-xs"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary font-heading font-bold text-base flex items-center justify-center shrink-0 border border-primary/25">
+                    {school.name_bn[0] || 'সপ'}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <h2 className="text-xs font-bold text-text truncate leading-tight">
+                    {school.name_bn}
+                  </h2>
+                  <p className="text-[10px] font-mono text-primary truncate mt-0.5">
+                    /{school.slug}/admin
+                  </p>
                 </div>
-              )}
-              <div className="min-w-0">
-                <h2 className="text-xs font-bold text-text truncate leading-tight">
-                  {school.name_bn}
-                </h2>
-                <p className="text-[10px] font-mono text-primary truncate mt-0.5">
-                  /{school.slug}/admin
-                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="lg:hidden p-1.5 rounded-lg text-muted hover:text-text hover:bg-surface-2 cursor-pointer"
+                aria-label="মেনু বন্ধ করুন"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Menu List */}
-            <nav className="p-2 space-y-1">
-              {visibleMenuItems.map((item) => {
-                const IconComp = item.icon;
-                const isActive = subview === item.key || (item.key === 'dashboard' && subview === 'admin');
+            {/* Grouped Menu Sections */}
+            <nav className="p-2 space-y-3" aria-label="অ্যাডমিন মেনু">
+              {menuSections.map(section => {
+                const sectionItems = section.items.filter(canShowItem);
+                if (sectionItems.length === 0) return null;
 
                 return (
-                  <Link
-                    key={item.key}
-                    to={item.path}
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3.5 h-11 rounded-[10px] text-xs sm:text-sm font-semibold transition-all relative select-none ${
-                      isActive
-                        ? 'bg-primary-soft text-primary'
-                        : 'text-muted hover:text-text hover:bg-surface-2'
-                    }`}
-                  >
-                    {/* Active Left 3px line */}
-                    {isActive && (
-                      <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-primary rounded-r" />
-                    )}
-                    <IconComp className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
+                  <div key={section.id} className="space-y-0.5">
+                    <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted/70 font-mono">
+                      {section.title}
+                    </div>
+                    {sectionItems.map(item => {
+                      const IconComp = item.icon;
+                      const isActive = subview === item.key || (item.key === 'dashboard' && subview === 'admin');
+
+                      return (
+                        <Link
+                          key={item.key}
+                          to={item.path}
+                          onClick={() => setMobileSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 h-10 rounded-xl text-xs sm:text-[13px] font-semibold transition-all relative select-none ${
+                            isActive
+                              ? 'bg-primary-soft text-primary font-bold'
+                              : 'text-muted hover:text-text hover:bg-surface-2'
+                          }`}
+                        >
+                          {isActive && (
+                            <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-primary rounded-r" />
+                          )}
+                          <IconComp className="w-4 h-4 shrink-0" aria-hidden="true" />
+                          <span className="truncate">{item.label}</span>
+                          {Boolean(item.badge && item.badge > 0) && (
+                            <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-warning-soft text-warning border border-warning-line">
+                              {toBengaliNumber(item.badge)}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </nav>
