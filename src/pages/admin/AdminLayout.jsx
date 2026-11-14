@@ -42,6 +42,7 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
 
   // Dynamic Document Title
   useEffect(() => {
@@ -156,9 +157,13 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
       {isExpiringSoon && !supportMode && (
         <div className="bg-warning-soft border-b border-warning-line px-4 py-2 text-xs font-semibold text-warning flex items-center justify-between">
           <span>⏱ আপনার স্কুল প্ল্যানের মেয়াদ শেষ হতে আর মাত্র {daysLeft} দিন বাকি।</span>
-          <span className="underline cursor-pointer" onClick={() => alert('প্ল্যান নবায়নের জন্য Platform Owner-এর সাথে যোগাযোগ করুন।')}>
+          <button
+            type="button"
+            className="underline cursor-pointer bg-transparent border-0 text-inherit font-semibold p-0"
+            onClick={() => setRenewModalOpen(true)}
+          >
             নবায়ন করুন →
-          </span>
+          </button>
         </div>
       )}
 
@@ -401,6 +406,49 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
                 </div>
               </div>
             )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Plan Renewal Guidance Modal */}
+      {renewModalOpen && (
+        <Modal
+          isOpen={renewModalOpen}
+          onClose={() => setRenewModalOpen(false)}
+          title="স্কুল সাবস্ক্রিপশন প্ল্যান নবায়ন"
+          size="md"
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-xl bg-surface-2 border border-border space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted">বর্তমান প্ল্যান:</span>
+                <strong className="text-text font-mono uppercase">{school?.plan || 'STANDARD'}</strong>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">মেয়াদ উত্তীর্ণের তারিখ:</span>
+                <span className="text-warning font-mono font-bold">{school?.plan_valid_until}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">অবশিষ্ট দিন:</span>
+                <Badge variant="warning">{daysLeft} দিন</Badge>
+              </div>
+            </div>
+
+            <p className="text-muted leading-relaxed">
+              প্ল্যান সক্রিয় রাখতে এবং নিরবচ্ছিন্ন অনলাইন সেবা নিশ্চিত করতে সহজ পাঠশালা কেন্দ্রীয় বিলিং বা আপনার নির্ধারিত রিজিওনাল প্রতিনিধির সাথে যোগাযোগ করে ইনভয়েস পরিশোধ করুন।
+            </p>
+
+            <div className="p-3.5 rounded-xl bg-primary-soft border border-primary/20 space-y-1">
+              <span className="font-bold text-text block">সহায়তা ও বিলিং হেল্পলাইন:</span>
+              <p className="font-mono text-primary font-bold text-sm">০১৮১২-৩৪৫৬৭৮</p>
+              <p className="font-mono text-muted text-[11px]">billing@sohojpathshala.app</p>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <Button variant="primary" size="sm" onClick={() => setRenewModalOpen(false)}>
+                বুঝেছি
+              </Button>
+            </div>
           </div>
         </Modal>
       )}

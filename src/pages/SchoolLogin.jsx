@@ -9,7 +9,8 @@ import Input from '../components/ui/Input';
 import Checkbox from '../components/ui/Checkbox';
 import Alert from '../components/ui/Alert';
 import Badge from '../components/ui/Badge';
-import { Lock, User, ShieldAlert, ArrowLeft, GraduationCap } from 'lucide-react';
+import Modal from '../components/ui/Modal';
+import { Lock, User, ShieldAlert, ArrowLeft, GraduationCap, Phone, KeyRound } from 'lucide-react';
 
 export default function SchoolLogin() {
   const { slug } = useParams();
@@ -24,6 +25,15 @@ export default function SchoolLogin() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [forgotModalOpen, setForgotModalOpen] = useState(false);
+
+  // Check if session timed out
+  React.useEffect(() => {
+    if (sessionStorage.getItem('sp_session_timeout')) {
+      setError('নিষ্ক্রিয়তার কারণে সেশন মেয়াদোত্তীর্ণ হয়েছে। পুনরায় লগইন করুন।');
+      sessionStorage.removeItem('sp_session_timeout');
+    }
+  }, []);
 
   if (!school) {
     return (
@@ -148,9 +158,13 @@ export default function SchoolLogin() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs sm:text-sm font-medium text-text">পাসওয়ার্ড</span>
-                <span className="text-xs text-primary hover:underline cursor-pointer" onClick={() => alert('পাসওয়ার্ড রিসেট করতে স্কুলের সুপার অ্যাডমিন বা প্রধান শিক্ষকের সাথে যোগাযোগ করুন।')}>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline cursor-pointer bg-transparent border-0 p-0"
+                  onClick={() => setForgotModalOpen(true)}
+                >
                   পাসওয়ার্ড ভুলে গেছেন?
-                </span>
+                </button>
               </div>
               <Input
                 type="password"
@@ -223,6 +237,43 @@ export default function SchoolLogin() {
           </p>
         </div>
       </div>
+
+      {/* Forgot Password Guidance Modal */}
+      {forgotModalOpen && (
+        <Modal
+          isOpen={forgotModalOpen}
+          onClose={() => setForgotModalOpen(false)}
+          title="পাসওয়ার্ড পুনরুদ্ধার নির্দেশিকা"
+          size="md"
+        >
+          <div className="space-y-4 text-xs">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-primary-soft border border-primary/20 text-text">
+              <KeyRound className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span className="font-bold block">নিরাপত্তা ও অ্যাক্সেস পলিসি</span>
+                <p className="text-muted leading-relaxed">
+                  প্রাতিষ্ঠানিক ডেটার সর্বোচ্চ সুরক্ষায় পাবলিক পাসওয়ার্ড রিসেট লিংক উন্মুক্ত রাখা হয়নি।
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <span className="font-bold text-text block">কীভাবে পাসওয়ার্ড রিসেট করবেন:</span>
+              <ol className="list-decimal list-inside space-y-1 text-muted">
+                <li>আপনার প্রতিষ্ঠানের সুপার অ্যাডমিন বা প্রধান শিক্ষকের কার্যালয়ে যোগাযোগ করুন।</li>
+                <li>অ্যাডমিন প্যানেল থেকে আপনার ইউজারনেম সিলেক্ট করে পাসওয়ার্ড রিসেট করে দেওয়া হবে।</li>
+                <li>স্কুল সুপার অ্যাডমিন অ্যাকাউন্টের ক্ষেত্রে সহজ পাঠশালা সাপোর্ট হেল্পলাইনে যোগাযোগ করুন।</li>
+              </ol>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <Button variant="primary" size="sm" onClick={() => setForgotModalOpen(false)}>
+                বুঝেছি
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

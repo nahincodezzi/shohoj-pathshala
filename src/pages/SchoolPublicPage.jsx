@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { TenantRepository } from '../services/tenantStorage';
@@ -39,6 +39,7 @@ import {
   Copy, 
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   UserCheck,
   Image as ImageIcon,
   FileText,
@@ -118,6 +119,37 @@ export default function SchoolPublicPage() {
 
   // Mobile menu
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const navRef = useRef(null);
+
+  // Click outside and ESC key listener for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        setMobileNavOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const navigateToTab = (tabKey) => {
+    setActiveTab(tabKey);
+    window.location.hash = tabKey;
+    setOpenDropdown(null);
+    setMobileNavOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Sync hash with activeTab
   useEffect(() => {
@@ -191,7 +223,7 @@ export default function SchoolPublicPage() {
       setSubmittedAdmission(newAdm);
       showToast('ভর্তি আবেদন সফলভাবে জমা হয়েছে!', 'success');
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'ভর্তি আবেদন প্রক্রিয়াকরণে ত্রুটি হয়েছে', 'error');
     }
   };
 
@@ -204,20 +236,29 @@ export default function SchoolPublicPage() {
     setTrackResult(adm || 'NOT_FOUND');
   };
 
-  // Navigation Items
-  const navItems = [
-    { key: 'home', label: 'হোম' },
-    { key: 'about', label: 'পরিচিতি' },
-    { key: 'committee', label: 'পরিচালনা পর্ষদ' },
-    { key: 'teachers', label: 'শিক্ষক ও কর্মচারী' },
-    { key: 'academics', label: 'একাডেমিক ও রুটিন' },
-    { key: 'uniform', label: 'পোশাক নীতিমালা' },
-    { key: 'notices', label: 'নোটিশ' },
-    { key: 'admission', label: 'অনলাইন ভর্তি' },
-    { key: 'results', label: 'রেজাল্ট' },
-    { key: 'gallery', label: 'গ্যালারি' },
-    { key: 'contact', label: 'যোগাযোগ' }
-  ];
+  // Structured Navigation Groups
+  const navGroups = {
+    about: {
+      id: 'about',
+      label: 'আমাদের সম্পর্কে',
+      keys: ['about', 'committee', 'teachers'],
+      items: [
+        { key: 'about', label: 'বিদ্যালয় পরিচিতি ও ইতিহাস', desc: 'ইতিহাস, লক্ষ্য, ভিশন ও প্রধান শিক্ষকের বাণী', icon: BookOpen },
+        { key: 'committee', label: 'পরিচালনা পর্ষদ', desc: 'ম্যানেজিং কমিটি ও পরিষদ সদস্যবৃন্দ', icon: Shield },
+        { key: 'teachers', label: 'শিক্ষক ও কর্মচারী পরিষদ', desc: 'অভিজ্ঞ শিক্ষকমণ্ডলী ও প্রাতিষ্ঠানিক স্টাফ', icon: Users },
+      ]
+    },
+    academics: {
+      id: 'academics',
+      label: 'একাডেমিক',
+      keys: ['academics', 'uniform', 'notices'],
+      items: [
+        { key: 'academics', label: 'শাখা ও ক্লাস রুটিন', desc: 'শাখা বিবরণ ও পরীক্ষার রুটিন ডাউনলোড', icon: Calendar },
+        { key: 'uniform', label: 'পোশাক নীতিমালা (Uniform)', desc: 'ছাত্র ও ছাত্রীদের নির্ধারিত ড্রেসকোড', icon: Sparkles },
+        { key: 'notices', label: 'প্রাতিষ্ঠানিক নোটিশ বোর্ড', desc: 'জরুরি ও অ্যাকাডেমিক সকল নোটিশ', icon: Bell },
+      ]
+    }
+  };
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
@@ -247,7 +288,7 @@ export default function SchoolPublicPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           
           {/* Logo & School Name */}
-          <Link to={`/${school.slug}`} className="flex items-center gap-3 group">
+          <Link to={`/${school.slug}`} onClick={() => navigateToTab('home')} className="flex items-center gap-3 group">
             <div className="w-12 h-12 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
               {school.name_bn[0]}
             </div>
@@ -261,25 +302,174 @@ export default function SchoolPublicPage() {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-1">
-            {navItems.map((item) => (
+          {/* Desktop Grouped Dropdown Navigation */}
+          <nav ref={navRef} className="hidden lg:flex items-center gap-1.5" aria-label="প্রধান নেভিগেশন">
+            {/* 1. Home */}
+            <button
+              type="button"
+              onClick={() => navigateToTab('home')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'home'
+                  ? 'bg-primary text-on-primary shadow-xs'
+                  : 'text-muted hover:text-text hover:bg-surface-2'
+              }`}
+            >
+              হোম
+            </button>
+
+            {/* 2. Dropdown: আমাদের সম্পর্কে */}
+            <div className="relative">
               <button
-                key={item.key}
                 type="button"
-                onClick={() => {
-                  setActiveTab(item.key);
-                  window.location.hash = item.key;
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  activeTab === item.key
+                onClick={() => setOpenDropdown(openDropdown === 'about' ? null : 'about')}
+                onMouseEnter={() => setOpenDropdown('about')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer ${
+                  navGroups.about.keys.includes(activeTab)
                     ? 'bg-primary text-on-primary shadow-xs'
                     : 'text-muted hover:text-text hover:bg-surface-2'
                 }`}
+                aria-expanded={openDropdown === 'about'}
               >
-                {item.label}
+                <span>{navGroups.about.label}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === 'about' ? 'rotate-180' : ''}`} />
               </button>
-            ))}
+
+              {openDropdown === 'about' && (
+                <div 
+                  onMouseLeave={() => setOpenDropdown(null)}
+                  className="absolute top-full left-0 mt-1.5 w-72 bg-surface/95 backdrop-blur-md border border-border rounded-xl shadow-xl p-2 z-50 animate-scale-in"
+                >
+                  {navGroups.about.items.map((sub) => {
+                    const SubIcon = sub.icon;
+                    const isActive = activeTab === sub.key;
+                    return (
+                      <button
+                        key={sub.key}
+                        type="button"
+                        onClick={() => navigateToTab(sub.key)}
+                        className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-colors cursor-pointer ${
+                          isActive 
+                            ? 'bg-primary-soft text-primary font-bold' 
+                            : 'hover:bg-surface-2 text-text'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-primary text-on-primary' : 'bg-surface-2 text-muted'}`}>
+                          <SubIcon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold leading-tight">{sub.label}</div>
+                          <div className="text-[11px] text-muted line-clamp-1 mt-0.5">{sub.desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 3. Dropdown: একাডেমিক */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOpenDropdown(openDropdown === 'academics' ? null : 'academics')}
+                onMouseEnter={() => setOpenDropdown('academics')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer ${
+                  navGroups.academics.keys.includes(activeTab)
+                    ? 'bg-primary text-on-primary shadow-xs'
+                    : 'text-muted hover:text-text hover:bg-surface-2'
+                }`}
+                aria-expanded={openDropdown === 'academics'}
+              >
+                <span>{navGroups.academics.label}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === 'academics' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {openDropdown === 'academics' && (
+                <div 
+                  onMouseLeave={() => setOpenDropdown(null)}
+                  className="absolute top-full left-0 mt-1.5 w-72 bg-surface/95 backdrop-blur-md border border-border rounded-xl shadow-xl p-2 z-50 animate-scale-in"
+                >
+                  {navGroups.academics.items.map((sub) => {
+                    const SubIcon = sub.icon;
+                    const isActive = activeTab === sub.key;
+                    return (
+                      <button
+                        key={sub.key}
+                        type="button"
+                        onClick={() => navigateToTab(sub.key)}
+                        className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-colors cursor-pointer ${
+                          isActive 
+                            ? 'bg-primary-soft text-primary font-bold' 
+                            : 'hover:bg-surface-2 text-text'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-primary text-on-primary' : 'bg-surface-2 text-muted'}`}>
+                          <SubIcon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold leading-tight">{sub.label}</div>
+                          <div className="text-[11px] text-muted line-clamp-1 mt-0.5">{sub.desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 4. Admission Action */}
+            <button
+              type="button"
+              onClick={() => navigateToTab('admission')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'admission'
+                  ? 'bg-accent text-white shadow-xs'
+                  : 'bg-accent-soft text-accent hover:bg-accent hover:text-white border border-accent-line'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>অনলাইন ভর্তি</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+
+            {/* 5. Results */}
+            <button
+              type="button"
+              onClick={() => navigateToTab('results')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'results'
+                  ? 'bg-primary text-on-primary shadow-xs'
+                  : 'text-muted hover:text-text hover:bg-surface-2'
+              }`}
+            >
+              রেজাল্ট
+            </button>
+
+            {/* 6. Gallery */}
+            <button
+              type="button"
+              onClick={() => navigateToTab('gallery')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'gallery'
+                  ? 'bg-primary text-on-primary shadow-xs'
+                  : 'text-muted hover:text-text hover:bg-surface-2'
+              }`}
+            >
+              গ্যালারি
+            </button>
+
+            {/* 7. Contact */}
+            <button
+              type="button"
+              onClick={() => navigateToTab('contact')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'contact'
+                  ? 'bg-primary text-on-primary shadow-xs'
+                  : 'text-muted hover:text-text hover:bg-surface-2'
+              }`}
+            >
+              যোগাযোগ
+            </button>
           </nav>
 
           {/* Right Header Actions */}
@@ -290,7 +480,7 @@ export default function SchoolPublicPage() {
             <button
               type="button"
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="xl:hidden p-2 rounded-lg text-muted hover:text-text cursor-pointer"
+              className="lg:hidden p-2 rounded-lg text-muted hover:text-text cursor-pointer"
               aria-label="মেনু খুলুন"
             >
               {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -298,28 +488,177 @@ export default function SchoolPublicPage() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Navigation */}
+        {/* Mobile Navigation Drawer / Backdrop */}
         {mobileNavOpen && (
-          <div className="xl:hidden bg-surface border-b border-border p-4 space-y-1">
-            <div className="grid grid-cols-2 gap-1.5 pb-3">
-              {navItems.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(item.key);
-                    window.location.hash = item.key;
-                    setMobileNavOpen(false);
-                  }}
-                  className={`p-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${
-                    activeTab === item.key
-                      ? 'bg-primary text-on-primary'
-                      : 'text-muted hover:text-text hover:bg-surface-2'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+          <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-fade-in no-print">
+            <div className="w-4/5 max-w-sm h-full bg-surface border-l border-border p-5 flex flex-col justify-between overflow-y-auto">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center">
+                      {school.name_bn[0]}
+                    </div>
+                    <span className="font-heading font-bold text-sm text-text truncate max-w-[170px]">{school.name_bn}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="p-1.5 rounded-lg text-muted hover:text-text hover:bg-surface-2 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Section: মূল মেনু */}
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">প্রধান মেনু</span>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('home')}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'home' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Home className="w-4 h-4" />
+                        <span>হোমপেজ</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('admission')}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                          activeTab === 'admission' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <GraduationCap className="w-4 h-4 text-accent" />
+                          <span>অনলাইন ভর্তি আবেদন</span>
+                        </div>
+                        <Badge variant="accent" size="sm">চলছে</Badge>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('results')}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'results' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 text-info" />
+                        <span>রেজাল্ট ও মার্কশিট</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('notices')}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                          activeTab === 'notices' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Bell className="w-4 h-4 text-accent" />
+                          <span>প্রাতিষ্ঠানিক নোটিশ</span>
+                        </div>
+                        {urgentNotice && <span className="w-2 h-2 rounded-full bg-accent" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">আমাদের সম্পর্কে</span>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('about')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'about' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>বিদ্যালয় পরিচিতি ও ইতিহাস</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('committee')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'committee' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Shield className="w-4 h-4" />
+                        <span>পরিচালনা পর্ষদ</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('teachers')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'teachers' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>শিক্ষক ও কর্মচারী পরিষদ</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">অন্যান্য</span>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('academics')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'academics' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Calendar className="w-4 h-4" />
+                        <span>ক্লাস ও পরীক্ষার রুটিন</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('uniform')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'uniform' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>পোশাক নীতিমালা (Uniform)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('gallery')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'gallery' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        <span>ফটো গ্যালারি</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('contact')}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
+                          activeTab === 'contact' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
+                        }`}
+                      >
+                        <Phone className="w-4 h-4" />
+                        <span>যোগাযোগ ও লোকেশন</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Drawer Bottom Actions */}
+              <div className="pt-4 border-t border-border space-y-3">
+                <Link to={`/${school.slug}/login`} className="w-full block">
+                  <Button variant="primary" size="md" className="w-full" icon={Users}>
+                    অ্যাডমিন পোর্টাল লগইন
+                  </Button>
+                </Link>
+                <div className="flex items-center justify-between text-xs text-muted">
+                  <span>থিম পরিবর্তন</span>
+                  <ThemeToggle mode={mode} toggleMode={toggleMode} lang="bn" />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -354,7 +693,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 1: HOME TAB (FULL FEATURED HOMEPAGE) ============== */}
       {/* ========================================================================= */}
       {activeTab === 'home' && (
-        <div className="flex-1 space-y-12 pb-16">
+        <div className="flex-1 space-y-12 pb-16 animate-fade-in">
           
           {/* Dynamic Hero Slider */}
           <section className="relative overflow-hidden bg-surface-2 border-b border-border">
@@ -818,7 +1157,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 2: ABOUT US (পরিচিতি) ============================= */}
       {/* ========================================================================= */}
       {activeTab === 'about' && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10">
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ABOUT US</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -882,7 +1221,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 3: MANAGING COMMITTEE (পরিচালনা পর্ষদ) ============= */}
       {/* ========================================================================= */}
       {activeTab === 'committee' && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">GOVERNING BODY</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -910,25 +1249,31 @@ export default function SchoolPublicPage() {
           )}
 
           {/* Committee Roster Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {committee.map((member) => (
-              <Card key={member.id} surface="surface" className="p-5 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-surface-2 text-primary font-bold text-base flex items-center justify-center shrink-0 border border-border">
-                  {member.name[0]}
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-text leading-tight">{member.name}</h4>
-                  <p className="text-xs text-primary font-medium">{member.designation}</p>
-                  <span className="text-[10px] text-muted block">{member.role_category}</span>
-                  {member.phone && (
-                    <span className="text-[11px] font-mono text-muted flex items-center gap-1 mt-1">
-                      <Phone className="w-3 h-3" /> {member.phone}
-                    </span>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
+          {committee.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {committee.map((member) => (
+                <Card key={member.id} surface="surface" className="p-5 flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-surface-2 text-primary font-bold text-base flex items-center justify-center shrink-0 border border-border">
+                    {member.name[0]}
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-text leading-tight">{member.name}</h4>
+                    <p className="text-xs text-primary font-medium">{member.designation}</p>
+                    <span className="text-[10px] text-muted block">{member.role_category}</span>
+                    {member.phone && (
+                      <span className="text-[11px] font-mono text-muted flex items-center gap-1 mt-1">
+                        <Phone className="w-3 h-3" /> {member.phone}
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="পরিচালনা পর্ষদের তথ্য পাওয়া যায়নি" description="পরিচালনা পর্ষদের তালিকা শীঘ্রই হালনাগাদ করা হবে।" />
+            </Card>
+          )}
         </main>
       )}
 
@@ -936,7 +1281,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 4: FACULTY & STAFF (শিক্ষক ও কর্মচারী) ============= */}
       {/* ========================================================================= */}
       {activeTab === 'teachers' && (
-        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">FACULTY & STAFF</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -945,28 +1290,34 @@ export default function SchoolPublicPage() {
             <p className="text-xs sm:text-sm text-muted">আমাদের নিবেদিতপ্রাণ শিক্ষক ও কর্মকর্তা পরিষদ</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {teachers.map((t) => (
-              <Card key={t.id} surface="surface" className="p-5 flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-surface-2 border border-border flex items-center justify-center text-primary shrink-0 font-bold text-lg">
-                  {t.name.split(' ').pop()?.[0] || 'শ'}
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h4 className="text-sm font-bold text-text leading-tight truncate">{t.name}</h4>
-                  <p className="text-xs text-primary font-semibold">{t.designation}</p>
-                  <p className="text-[11px] text-muted truncate">{t.subject || t.qualification}</p>
-                  {t.qualification && (
-                    <p className="text-[10px] text-muted font-mono">{t.qualification}</p>
-                  )}
-                  {t.phone && (
-                    <div className="pt-1 flex items-center gap-1 text-[11px] text-muted font-mono">
-                      <Phone className="w-3 h-3 text-primary" /> {t.phone}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
+          {teachers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {teachers.map((t) => (
+                <Card key={t.id} surface="surface" className="p-5 flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-surface-2 border border-border flex items-center justify-center text-primary shrink-0 font-bold text-lg">
+                    {t.name.split(' ').pop()?.[0] || 'শ'}
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h4 className="text-sm font-bold text-text leading-tight truncate">{t.name}</h4>
+                    <p className="text-xs text-primary font-semibold">{t.designation}</p>
+                    <p className="text-[11px] text-muted truncate">{t.subject || t.qualification}</p>
+                    {t.qualification && (
+                      <p className="text-[10px] text-muted font-mono">{t.qualification}</p>
+                    )}
+                    {t.phone && (
+                      <div className="pt-1 flex items-center gap-1 text-[11px] text-muted font-mono">
+                        <Phone className="w-3 h-3 text-primary" /> {t.phone}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="শিক্ষক ও কর্মচারী তালিকা পাওয়া যায়নি" description="তালিকা শীঘ্রই হালনাগাদ করা হবে।" />
+            </Card>
+          )}
         </main>
       )}
 
@@ -974,7 +1325,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 5: ACADEMICS & ROUTINES (একাডেমিক ও রুটিন) ========= */}
       {/* ========================================================================= */}
       {activeTab === 'academics' && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10">
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ACADEMICS & ROUTINES</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -985,40 +1336,46 @@ export default function SchoolPublicPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
-            {routines.map((rt) => (
-              <Card key={rt.id} surface="surface" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5" />
+          {routines.length > 0 ? (
+            <div className="space-y-4">
+              {routines.map((rt) => (
+                <Card key={rt.id} surface="surface" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-text leading-tight">{rt.title}</h4>
+                      <span className="text-[11px] text-muted font-mono mt-0.5 block">
+                        কার্যকরের তারিখ: {rt.effective_date} • ফাইল সাইজ: {rt.file_size}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-text leading-tight">{rt.title}</h4>
-                    <span className="text-[11px] text-muted font-mono mt-0.5 block">
-                      কার্যকরের তারিখ: {rt.effective_date} • ফাইল সাইজ: {rt.file_size}
-                    </span>
-                  </div>
-                </div>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={Download}
-                  onClick={() => alert(`ডাউনলোড হচ্ছে: ${rt.title}\n(ফাইল: ${rt.type} ফরম্যাট)`)}
-                >
-                  ডাউনলোড (PDF)
-                </Button>
-              </Card>
-            ))}
-          </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Download}
+                    onClick={() => showToast(`ডাউনলোড শুরু হয়েছে: ${rt.title} (${rt.file_size})`, 'success')}
+                  >
+                    ডাউনলোড (PDF)
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="কোনো রুটিন প্রকাশিত হয়নি" description="রুটিন ও সিলেবাস প্রকাশের পর এখানে দেখা যাবে।" />
+            </Card>
+          )}
         </main>
       )}
 
       {/* ========================================================================= */}
       {/* ================= TAB 6: UNIFORM & DRESS CODE (পোশাক নীতিমালা) ========== */}
       {/* ========================================================================= */}
-      {activeTab === 'uniform' && uniform && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+      {activeTab === 'uniform' && (
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">DRESS CODE</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1029,64 +1386,72 @@ export default function SchoolPublicPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Boys Uniform Card */}
-            <Card surface="surface" className="p-6 space-y-4 border-t-4 border-t-primary">
-              <span className="text-xs font-mono font-bold text-primary uppercase">ছাত্রদের পোশাক (Boys)</span>
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">শার্ট</span>
-                  <strong className="text-text">{uniform.boys.shirt}</strong>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">প্যান্ট</span>
-                  <strong className="text-text">{uniform.boys.pant}</strong>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">ব্যাজ</span>
-                  <span className="text-text">{uniform.boys.badge}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">জুতো ও মোজা</span>
-                  <span className="text-text">{uniform.boys.shoes}</span>
-                </div>
-              </div>
-            </Card>
+          {uniform ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Boys Uniform Card */}
+                <Card surface="surface" className="p-6 space-y-4 border-t-4 border-t-primary">
+                  <span className="text-xs font-mono font-bold text-primary uppercase">ছাত্রদের পোশাক (Boys)</span>
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">শার্ট</span>
+                      <strong className="text-text">{uniform.boys.shirt}</strong>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">প্যান্ট</span>
+                      <strong className="text-text">{uniform.boys.pant}</strong>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">ব্যাজ</span>
+                      <span className="text-text">{uniform.boys.badge}</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">জুতো ও মোজা</span>
+                      <span className="text-text">{uniform.boys.shoes}</span>
+                    </div>
+                  </div>
+                </Card>
 
-            {/* Girls Uniform Card */}
-            <Card surface="surface" className="p-6 space-y-4 border-t-4 border-t-accent">
-              <span className="text-xs font-mono font-bold text-accent uppercase">ছাত্রীদের পোশাক (Girls)</span>
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">ফ্রক / কামিজ</span>
-                  <strong className="text-text">{uniform.girls.dress}</strong>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">পায়জামা / সালোয়ার</span>
-                  <strong className="text-text">{uniform.girls.salwar}</strong>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">ওড়না ও ফিতা</span>
-                  <span className="text-text">{uniform.girls.orna} • {uniform.girls.hair}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-surface-2 border border-border">
-                  <span className="text-muted block text-[10px]">জুতো ও মোজা</span>
-                  <span className="text-text">{uniform.girls.shoes}</span>
-                </div>
+                {/* Girls Uniform Card */}
+                <Card surface="surface" className="p-6 space-y-4 border-t-4 border-t-accent">
+                  <span className="text-xs font-mono font-bold text-accent uppercase">ছাত্রীদের পোশাক (Girls)</span>
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">ফ্রক / কামিজ</span>
+                      <strong className="text-text">{uniform.girls.dress}</strong>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">পায়জামা / সালোয়ার</span>
+                      <strong className="text-text">{uniform.girls.salwar}</strong>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">ওড়না ও ফিতা</span>
+                      <span className="text-text">{uniform.girls.orna} • {uniform.girls.hair}</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-surface-2 border border-border">
+                      <span className="text-muted block text-[10px]">জুতো ও মোজা</span>
+                      <span className="text-text">{uniform.girls.shoes}</span>
+                    </div>
+                  </div>
+                </Card>
               </div>
-            </Card>
-          </div>
 
-          {/* Winter Dress & Guidelines */}
-          <Card surface="surface" className="p-6 space-y-4">
-            <h4 className="text-sm font-bold text-text">শীতকালীন পোশাক ও সাধারণ নির্দেশিকা</h4>
-            <p className="text-xs text-primary font-semibold">{uniform.winter}</p>
-            <div className="space-y-1.5 text-xs text-muted leading-relaxed">
-              {uniform.guidelines?.map((gl, i) => (
-                <p key={i}>{gl}</p>
-              ))}
-            </div>
-          </Card>
+              {/* Winter Dress & Guidelines */}
+              <Card surface="surface" className="p-6 space-y-4">
+                <h4 className="text-sm font-bold text-text">শীতকালীন পোশাক ও সাধারণ নির্দেশিকা</h4>
+                <p className="text-xs text-primary font-semibold">{uniform.winter}</p>
+                <div className="space-y-1.5 text-xs text-muted leading-relaxed">
+                  {uniform.guidelines?.map((gl, i) => (
+                    <p key={i}>{gl}</p>
+                  ))}
+                </div>
+              </Card>
+            </>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="পোশাক নীতিমালা সংরক্ষিত নেই" description="এই প্রতিষ্ঠানের পোশাক নীতিমালা শীঘ্রই যুক্ত করা হবে।" />
+            </Card>
+          )}
         </main>
       )}
 
@@ -1094,7 +1459,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 7: NOTICES (নোটিশ বোর্ড) ========================== */}
       {/* ========================================================================= */}
       {activeTab === 'notices' && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">NOTICE BOARD</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1124,27 +1489,33 @@ export default function SchoolPublicPage() {
             ))}
           </div>
 
-          <div className="space-y-4">
-            {filteredNotices.map((n) => (
-              <Card key={n.id} surface="surface" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <Badge variant={n.category === 'exam' ? 'info' : n.category === 'admission' ? 'primary' : 'muted'}>
-                      {n.category === 'exam' ? 'পরীক্ষা' : n.category === 'admission' ? 'ভর্তি' : 'সাধারণ'}
-                    </Badge>
-                    {n.is_urgent && <Badge variant="danger">জরুরি</Badge>}
-                    <span className="text-muted font-mono">{n.date}</span>
+          {filteredNotices.length > 0 ? (
+            <div className="space-y-4">
+              {filteredNotices.map((n) => (
+                <Card key={n.id} surface="surface" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <Badge variant={n.category === 'exam' ? 'info' : n.category === 'admission' ? 'primary' : 'muted'}>
+                        {n.category === 'exam' ? 'পরীক্ষা' : n.category === 'admission' ? 'ভর্তি' : 'সাধারণ'}
+                      </Badge>
+                      {n.is_urgent && <Badge variant="danger">জরুরি</Badge>}
+                      <span className="text-muted font-mono">{n.date}</span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-bold text-text">{n.title}</h4>
+                    <p className="text-xs text-muted line-clamp-2">{n.description}</p>
                   </div>
-                  <h4 className="text-sm sm:text-base font-bold text-text">{n.title}</h4>
-                  <p className="text-xs text-muted line-clamp-2">{n.description}</p>
-                </div>
 
-                <Button variant="secondary" size="sm" onClick={() => setReadingNotice(n)}>
-                  সম্পূর্ণ পড়ুন
-                </Button>
-              </Card>
-            ))}
-          </div>
+                  <Button variant="secondary" size="sm" onClick={() => setReadingNotice(n)}>
+                    সম্পূর্ণ পড়ুন
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="এই ক্যাটাগরিতে কোনো নোটিশ নেই" description="অন্যান্য ফিল্টারে ক্লিক করে নোটিশ খুঁজুন।" />
+            </Card>
+          )}
         </main>
       )}
 
@@ -1152,7 +1523,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 8: ONLINE ADMISSION (অনলাইন ভর্তি) ================== */}
       {/* ========================================================================= */}
       {activeTab === 'admission' && (
-        <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div className="text-center">
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ADMISSION 2027</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1361,7 +1732,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 9: RESULTS & MARKSHEET (রেজাল্ট) ================== */}
       {/* ========================================================================= */}
       {activeTab === 'results' && (
-        <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div className="text-center">
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">EXAMINATION RESULTS</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1503,7 +1874,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 10: PHOTO GALLERY (গ্যালারি) ======================= */}
       {/* ========================================================================= */}
       {activeTab === 'gallery' && (
-        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8">
+        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">PHOTO GALLERY</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1535,29 +1906,35 @@ export default function SchoolPublicPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGallery.map((g) => (
-              <Card
-                key={g.id}
-                surface="surface"
-                onClick={() => setLightboxImage(g)}
-                className="overflow-hidden p-0 group cursor-pointer hover:border-primary transition-colors"
-              >
-                <div className="aspect-video overflow-hidden bg-surface-2 relative">
-                  <img
-                    src={g.image}
-                    alt={g.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-4 space-y-1">
-                  <h4 className="text-sm font-bold text-text line-clamp-1">{g.title}</h4>
-                  <p className="text-xs text-muted line-clamp-2">{g.description}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
+          {filteredGallery.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredGallery.map((g) => (
+                <Card
+                  key={g.id}
+                  surface="surface"
+                  onClick={() => setLightboxImage(g)}
+                  className="overflow-hidden p-0 group cursor-pointer hover:border-primary transition-colors"
+                >
+                  <div className="aspect-video overflow-hidden bg-surface-2 relative">
+                    <img
+                      src={g.image}
+                      alt={g.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-4 space-y-1">
+                    <h4 className="text-sm font-bold text-text line-clamp-1">{g.title}</h4>
+                    <p className="text-xs text-muted line-clamp-2">{g.description}</p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card surface="surface" className="p-8 text-center">
+              <EmptyState title="এই ক্যাটাগরিতে কোনো ছবি নেই" description="অন্যান্য ক্যাটাগরি ফিল্টার করে ছবি দেখুন।" />
+            </Card>
+          )}
         </main>
       )}
 
@@ -1565,7 +1942,7 @@ export default function SchoolPublicPage() {
       {/* ================= TAB 11: CONTACT (যোগাযোগ) ============================= */}
       {/* ========================================================================= */}
       {activeTab === 'contact' && (
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10">
+        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12 w-full space-y-10 animate-fade-in">
           <div>
             <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">CONTACT</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
@@ -1867,7 +2244,7 @@ export default function SchoolPublicPage() {
       )}
 
       {/* ================= 12. INSTITUTIONAL FOOTER ================= */}
-      <footer className="border-t border-border bg-surface py-12 mt-auto">
+      <footer className="border-t border-border bg-surface py-12 mt-auto mb-16 lg:mb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10 text-xs">
             <div className="space-y-3">
@@ -1888,20 +2265,20 @@ export default function SchoolPublicPage() {
             <div className="space-y-2">
               <span className="font-bold text-text block uppercase font-mono text-[11px] tracking-wider">দ্রুত নেভিগেশন</span>
               <ul className="space-y-1.5 text-muted">
-                <li><button type="button" onClick={() => { setActiveTab('about'); window.location.hash = 'about'; }} className="hover:text-primary cursor-pointer">বিদ্যালয় পরিচিতি</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('committee'); window.location.hash = 'committee'; }} className="hover:text-primary cursor-pointer">পরিচালনা পর্ষদ</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('teachers'); window.location.hash = 'teachers'; }} className="hover:text-primary cursor-pointer">শিক্ষক ও কর্মচারী পরিষদ</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('uniform'); window.location.hash = 'uniform'; }} className="hover:text-primary cursor-pointer">পোশাক নীতিমালা</button></li>
+                <li><button type="button" onClick={() => navigateToTab('about')} className="hover:text-primary cursor-pointer">বিদ্যালয় পরিচিতি</button></li>
+                <li><button type="button" onClick={() => navigateToTab('committee')} className="hover:text-primary cursor-pointer">পরিচালনা পর্ষদ</button></li>
+                <li><button type="button" onClick={() => navigateToTab('teachers')} className="hover:text-primary cursor-pointer">শিক্ষক ও কর্মচারী পরিষদ</button></li>
+                <li><button type="button" onClick={() => navigateToTab('uniform')} className="hover:text-primary cursor-pointer">পোশাক নীতিমালা</button></li>
               </ul>
             </div>
 
             <div className="space-y-2">
               <span className="font-bold text-text block uppercase font-mono text-[11px] tracking-wider">একাডেমিক সেবা</span>
               <ul className="space-y-1.5 text-muted">
-                <li><button type="button" onClick={() => { setActiveTab('admission'); window.location.hash = 'admission'; }} className="hover:text-primary cursor-pointer">অনলাইন ভর্তি আবেদন</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('results'); window.location.hash = 'results'; }} className="hover:text-primary cursor-pointer">রেজাল্ট ও মার্কশিট</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('academics'); window.location.hash = 'academics'; }} className="hover:text-primary cursor-pointer">রুটিন ও সিলেবাস ডাউনলোড</button></li>
-                <li><button type="button" onClick={() => { setActiveTab('notices'); window.location.hash = 'notices'; }} className="hover:text-primary cursor-pointer">প্রাতিষ্ঠানিক নোটিশ</button></li>
+                <li><button type="button" onClick={() => navigateToTab('admission')} className="hover:text-primary cursor-pointer">অনলাইন ভর্তি আবেদন</button></li>
+                <li><button type="button" onClick={() => navigateToTab('results')} className="hover:text-primary cursor-pointer">রেজাল্ট ও মার্কশিট</button></li>
+                <li><button type="button" onClick={() => navigateToTab('academics')} className="hover:text-primary cursor-pointer">রুটিন ও সিলেবাস ডাউনলোড</button></li>
+                <li><button type="button" onClick={() => navigateToTab('notices')} className="hover:text-primary cursor-pointer">প্রাতিষ্ঠানিক নোটিশ</button></li>
               </ul>
             </div>
 
@@ -1923,6 +2300,67 @@ export default function SchoolPublicPage() {
           </div>
         </div>
       </footer>
+
+      {/* ================= 13. MOBILE STICKY BOTTOM 4-TAB NAVIGATION BAR (Master Prompt 7.3) ================= */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-lg px-2 py-1.5 flex items-center justify-around no-print" aria-label="মোবাইল দ্রুত মেনু">
+        {/* হোম */}
+        <button
+          type="button"
+          onClick={() => navigateToTab('home')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'home' ? 'text-primary font-bold' : 'text-muted hover:text-text'
+          }`}
+        >
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">হোম</span>
+        </button>
+
+        {/* নোটিশ */}
+        <button
+          type="button"
+          onClick={() => navigateToTab('notices')}
+          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'notices' ? 'text-primary font-bold' : 'text-muted hover:text-text'
+          }`}
+        >
+          <div className="relative">
+            <Bell className="w-5 h-5 mb-0.5" />
+            {urgentNotice && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
+            )}
+          </div>
+          <span className="text-[10px]">নোটিশ</span>
+        </button>
+
+        {/* ভর্তি */}
+        <button
+          type="button"
+          onClick={() => navigateToTab('admission')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'admission' ? 'text-primary font-bold' : 'text-muted hover:text-text'
+          }`}
+        >
+          <div className="relative">
+            <GraduationCap className="w-5 h-5 mb-0.5 text-accent" />
+            <span className="absolute -top-1.5 -right-2.5 text-[8px] bg-accent text-white font-bold px-1 rounded-full leading-tight">
+              নতুন
+            </span>
+          </div>
+          <span className="text-[10px]">ভর্তি</span>
+        </button>
+
+        {/* রেজাল্ট */}
+        <button
+          type="button"
+          onClick={() => navigateToTab('results')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'results' ? 'text-primary font-bold' : 'text-muted hover:text-text'
+          }`}
+        >
+          <FileText className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">রেজাল্ট</span>
+        </button>
+      </nav>
     </div>
   );
 }

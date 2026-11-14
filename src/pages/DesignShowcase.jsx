@@ -172,7 +172,7 @@ export default function DesignShowcase() {
                   <Banner 
                     variant="warning" 
                     actionLabel="নবায়ন করুন" 
-                    onAction={() => alert('নবায়ন ক্লিক')}
+                    onAction={() => showToast('নবায়ন অ্যাকশন ট্রিগার হয়েছে', 'info')}
                   >
                     প্ল্যানের মেয়াদ শেষ হতে ৫ দিন বাকি
                   </Banner>
@@ -301,7 +301,7 @@ export default function DesignShowcase() {
                   <Banner 
                     variant="warning" 
                     actionLabel="নবায়ন করুন" 
-                    onAction={() => alert('নবায়ন ক্লিক')}
+                    onAction={() => showToast('নবায়ন অ্যাকশন ট্রিগার হয়েছে', 'info')}
                   >
                     প্ল্যানের মেয়াদ শেষ হতে ৫ দিন বাকি
                   </Banner>

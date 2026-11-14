@@ -124,8 +124,8 @@ export function AuthProvider({ children }) {
       clearTimeout(timeoutId);
       if (currentUser) {
         timeoutId = setTimeout(() => {
+          sessionStorage.setItem('sp_session_timeout', 'true');
           logout();
-          alert('৩০ মিনিট নিষ্ক্রিয় থাকার কারণে আপনার সেশন সমাপ্ত করা হয়েছে। পুনরায় লগইন করুন।');
         }, 30 * 60 * 1000);
       }
     };

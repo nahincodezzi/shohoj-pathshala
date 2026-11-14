@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
+import Modal from '../components/ui/Modal';
 import { 
   GraduationCap, 
   Users, 
@@ -25,12 +26,15 @@ import {
   Search,
   Building2,
   Menu,
-  X
+  X,
+  Phone,
+  Mail
 } from 'lucide-react';
 
 export default function LandingPage() {
   const { mode, toggleMode } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const schools = TenantRepository.getSchools();
 
@@ -437,8 +441,8 @@ export default function LandingPage() {
               প্ল্যাটফর্মে উন্মুক্ত পাবলিক রেজিস্ট্রেশন নেই। সরাসরি স্কুল বোর্ডের অনুমোদনে নতুন স্কুল অনবোর্ড করা হয়।
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Button variant="primary" size="lg" onClick={() => alert('স্কুল যুক্ত করতে কল করুন: ০১৮১২-৩৪৫৬৭৮ অথবা ইমেইল: onboard@sohojpathshala.app')}>
-                যোগাযোগ করুন
+              <Button variant="primary" size="lg" onClick={() => setContactModalOpen(true)}>
+                যোগাযোগ ও অনবোর্ডিং
               </Button>
               <a href="#schools">
                 <Button variant="secondary" size="lg">
@@ -449,6 +453,63 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Onboarding & Contact Modal */}
+      {contactModalOpen && (
+        <Modal
+          isOpen={contactModalOpen}
+          onClose={() => setContactModalOpen(false)}
+          title="নতুন স্কুল অনবোর্ডিং যোগাযোগ"
+          size="md"
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-muted leading-relaxed">
+              সহজ পাঠশালা প্ল্যাটফর্মে আপনার স্কুল যুক্ত করতে আমাদের প্রতিনিধি দলের সাথে যোগাযোগ করুন। আমরা আপনার প্রতিষ্ঠানের EIIN ও প্রাথমিক তথ্য দিয়ে মাত্র ২৪ ঘণ্টার মধ্যে পূর্ণাঙ্গ সিস্টেম প্রস্তুত করে দেব।
+            </p>
+
+            <div className="p-4 rounded-xl bg-surface-2 border border-border space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary-soft text-primary flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted block">সরাসরি কল করুন (Helpline)</span>
+                  <a href="tel:+8801812345678" className="text-sm font-bold font-mono text-primary hover:underline">
+                    ০১৮১২-৩৪৫৬৭৮
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-accent-soft text-accent flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted block">অফিসিয়াল ইমেইল</span>
+                  <a href="mailto:onboard@sohojpathshala.app" className="text-sm font-bold font-mono text-accent hover:underline">
+                    onboard@sohojpathshala.app
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-2">
+              <span className="font-bold text-text block">অনবোর্ডিং প্রক্রিয়া:</span>
+              <ul className="space-y-1 text-muted list-disc list-inside">
+                <li>প্রতিষ্ঠানের EIIN, প্রধান শিক্ষকের নাম ও রেজুলেশন কপি প্রদান</li>
+                <li>নিরাপদ সুপার অ্যাডমিন ক্রেডেনশিয়াল ও ডোমেইন সক্রিয়করণ</li>
+                <li>বিনামূল্যে শিক্ষক ও স্টাফদের জন্য সম্পূর্ণ অনলাইন প্রশিক্ষণ</li>
+              </ul>
+            </div>
+
+            <div className="pt-3 flex justify-end">
+              <Button variant="secondary" size="sm" onClick={() => setContactModalOpen(false)}>
+                বন্ধ করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* ================= 8. FOOTER ================= */}
       <footer className="border-t border-border bg-surface py-10 mt-auto">
