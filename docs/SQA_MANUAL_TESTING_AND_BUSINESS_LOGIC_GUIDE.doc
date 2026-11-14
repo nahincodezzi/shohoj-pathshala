@@ -1,0 +1,341 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+  <meta charset='utf-8'>
+  <title>সহজ পাঠশালা (Sohoj Pathshala) — SQA Manual Testing Guide & Business Logic Specification</title>
+  <!--[if gte mso 9]>
+  <xml>
+    <w:WordDocument>
+      <w:View>Print</w:View>
+      <w:Zoom>100</w:Zoom>
+      <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+  </xml>
+  <![endif]-->
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; color: #1e293b; line-height: 1.5; padding: 20px; }
+    h1 { color: #047857; font-size: 20pt; border-bottom: 2pt solid #047857; padding-bottom: 6pt; margin-bottom: 12pt; }
+    h2 { color: #0f172a; font-size: 14pt; border-left: 4pt solid #047857; padding-left: 8pt; margin-top: 18pt; margin-bottom: 8pt; }
+    h3 { color: #334155; font-size: 12pt; margin-top: 12pt; margin-bottom: 6pt; }
+    table { width: 100%; border-collapse: collapse; margin: 12pt 0; font-size: 10pt; }
+    th, td { border: 1pt solid #cbd5e1; padding: 6pt 8pt; text-align: left; }
+    th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; }
+    .callout { background-color: #ecfdf5; border-left: 4pt solid #047857; padding: 8pt 12pt; margin: 10pt 0; }
+    .badge { display: inline-block; padding: 2pt 6pt; font-weight: bold; font-size: 8pt; border-radius: 4pt; }
+    .badge-pass { background-color: #dcfce7; color: #166534; }
+    code { font-family: Consolas, monospace; background-color: #f1f5f9; padding: 1pt 4pt; }
+  </style>
+</head>
+<body>
+
+  <h1>সহজ পাঠশালা (Sohoj Pathshala)</h1>
+  <p><strong>Multi-Tenant School Management SaaS · ম্যানুয়াল SQA টেস্ট গাইড, বিজনেস লজিক স্পেসিফিকেশন ও টেস্ট ক্রেডেনশিয়াল</strong></p>
+  <hr/>
+
+  <div class="callout">
+    <strong>ডকুমেন্ট উদ্দেশ্য:</strong> এই ফাইলটি ম্যানুয়াল সফটওয়্যার কোয়ালিটি অ্যাসুরেন্স (SQA) ইঞ্জিনিয়ারদের জন্য প্রস্তুতকৃত সম্পূর্ণ স্পেসিফিকেশন। এখানে সিস্টেমের প্রতিটি স্তরের বিজনেস নিয়ম, সিকিউরিটি পলিসি, পরীক্ষার ফলাফল হিসাব, ফি রসিদের ফরম্যাট এবং ৪১টি সুনির্দিষ্ট ডিফেক্ট ভেরিফিকেশন টেস্ট কেস দেওয়া আছে।
+  </div>
+
+  <h2>১. সিস্টেমের ৪টি প্রধান টিয়ার ও রাউট ম্যাপিং</h2>
+  <table>
+    <tr>
+      <th>টিয়ার</th>
+      <th>নাম</th>
+      <th>URL পাথ</th>
+      <th>মূল দায়িত্ব ও ব্যবহারকারী</th>
+    </tr>
+    <tr>
+      <td>১</td>
+      <td>প্ল্যাটফর্ম ল্যান্ডিং পেজ</td>
+      <td><code>http://localhost:5173/</code></td>
+      <td>পাবলিক ভিজিটর, নতুন স্কুলের অনবোর্ডিং রিকুয়েস্ট, ফিচার ও প্যাকেজ প্রদর্শন।</td>
+    </tr>
+    <tr>
+      <td>২</td>
+      <td>প্ল্যাটফর্ম ওনার কোর</td>
+      <td><code>http://localhost:5173/owner</code></td>
+      <td>সুপার কন্ট্রোল প্যানেল: নতুন স্কুল অনবোর্ডিং, সাপোর্ট মোড, ওনার পাসওয়ার্ড রিসেট।</td>
+    </tr>
+    <tr>
+      <td>৩</td>
+      <td>স্কুল পাবলিক পোর্টাল</td>
+      <td><code>http://localhost:5173/:slug</code> (যেমন: <code>/bdhs</code>)</td>
+      <td>শিক্ষার্থী ও অভিভাবক: ভর্তি ফরম পূরণ, রেজাল্ট সার্চ, রুটিন ডাউনলোড, নোটিশ।</td>
+    </tr>
+    <tr>
+      <td>৪</td>
+      <td>স্কুল অ্যাডমিন পোর্টাল</td>
+      <td><code>http://localhost:5173/:slug/admin</code></td>
+      <td>স্কুল সুপার অ্যাডমিন, হেডমাস্টার, শিক্ষক ও অফিস সহকারী: প্রতিদিনের প্রশাসনিক কাজ।</td>
+    </tr>
+  </table>
+
+  <h2>২. সকল টেস্ট ক্রেডেনশিয়াল (Credentials Matrix)</h2>
+
+  <h3>ক. প্ল্যাটফর্ম ওনার (Platform Owner)</h3>
+  <p><strong>লগইন URL:</strong> <code>http://localhost:5173/owner</code></p>
+  <p><strong>ইউজারনেম:</strong> <code>owner</code> | <strong>পাসওয়ার্ড:</strong> <code>password123</code></p>
+  <p><strong>রোল:</strong> <code>platform_owner</code> | <strong>থিম:</strong> Indigo (স্থির)</p>
+  <p><strong>বিশেষ দ্রষ্টব্য:</strong> যেকোনো স্কুলে পাসওয়ার্ড ছাড়া ভিউ-অনলি <em>Support Mode</em>-এ প্রবেশের পূর্ণ ক্ষমতা রয়েছে।</p>
+
+  <h3>খ. বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS) — প্রিমিয়াম প্ল্যান (থিম: Emerald)</h3>
+  <p><strong>URL:</strong> <code>http://localhost:5173/bdhs</code> | <strong>লগইন:</strong> <code>http://localhost:5173/bdhs/login</code></p>
+  <p><strong>EIIN:</strong> <code>106644</code> | <strong>বোর্ড:</strong> কুমিল্লা | <strong>জেলা:</strong> ফেনী</p>
+  <table>
+    <tr><th>রোল</th><th>ইউজারনেম</th><th>পাসওয়ার্ড</th><th>ব্যবহারকারীর নাম ও পদবি</th></tr>
+    <tr><td>সুপার অ্যাডমিন</td><td><code>admin</code></td><td><code>password123</code></td><td>সুপার অ্যাডমিন (BDHS)</td></tr>
+    <tr><td>প্রধান শিক্ষক</td><td><code>headmaster</code></td><td><code>password123</code></td><td>জনাব বাহার উদ্দিন ভূঁইয়া</td></tr>
+    <tr><td>সহকারী প্রধান</td><td><code>assthead</code></td><td><code>password123</code></td><td>জনাব সলিম উদ্দিন মজুমদার</td></tr>
+    <tr><td>সহকারী শিক্ষক</td><td><code>teacher</code></td><td><code>password123</code></td><td>জনাব জাহাঙ্গীর আলম</td></tr>
+    <tr><td>অফিস সহকারী</td><td><code>office</code></td><td><code>password123</code></td><td>নুরুল কবির ভূঁইয়া</td></tr>
+  </table>
+
+  <h3>গ. বরুড়া আদর্শ উচ্চ বিদ্যালয় (BAHS) — স্ট্যান্ডার্ড প্ল্যান (থিম: Indigo)</h3>
+  <p><strong>URL:</strong> <code>http://localhost:5173/bahs</code> | <strong>লগইন:</strong> <code>http://localhost:5173/bahs/login</code></p>
+  <p><strong>EIIN:</strong> <code>105123</code> | <strong>বোর্ড:</strong> কুমিল্লা | <strong>জেলা:</strong> কুমিল্লা</p>
+  <table>
+    <tr><th>রোল</th><th>ইউজারনেম</th><th>পাসওয়ার্ড</th><th>ব্যবহারকারীর নাম</th></tr>
+    <tr><td>সুপার অ্যাডমিন</td><td><code>admin</code></td><td><code>password123</code></td><td>সুপার অ্যাডমিন (BAHS)</td></tr>
+    <tr><td>প্রধান শিক্ষক</td><td><code>headmaster</code></td><td><code>password123</code></td><td>প্রধান শিক্ষক (বরুড়া আদর্শ)</td></tr>
+    <tr><td>সহকারী শিক্ষক</td><td><code>teacher</code></td><td><code>password123</code></td><td>সিনিয়র শিক্ষক (BAHS)</td></tr>
+  </table>
+
+  <h2>৩. রোল ও পারমিশন ম্যাট্রিক্স (RBAC)</h2>
+  <table>
+    <tr>
+      <th>মডিউল / স্ক্রিন</th>
+      <th>Owner</th>
+      <th>Super Admin</th>
+      <th>Headmaster</th>
+      <th>Teacher</th>
+      <th>Office Asst.</th>
+    </tr>
+    <tr>
+      <td>ড্যাশবোর্ড ওভারভিউ</td>
+      <td>সাপোর্ট মোড</td>
+      <td>পূর্ণাঙ্গ</td>
+      <td>পূর্ণাঙ্গ</td>
+      <td>সংক্ষিপ্ত</td>
+      <td>পূর্ণাঙ্গ</td>
+    </tr>
+    <tr>
+      <td>শিক্ষার্থী তালিকা ও আইডি কার্ড</td>
+      <td>সাপোর্ট মোড</td>
+      <td>✓</td>
+      <td>✓</td>
+      <td>ভিউ অনলি</td>
+      <td>✓</td>
+    </tr>
+    <tr>
+      <td>ভর্তি আবেদন অনুমোদন</td>
+      <td>সাপোর্ট মোড</td>
+      <td>✓</td>
+      <td>✓</td>
+      <td>✕ ব্লকড</td>
+      <td>যাচাই অনলি</td>
+    </tr>
+    <tr>
+      <td>ফলাফল এন্ট্রি ও প্রকাশ</td>
+      <td>সাপোর্ট মোড</td>
+      <td>✓</td>
+      <td>✓</td>
+      <td>✓ (নিজ শ্রেণি)</td>
+      <td>✕ ব্লকড</td>
+    </tr>
+    <tr>
+      <td>ফি আদায় ও মানি রসিদ</td>
+      <td>সাপোর্ট মোড</td>
+      <td>✓</td>
+      <td>ভিউ অনলি</td>
+      <td>✕ ব্লকড</td>
+      <td>✓ (আদায়)</td>
+    </tr>
+    <tr>
+      <td>রসিদ বাতিল (Void Receipt)</td>
+      <td>✕</td>
+      <td>✓ (কারণ সহ)</td>
+      <td>✕</td>
+      <td>✕</td>
+      <td>✕</td>
+    </tr>
+    <tr>
+      <td>নোটিশ প্রদান</td>
+      <td>সাপোর্ট মোড</td>
+      <td>✓</td>
+      <td>✓</td>
+      <td>✓ (একাডেমিক)</td>
+      <td>✕</td>
+    </tr>
+    <tr>
+      <td>ইউজার তৈরি ও পাসওয়ার্ড</td>
+      <td>✕</td>
+      <td>✓</td>
+      <td>✕</td>
+      <td>✕</td>
+      <td>✕</td>
+    </tr>
+    <tr>
+      <td>সিএমএস, লোগো ও ইনবক্স</td>
+      <td>✕</td>
+      <td>✓</td>
+      <td>ভিউ অনলি</td>
+      <td>✕ ব্লকড</td>
+      <td>✕ ব্লকড</td>
+    </tr>
+    <tr>
+      <td>স্কুল ফ্যাক্টরি রিসেট (RESET)</td>
+      <td>✕</td>
+      <td>✓ (কোড সহ)</td>
+      <td>✕</td>
+      <td>✕</td>
+      <td>✕</td>
+    </tr>
+  </table>
+
+  <h2>৪. মডিউলভিত্তিক বিজনেস লজিক ও রুলস</h2>
+
+  <h3>৪.১ অনলাইন ভর্তি আবেদন ও ট্র্যাকিং</h3>
+  <ul>
+    <li><strong>৩-ধাপের উইজার্ড:</strong> ধাপ ১ (শিক্ষার্থী তথ্য) -> ধাপ ২ (অভিভাবক ও যোগাযোগ) -> ধাপ ৩ (যাচাই ও সাবমিট)।</li>
+    <li><strong>ভ্যালিডেশন রুল:</strong> শিক্ষার্থীর বাংলা নাম অবশ্যই বাংলা ইউনিকোড স্ক্রিপ্ট হতে হবে। ইংরেজি নাম বড় হাতের অক্ষরের হতে হবে। ছবি আপলোড বাধ্যতামূলক। পূর্ববর্তী জিপিএ ১.০০ থেকে ৫.০০ এর মধ্যে হতে হবে। শ্রেণি ৯ ও ১০ এর জন্য 'General' গ্রুপ নিষিদ্ধ (বিজ্ঞান/ব্যবসায় শিক্ষা/মানবিক বাধ্যতামূলক)।</li>
+    <li><strong>অভিভাবকের ফোন:</strong> বাংলাদেশি ১১ ডিজিট ফোন নম্বর ভ্যালিডেশন প্রযোজ্য।</li>
+    <li><strong>সিকিউর ট্র্যাকিং (D28):</strong> ট্র্যাকিং কোড এবং আবেদনে দেওয়া ১১ ডিজিট মোবাইল নম্বর উভয়টি মিললে তবেই প্রবেশপত্র দেখা যাবে।</li>
+    <li><strong>অনুমোদন ফ্লো:</strong> অ্যাডমিন অনুমোদন দেওয়ার সাথে সাথে রোল নম্বর নির্ধারিত হয় এবং আবেদনকারীর ছবিসহ তথ্য স্বয়ংক্রিয়ভাবে 'Students' টেবিলে সিঙ্ক হয়ে যায়।</li>
+  </ul>
+
+  <h3>৪.২ পরীক্ষার ফলাফল ও মার্কশিট</h3>
+  <ul>
+    <li><strong>৫টি প্রমিত পরীক্ষা:</strong> First-Term, Half-Yearly, Annual, Pre-Test, Test।</li>
+    <li><strong>NCTB গ্রেডিং স্কেল:</strong> ৮০–১০০: A+ (5.00), ৭০–৭৯: A (4.00), ৬০–৬৯: A- (3.50), ৫০–৫৯: B (3.00), ৪০–৪৯: C (2.00), ৩৩–৩৯: D (1.00), ০–৩২: F (0.00)। যেকোনো ১ বিষয়ে F পেলে মোট ফলাফল F (GPA 0.00 / FAILED)।</li>
+    <li><strong>ভূতুড়ে ছাত্র প্রতিরোধ:</strong> উক্ত ক্লাসে শিক্ষার্থী নিবন্ধিত না থাকলে ফলাফল এন্ট্রি দেওয়া যাবে না।</li>
+    <li><strong>বাংলা সংখ্যা সমর্থন:</strong> রোলের ঘরে বাংলা ১ বা ইংরেজি 1 যাই দেওয়া হোক, রেজাল্ট সফলভাবে আসবে।</li>
+    <li><strong>অফিসিয়াল ট্রান্সক্রিপ্ট প্রিন্ট:</strong> স্কুলের লেটারহেড, বিষয়ভিত্তিক পূর্ণমান (১০০), প্রাপ্ত নম্বর, গ্রেড, জিপিএ এবং শ্রেণি শিক্ষক ও প্রধান শিক্ষকের স্বাক্ষরের স্থান সহ A4 পৃষ্ঠায় প্রিন্ট ফিট হবে।</li>
+  </ul>
+
+  <h3>৪.৩ ফি আদায় ও ২-কপি মানি রসিদ</h3>
+  <ul>
+    <li><strong>কোনো রসিদ ডিলিট হয় না (Immutable):</strong> অডিট সুরক্ষায় রসিদ মোছা যায় না; প্রয়োজনে সুপার অ্যাডমিন কারণ লিখে বাতিল (Void) করবেন, যা বড় লাল VOIDED জলছাপ সহ অডিটে থাকবে।</li>
+    <li><strong>২-কপি প্রিন্ট ফরম্যাট:</strong> একই পৃষ্ঠায় "শিক্ষার্থী কপি" ও "অফিস কপি", মাঝে কাঁচি দিয়ে কাটার দাগ।</li>
+    <li><strong>কথায় টাকা রূপান্তর:</strong> টাকার অঙ্ক স্বয়ংক্রিয়ভাবে বাংলা কথায় (যেমন: এক হাজার পাঁচশত টাকা মাত্র) মুদ্রিত হবে। ডিজিটাল পেমেন্টে Trx ID প্রদর্শিত হবে।</li>
+  </ul>
+
+  <h2>৫. ম্যানুয়াল SQA টেস্ট কেস চেকলিস্ট (D01 – D41)</h2>
+  <table>
+    <tr>
+      <th>আইডি</th>
+      <th>মডিউল</th>
+      <th>টেস্টের বিবরণ</th>
+      <th>প্রত্যাশিত ফলাফল</th>
+      <th>স্ট্যাটাস</th>
+    </tr>
+    <tr>
+      <td>TC-01</td>
+      <td>URL সিকিউরিটি</td>
+      <td>BDHS লগইন অবস্থায় ইউআরএলে /bahs/admin দিন।</td>
+      <td>Access Denied কার্ড দেখাবে এবং রিডাইরেক্ট করবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-02</td>
+      <td>রোল RBAC</td>
+      <td>সহকারী শিক্ষক হিসেবে সরাসরি /admin/users এ যান।</td>
+      <td>অ্যাক্সেস ব্লক হবে; সতর্কবার্তা আসবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-03</td>
+      <td>ওনার লগইন</td>
+      <td>লগআউট অবস্থায় সরাসরি /owner ইউআরএলে যান।</td>
+      <td>ওনার সিকিউর লগইন কার্ড ছাড়া ড্যাশবোর্ড আসবে না।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-04</td>
+      <td>টেন্যান্ট আইসোলেশন</td>
+      <td>BDHS-এর নোটিশ ডিলিট করে BAHS-এ চেক করুন।</td>
+      <td>BAHS-এর কোনো নোটিশে কোনো প্রভাব পড়বে না।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-05</td>
+      <td>পাসওয়ার্ড হ্যাশ</td>
+      <td>নতুন ইউজার বানিয়ে ব্রাউজার স্টোরেজ চেক করুন।</td>
+      <td>পাসওয়ার্ড SHA-256 হ্যাশড আকারে থাকবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-08</td>
+      <td>কন্টাক্ট ফরম</td>
+      <td>ভুল মোবাইল ও সঠিক বার্তা দিয়ে ইনবক্সে চেক করুন।</td>
+      <td>ভুল নম্বরে এরর দেখাবে; সঠিক বার্তা অ্যাডমিনে যাবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-09</td>
+      <td>ভর্তি ভ্যালিডেশন</td>
+      <td>বাংলা নামের ঘরে ইংরেজি লিখে পরবর্তী ধাপে যান।</td>
+      <td>লাল এরর মেসেজ দিয়ে আটকে দেবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-10</td>
+      <td>রুটিন ফাইল</td>
+      <td>একাডেমিক পেজে রুটিনের ডাউনলোড চাপুন।</td>
+      <td>আসল রুটিন ফাইল কম্পিউটারে ডাউনলোড হবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-11</td>
+      <td>ভূতুড়ে ছাত্র গার্ড</td>
+      <td>রেজাল্ট এন্ট্রিতে কাল্পনিক রোল দিন।</td>
+      <td>"শিক্ষার্থী পাওয়া যায়নি" এরর দেবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-14</td>
+      <td>পাসওয়ার্ড রিসেট</td>
+      <td>ওনার প্যানেল থেকে স্কুলের পাসওয়ার্ড রিসেট করুন।</td>
+      <td>নতুন অস্থায়ী পাসওয়ার্ড মডালে তৈরি হবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-20</td>
+      <td>স্কুল থিম</td>
+      <td>নতুন ব্রাউজার উইন্ডোতে /bahs ওপেন করুন।</td>
+      <td>স্বয়ংক্রিয়ভাবে Indigo থিমে লোড হবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-26</td>
+      <td>মানি রিসিট</td>
+      <td>ফি আদায় করে রসিদ প্রিন্ট প্রিভিউ দেখুন।</td>
+      <td>২-কপি, কাঁচি দাগ ও কথায় টাকা মুদ্রিত থাকবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-28</td>
+      <td>ভর্তি ট্র্যাকিং</td>
+      <td>শুধুমাত্র কোড দিয়ে স্ট্যাটাস খুঁজুন।</td>
+      <td>মোবাইল নম্বর ছাড়া অনুসন্ধান আটকে দেবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-33</td>
+      <td>বাংলা সংখ্যা</td>
+      <td>রেজাল্ট সার্চে বাংলা ১ লিখে খুঁজুন।</td>
+      <td>সফলভাবে ফলাফল লোড হবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+    <tr>
+      <td>TC-38</td>
+      <td>টাচ টার্গেট</td>
+      <td>স্লাইডারের ডটস স্পর্শ করুন।</td>
+      <td>৪৪ পিক্সেল মিনিমাম টাচ টার্গেটে রেসপন্স করবে।</td>
+      <td><span class="badge badge-pass">PASS</span></td>
+    </tr>
+  </table>
+
+  <p style="text-align: center; color: #64748b; font-size: 9pt; margin-top: 30pt;">
+    সহজ পাঠশালা (Sohoj Pathshala) · Multi-Tenant School Management SaaS · SQA Specification Document v1.0
+  </p>
+</body>
+</html>

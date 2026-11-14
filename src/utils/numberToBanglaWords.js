@@ -79,3 +79,4 @@ export function numberToBanglaWords(amount) {
 
   return `${parts.join(' ')} টাকা মাত্র`;
 }
+
