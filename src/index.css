@@ -1,7 +1,56 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
-@layer base {
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+@theme {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+  
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  
+  --color-indigo: var(--indigo);
+  --color-indigo-soft: var(--indigo-soft);
+
+  --font-heading: 'Hind Siliguri', sans-serif;
+  --font-body: 'Noto Sans Bengali', sans-serif;
+  --font-mono: 'Inter', monospace;
+  --font-sans: 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom Utilities for Sohoj Pathshala */
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 }

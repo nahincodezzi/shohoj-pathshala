@@ -1,12 +1,61 @@
 <!doctype html>
-<html lang="bn">
+<html lang="bn" class="mode-dark theme-emerald">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>সহজ পাঠশালা (Shohoj Pathshala) — স্মার্ট স্কুল প্ল্যাটফর্ম</title>
+    <title>সহজ পাঠশালা — মাল্টি স্কুল প্ল্যাটফর্ম</title>
+    <meta name="description" content="সব স্কুল, এক সহজ প্ল্যাটফর্মে। মাল্টি-স্কুল স্কুল ম্যানেজমেন্ট সিস্টেম ও পাবলিক পোর্টাল।" />
+
+    <!-- Google Fonts: Hind Siliguri, Noto Sans Bengali, Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Pre-paint No-Flash Inline Script -->
+    <script>
+      (function() {
+        try {
+          var path = window.location.pathname;
+          var mode = 'dark';
+          var theme = 'emerald';
+
+          if (path.indexOf('/owner') === 0) {
+            // Owner panel is ALWAYS Indigo
+            theme = 'indigo';
+            var savedOwnerMode = localStorage.getItem('owner_mode');
+            if (savedOwnerMode === 'light' || savedOwnerMode === 'dark') {
+              mode = savedOwnerMode;
+            }
+          } else {
+            // Check for school slug in path e.g. /bdhs or /bdhs/admin
+            var segments = path.split('/').filter(Boolean);
+            var slug = segments[0];
+            if (slug && slug !== 'design' && slug !== 'login') {
+              var savedSlugMode = localStorage.getItem(slug + '_mode');
+              var savedSlugTheme = localStorage.getItem(slug + '_theme');
+              if (savedSlugMode) mode = savedSlugMode;
+              if (savedSlugTheme) theme = savedSlugTheme;
+            } else {
+              // Platform landing
+              var savedPlatMode = localStorage.getItem('platform_mode');
+              var savedPlatTheme = localStorage.getItem('platform_theme');
+              if (savedPlatMode) mode = savedPlatMode;
+              if (savedPlatTheme) theme = savedPlatTheme;
+            }
+          }
+
+          var docEl = document.documentElement;
+          docEl.classList.remove('mode-dark', 'mode-light', 'theme-emerald', 'theme-indigo');
+          docEl.classList.add(mode === 'light' ? 'mode-light' : 'mode-dark');
+          docEl.classList.add(theme === 'indigo' ? 'theme-indigo' : 'theme-emerald');
+        } catch (e) {
+          console.error('Error applying theme pre-paint:', e);
+        }
+      })();
+    </script>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased">
+  <body class="bg-bg text-text antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

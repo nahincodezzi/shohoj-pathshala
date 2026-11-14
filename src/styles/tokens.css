@@ -1,0 +1,135 @@
+/* ==========================================================================
+   সহজ পাঠশালা (Sohoj Pathshala) — Design System Color Tokens
+   Master Tokens: Dark Mode (Default) & Light Mode
+   Themes: Emerald (Default) & Indigo (School option / Owner enforced)
+   ========================================================================== */
+
+/* ── ডার্ক মোড (ডিফল্ট) ── */
+.mode-dark {
+  --bg: #0B1215;
+  --bg-alt: #0E161A;
+  --surface: #121A1F;
+  --surface-2: #18232A;
+  --border: #24323A;
+  --border-strong: #33454F;
+  --text: #E6EDF0;
+  --muted: #9AABB3;
+  --subtle: #7D8E97;
+  --primary: #2DD4A7;
+  --primary-hover: #5EE3BE;
+  --primary-soft: rgba(45, 212, 167, 0.12);
+  --on-primary: #04201A;
+  --accent: #F5B544;
+  --accent-soft: rgba(245, 181, 68, 0.12);
+  --accent-line: rgba(245, 181, 68, 0.25);
+  --success: #34D399;
+  --success-soft: rgba(52, 211, 153, 0.12);
+  --warning: #FBBF24;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --warning-line: rgba(251, 191, 36, 0.3);
+  --danger: #F87171;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --info: #60A5FA;
+  --info-soft: rgba(96, 165, 250, 0.12);
+  --indigo: #818CF8;
+  --indigo-soft: rgba(129, 140, 248, 0.14);
+  --header-bg: rgba(11, 18, 21, 0.88);
+  --hero-fade-0: rgba(11, 18, 21, 0);
+  --hero-fade: rgba(11, 18, 21, 0.95);
+  --glass: rgba(11, 18, 21, 0.6);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* ── লাইট মোড ── */
+.mode-light {
+  --bg: #F7F9FC;
+  --bg-alt: #ECF8F3;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text: #0F172A;
+  --muted: #475569;
+  --subtle: #556477;
+  --primary: #047857;
+  --primary-hover: #065F46;
+  --primary-soft: rgba(4, 120, 87, 0.10);
+  --on-primary: #FFFFFF;
+  --accent: #B45309;
+  --accent-soft: #FEF3C7;
+  --accent-line: #FCD34D;
+  --success: #047857;
+  --success-soft: #D1FAE5;
+  --warning: #B45309;
+  --warning-soft: #FEF3C7;
+  --warning-line: #FCD34D;
+  --danger: #B91C1C;
+  --danger-soft: #FEE2E2;
+  --info: #1D4ED8;
+  --info-soft: #DBEAFE;
+  --indigo: #4338CA;
+  --indigo-soft: #E0E7FF;
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --hero-fade-0: rgba(247, 249, 252, 0);
+  --hero-fade: rgba(247, 249, 252, 0.97);
+  --glass: rgba(255, 255, 255, 0.85);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.10);
+  color-scheme: light;
+}
+
+/* ── Indigo থিম (স্কুলের পছন্দে; Owner প্যানেলে সবসময়) ── */
+.mode-dark.theme-indigo {
+  --primary: #818CF8;
+  --primary-hover: #A5B4FC;
+  --primary-soft: rgba(129, 140, 248, 0.14);
+  --on-primary: #0B1020;
+}
+
+.mode-light.theme-indigo {
+  --primary: #4338CA;
+  --primary-hover: #3730A3;
+  --primary-soft: rgba(67, 56, 202, 0.10);
+  --on-primary: #FFFFFF;
+}
+
+/* বেস নিয়ম */
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans Bengali', system-ui, sans-serif;
+  transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body, * {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 150ms ease-out;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--subtle);
+}
+
+/* প্রিন্ট স্টাইল: যে মোডই থাকুক সাদা কাগজে কালো লেখা */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
