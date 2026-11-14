@@ -36,7 +36,26 @@ export default function AdmissionManager() {
       <GridTable
         columns={[
           { key: 'tracking_id', label: 'ট্র্যাকিং কোড', width: '150px', fontMono: true },
-          { key: 'name_bn', label: 'আবেদনকারীর নাম', width: '2fr' },
+          { 
+            key: 'name_bn', 
+            label: 'আবেদনকারী', 
+            width: '2fr',
+            render: (val, row) => (
+              <div className="flex items-center gap-3">
+                {row.photo ? (
+                  <img src={row.photo} alt={val} className="w-8 h-8 rounded-full object-cover border border-border shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary-soft text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                    {val?.[0] || 'শিক্ষার্থী'}
+                  </div>
+                )}
+                <div>
+                  <div className="font-bold text-text">{val}</div>
+                  {row.name_en && <div className="text-[10px] text-muted font-mono">{row.name_en}</div>}
+                </div>
+              </div>
+            )
+          },
           { key: 'applied_class', label: 'শ্রেণি', width: '80px', render: (val) => `${val}ম` },
           { key: 'mobile', label: 'মোবাইল', width: '120px', fontMono: true },
           { key: 'applied_at', label: 'আবেদনের সময়', width: '140px', fontMono: true },
@@ -82,6 +101,19 @@ export default function AdmissionManager() {
           subtitle={`ট্র্যাকিং আইডি: ${selectedAdm.tracking_id}`}
         >
           <div className="space-y-4 text-xs sm:text-sm">
+            {selectedAdm.photo && (
+              <div className="flex justify-center pb-2">
+                <div className="relative group">
+                  <img
+                    src={selectedAdm.photo}
+                    alt={selectedAdm.name_bn}
+                    className="w-24 h-28 object-cover rounded-xl border-2 border-primary shadow-sm"
+                  />
+                  <span className="block text-center text-[10px] text-muted mt-1 font-mono">পাসপোর্ট ছবি</span>
+                </div>
+              </div>
+            )}
+
             <div className="p-4 rounded-xl bg-surface-2 border border-border space-y-2.5">
               <div className="flex justify-between">
                 <span className="text-muted">শিক্ষার্থীর নাম (বাংলা):</span>

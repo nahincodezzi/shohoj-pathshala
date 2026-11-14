@@ -9,8 +9,9 @@ import Checkbox from '../../../components/ui/Checkbox';
 import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
+import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
-import { Bell, Plus, AlertCircle } from 'lucide-react';
+import { Bell, Plus, AlertCircle, Paperclip, FileText, Download } from 'lucide-react';
 
 export default function NoticeManager() {
   const { school, supportMode } = useOutletContext();
@@ -23,7 +24,8 @@ export default function NoticeManager() {
     title: '',
     description: '',
     category: 'academic',
-    is_urgent: false
+    is_urgent: false,
+    attachment: null
   });
 
   const handleAddSubmit = (e) => {
@@ -41,6 +43,13 @@ export default function NoticeManager() {
 
     showToast('নোটিশ সফলভাবে প্রকাশিত হয়েছে!');
     setAddModalOpen(false);
+    setForm({
+      title: '',
+      description: '',
+      category: 'academic',
+      is_urgent: false,
+      attachment: null
+    });
   };
 
   return (
@@ -73,6 +82,20 @@ export default function NoticeManager() {
             )
           },
           {
+            key: 'attachment',
+            label: 'সংযুক্তি',
+            width: '100px',
+            render: (val) => (
+              val ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary-soft px-2 py-0.5 rounded-full">
+                  <Paperclip className="w-3 h-3" /> ফাইল
+                </span>
+              ) : (
+                <span className="text-xs text-muted">—</span>
+              )
+            )
+          },
+          {
             key: 'is_urgent',
             label: 'টিকার অবস্থা',
             width: '120px',
@@ -92,7 +115,7 @@ export default function NoticeManager() {
           }
         ]}
         data={notices}
-        minWidth="640px"
+        minWidth="680px"
       />
 
       {/* Add Notice Modal */}
@@ -134,6 +157,18 @@ export default function NoticeManager() {
               required
             />
           </div>
+
+          <FileUpload
+            label="নোটিশের সংযুক্তি / ফাইল (ঐচ্ছিক)"
+            helperText="PDF, DOC, DOCX অথবা নোটিশের ছবি আপলোড করুন"
+            type="file"
+            accept=".pdf,image/*,.doc,.docx"
+            value={form.attachment?.dataUrl || form.attachment}
+            onChange={(val, meta) => setForm({ 
+              ...form, 
+              attachment: val ? { dataUrl: val, name: meta?.name || 'Notice_Attachment.pdf', type: meta?.type || 'application/pdf' } : null 
+            })}
+          />
 
           <Checkbox
             label="জরুরি নোটিশ হিসেবে হেডার টিকারে দেখান (Urgent Ticker)"

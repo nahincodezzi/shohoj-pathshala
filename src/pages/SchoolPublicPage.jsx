@@ -14,6 +14,7 @@ import EmptyState from '../components/ui/EmptyState';
 import GridTable from '../components/ui/GridTable';
 import Modal from '../components/ui/Modal';
 import Alert from '../components/ui/Alert';
+import FileUpload from '../components/ui/FileUpload';
 import { useToast } from '../components/ui/ToastContext';
 import { 
   GraduationCap, 
@@ -50,7 +51,10 @@ import {
   Compass,
   Star,
   Briefcase,
-  ShieldCheck
+  ShieldCheck,
+  Film,
+  Play,
+  Paperclip
 } from 'lucide-react';
 
 export default function SchoolPublicPage() {
@@ -68,12 +72,15 @@ export default function SchoolPublicPage() {
   const committee = school ? TenantRepository.getCommittee(school.id) : [];
   const routines = school ? TenantRepository.getRoutines(school.id) : [];
   const gallery = school ? TenantRepository.getGallery(school.id) : [];
+  const videos = school ? TenantRepository.getVideos(school.id) : [];
   const facilities = school ? TenantRepository.getFacilities(school.id) : [];
 
   // Active hash or mobile tab
   const [activeTab, setActiveTab] = useState('home'); 
   const [activeNoticeFilter, setActiveNoticeFilter] = useState('all');
   const [activeGalleryFilter, setActiveGalleryFilter] = useState('all');
+  const [activeMediaTab, setActiveMediaTab] = useState('photos'); // 'photos', 'videos'
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   // Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -104,6 +111,7 @@ export default function SchoolPublicPage() {
   const [admissionForm, setAdmissionForm] = useState({
     name_bn: '',
     name_en: '',
+    photo: '',
     father_name: '',
     mother_name: '',
     applied_class: '6',
@@ -211,6 +219,12 @@ export default function SchoolPublicPage() {
     return g.category === activeGalleryFilter;
   });
 
+  // Video filtering
+  const filteredVideos = videos.filter(v => {
+    if (activeGalleryFilter === 'all') return true;
+    return v.category === activeGalleryFilter;
+  });
+
   // Handle Result Search
   const handleResultSearch = (e) => {
     e.preventDefault();
@@ -299,9 +313,17 @@ export default function SchoolPublicPage() {
           
           {/* Logo & School Name */}
           <Link to={`/${school.slug}`} onClick={() => navigateToTab('home')} className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
-              {school.name_bn[0]}
-            </div>
+            {(settings?.logo || school.logo) ? (
+              <img
+                src={settings?.logo || school.logo}
+                alt={school.name_bn}
+                className="w-12 h-12 rounded-2xl object-cover border border-border shadow-md shrink-0 bg-surface-2"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
+                {school.name_bn[0]}
+              </div>
+            )}
             <div>
               <h1 className="text-base sm:text-lg font-heading font-bold text-text leading-tight group-hover:text-primary transition-colors">
                 {school.name_bn}
@@ -855,7 +877,11 @@ export default function SchoolPublicPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-surface border border-border rounded-2xl p-6 sm:p-10 shadow-xs">
               <div className="lg:col-span-4 text-center lg:text-left">
                 <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl bg-surface-2 border-2 border-primary/30 mx-auto lg:mx-0 flex items-center justify-center text-primary mb-4 shadow-md overflow-hidden">
-                  <Users className="w-16 h-16 opacity-75" />
+                  {settings?.headmaster_photo ? (
+                    <img src={settings.headmaster_photo} alt={settings.headmaster_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Users className="w-16 h-16 opacity-75" />
+                  )}
                 </div>
                 <h3 className="text-lg font-heading font-bold text-text">
                   {settings?.headmaster_name || 'ভারপ্রাপ্ত প্রধান শিক্ষক'}
@@ -1245,8 +1271,12 @@ export default function SchoolPublicPage() {
           {/* President Card Highlight */}
           {settings?.chairman_name && (
             <Card surface="surface" className="p-6 sm:p-8 border-l-4 border-l-primary flex flex-col sm:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-primary-soft text-primary font-heading font-bold text-2xl flex items-center justify-center shrink-0">
-                {settings.chairman_name[0]}
+              <div className="w-24 h-24 rounded-full bg-primary-soft text-primary font-heading font-bold text-2xl flex items-center justify-center shrink-0 overflow-hidden border border-border">
+                {settings.chairman_photo ? (
+                  <img src={settings.chairman_photo} alt={settings.chairman_name} className="w-full h-full object-cover" />
+                ) : (
+                  settings.chairman_name[0]
+                )}
               </div>
               <div className="space-y-2 text-center sm:text-left">
                 <span className="text-xs font-mono font-bold text-primary uppercase">পরিচালনা পর্ষদের সম্মানিত সভাপতি</span>
@@ -1752,6 +1782,15 @@ export default function SchoolPublicPage() {
               <form onSubmit={handleAdmissionSubmit}>
                 {admissionStep === 1 && (
                   <div className="space-y-4">
+                    <FileUpload
+                      label="শিক্ষার্থীর পাসপোর্ট সাইজ ছবি (Passport Photo)"
+                      helperText="JPG বা PNG ফরম্যাট। ডিজিটাল প্রবেশপত্রে এই ছবিটি প্রদর্শিত হবে।"
+                      accept="image/*"
+                      type="image"
+                      aspectRatio="square"
+                      value={admissionForm.photo}
+                      onChange={(val) => setAdmissionForm({ ...admissionForm, photo: val })}
+                    />
                     <Input
                       label="শিক্ষার্থীর নাম (বাংলায়)"
                       placeholder="e.g. মোঃ তানভীর আহমেদ"
@@ -1847,6 +1886,15 @@ export default function SchoolPublicPage() {
 
                 {admissionStep === 3 && (
                   <div className="space-y-5">
+                    {admissionForm.photo && (
+                      <div className="flex justify-center pb-1">
+                        <img
+                          src={admissionForm.photo}
+                          alt="Applicant"
+                          className="w-20 h-24 object-cover rounded-xl border-2 border-primary shadow-xs"
+                        />
+                      </div>
+                    )}
                     <div className="p-4 rounded-xl bg-surface-2 border border-border space-y-2 text-xs">
                       <div className="flex justify-between py-1 border-b border-border/60">
                         <span className="text-muted">শিক্ষার্থীর নাম:</span>
@@ -2069,23 +2117,53 @@ export default function SchoolPublicPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* ================= TAB 10: PHOTO GALLERY (গ্যালারি) ======================= */}
+      {/* ================= TAB 10: MEDIA GALLERY (ফটো ও ভিডিও গ্যালারি) ========= */}
       {/* ========================================================================= */}
       {activeTab === 'gallery' && (
         <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
           <div>
-            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">PHOTO GALLERY</span>
+            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">MEDIA GALLERY</span>
             <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
-              আলোকচিত্র ও ফটো অ্যালবাম
+              আলোকচিত্র ও ভিডিও কর্নার
             </h2>
             <p className="text-xs sm:text-sm text-muted">
-              ক্যাম্পাস প্রাঙ্গণ, ক্রীড়া প্রতিযোগিতা, বিজ্ঞান মেলা ও সাংস্কৃতিক উৎসবের স্থিরচিত্র
+              ক্যাম্পাস প্রাঙ্গণ, ক্রীড়া প্রতিযোগিতা, বিজ্ঞান মেলা ও সাংস্কৃতিক উৎসবের স্মারক স্থিরচিত্র ও ভিডিও
             </p>
           </div>
 
+          {/* Media Switcher: Photos vs Videos */}
+          <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-xl border border-border max-w-xs">
+            <button
+              type="button"
+              onClick={() => setActiveMediaTab('photos')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeMediaTab === 'photos'
+                  ? 'bg-surface text-primary shadow-xs'
+                  : 'text-muted hover:text-text'
+              }`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>ছবি সমূহ ({gallery.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveMediaTab('videos')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeMediaTab === 'videos'
+                  ? 'bg-surface text-primary shadow-xs'
+                  : 'text-muted hover:text-text'
+              }`}
+            >
+              <Film className="w-3.5 h-3.5" />
+              <span>ভিডিও সমূহ ({videos.length})</span>
+            </button>
+          </div>
+
+          {/* Category Filter Chips */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {[
-              { key: 'all', label: 'সকল ছবি' },
+              { key: 'all', label: activeMediaTab === 'photos' ? 'সকল ছবি' : 'সকল ভিডিও' },
               { key: 'campus', label: 'ক্যাম্পাস ও প্রাঙ্গণ' },
               { key: 'sports', label: 'খেলাধুলা ও ক্রীড়া' },
               { key: 'academic', label: 'বিজ্ঞান ও ল্যাব' },
@@ -2104,34 +2182,93 @@ export default function SchoolPublicPage() {
             ))}
           </div>
 
-          {filteredGallery.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGallery.map((g) => (
-                <Card
-                  key={g.id}
-                  surface="surface"
-                  onClick={() => setLightboxImage(g)}
-                  className="overflow-hidden p-0 group cursor-pointer hover:border-primary transition-colors"
-                >
-                  <div className="aspect-video overflow-hidden bg-surface-2 relative">
-                    <img
-                      src={g.image}
-                      alt={g.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-4 space-y-1">
-                    <h4 className="text-sm font-bold text-text line-clamp-1">{g.title}</h4>
-                    <p className="text-xs text-muted line-clamp-2">{g.description}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card surface="surface" className="p-8 text-center">
-              <EmptyState title="এই ক্যাটাগরিতে কোনো ছবি নেই" description="অন্যান্য ক্যাটাগরি ফিল্টার করে ছবি দেখুন।" />
-            </Card>
+          {/* PHOTOS GRID */}
+          {activeMediaTab === 'photos' && (
+            filteredGallery.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                {filteredGallery.map((g) => (
+                  <Card
+                    key={g.id}
+                    surface="surface"
+                    onClick={() => setLightboxImage(g)}
+                    className="overflow-hidden p-0 group cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <div className="aspect-video overflow-hidden bg-surface-2 relative">
+                      <img
+                        src={g.image}
+                        alt={g.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="p-4 space-y-1">
+                      <h4 className="text-sm font-bold text-text line-clamp-1">{g.title}</h4>
+                      <p className="text-xs text-muted line-clamp-2">{g.description}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card surface="surface" className="p-8 text-center">
+                <EmptyState title="এই ক্যাটাগরিতে কোনো ছবি নেই" description="অন্যান্য ক্যাটাগরি ফিল্টার করে ছবি দেখুন।" />
+              </Card>
+            )
+          )}
+
+          {/* VIDEOS GRID */}
+          {activeMediaTab === 'videos' && (
+            filteredVideos.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                {filteredVideos.map((v) => (
+                  <Card
+                    key={v.id}
+                    surface="surface"
+                    onClick={() => setSelectedVideo(v)}
+                    className="overflow-hidden p-0 group cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <div className="aspect-video overflow-hidden bg-black relative flex items-center justify-center">
+                      {v.embed_url?.startsWith('data:video') ? (
+                        <video src={v.embed_url} className="w-full h-full object-cover opacity-80" />
+                      ) : v.thumbnail ? (
+                        <img
+                          src={v.thumbnail}
+                          alt={v.title}
+                          className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-500">
+                          <Film className="w-12 h-12" />
+                        </div>
+                      )}
+
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                        <div className="w-12 h-12 rounded-full bg-primary/95 text-on-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 ml-0.5 fill-current" />
+                        </div>
+                      </div>
+
+                      {/* Duration Badge */}
+                      {v.duration && (
+                        <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/85 text-white backdrop-blur-xs">
+                          {v.duration}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-4 space-y-1">
+                      <h4 className="text-sm font-bold text-text line-clamp-1 group-hover:text-primary transition-colors">{v.title}</h4>
+                      <p className="text-xs text-muted line-clamp-2">{v.description}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card surface="surface" className="p-8 text-center">
+                <EmptyState title="এই ক্যাটাগরিতে কোনো ভিডিও নেই" description="অন্যান্য ক্যাটাগরি ফিল্টার করে ভিডিও দেখুন।" />
+              </Card>
+            )
           )}
         </main>
       )}
@@ -2232,6 +2369,29 @@ export default function SchoolPublicPage() {
               {readingNotice.description}
             </div>
 
+            {readingNotice.attachment && (
+              <div className="p-4 rounded-xl bg-primary-soft border border-primary/30 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h5 className="font-bold text-text truncate">সংযুক্ত অফিসিয়াল ফাইল</h5>
+                    <span className="text-[11px] text-muted font-mono">{readingNotice.attachment.name || 'Notice_Document.pdf'}</span>
+                  </div>
+                </div>
+                <a
+                  href={readingNotice.attachment.dataUrl || readingNotice.attachment}
+                  download={readingNotice.attachment.name || 'Notice_Attachment.pdf'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition-opacity shrink-0 cursor-pointer shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" /> ডাউনলোড / সংযুক্তি দেখুন
+                </a>
+              </div>
+            )}
+
             <div className="flex justify-between items-center pt-2 border-t border-border">
               <Button variant="secondary" size="sm" onClick={() => setReadingNotice(null)}>
                 বন্ধ করুন
@@ -2268,6 +2428,43 @@ export default function SchoolPublicPage() {
             )}
             <div className="flex justify-end pt-2 border-t border-border">
               <Button variant="secondary" size="sm" onClick={() => setLightboxImage(null)}>
+                বন্ধ করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ================= MODAL 2.5: VIDEO PLAYER LIGHTBOX ================= */}
+      {selectedVideo && (
+        <Modal
+          isOpen={!!selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+          title={selectedVideo.title}
+          subtitle={`ভিডিও কর্নার • ব্যাপ্তি: ${selectedVideo.duration || 'ভিডিও'}`}
+          maxWidth="max-w-3xl"
+        >
+          <div className="space-y-4">
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black flex items-center justify-center">
+              {selectedVideo.embed_url?.startsWith('data:video') ? (
+                <video src={selectedVideo.embed_url} controls autoPlay className="w-full h-full object-contain" />
+              ) : (
+                <iframe
+                  src={selectedVideo.embed_url}
+                  title={selectedVideo.title}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+            {selectedVideo.description && (
+              <p className="text-xs text-muted leading-relaxed">
+                {selectedVideo.description}
+              </p>
+            )}
+            <div className="flex justify-end pt-2 border-t border-border">
+              <Button variant="secondary" size="sm" onClick={() => setSelectedVideo(null)}>
                 বন্ধ করুন
               </Button>
             </div>
@@ -2399,10 +2596,18 @@ export default function SchoolPublicPage() {
                   </div>
                 </div>
 
-                <div className="w-28 h-32 border-2 border-dashed border-slate-400 bg-slate-50 rounded flex flex-col items-center justify-center text-center p-2 text-slate-400 shrink-0">
-                  <UserCheck className="w-6 h-6 mb-1 opacity-50" />
-                  <span className="text-[9px] leading-tight">পাসপোর্ট সাইজ ছবি আঠা দিয়ে লাগান</span>
-                </div>
+                {admitCardData.photo ? (
+                  <img
+                    src={admitCardData.photo}
+                    alt="Applicant Photo"
+                    className="w-28 h-32 object-cover rounded border-2 border-slate-400 shrink-0 shadow-xs"
+                  />
+                ) : (
+                  <div className="w-28 h-32 border-2 border-dashed border-slate-400 bg-slate-50 rounded flex flex-col items-center justify-center text-center p-2 text-slate-400 shrink-0">
+                    <UserCheck className="w-6 h-6 mb-1 opacity-50" />
+                    <span className="text-[9px] leading-tight">পাসপোর্ট সাইজ ছবি আঠা দিয়ে লাগান</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-[11px] space-y-1">
@@ -2447,9 +2652,17 @@ export default function SchoolPublicPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10 text-xs">
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center">
-                  {school.name_bn[0]}
-                </div>
+                {(settings?.logo || school.logo) ? (
+                  <img
+                    src={settings?.logo || school.logo}
+                    alt={school.name_bn}
+                    className="w-9 h-9 rounded-xl object-cover border border-border shrink-0 bg-surface-2"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center shrink-0">
+                    {school.name_bn[0]}
+                  </div>
+                )}
                 <h4 className="font-heading font-bold text-text text-sm">{school.name_bn}</h4>
               </div>
               <p className="text-muted leading-relaxed">

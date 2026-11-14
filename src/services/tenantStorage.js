@@ -401,6 +401,28 @@ const SEED_GALLERY = [
   }
 ];
 
+// Video Gallery per School (YouTube or Direct Video Upload)
+const SEED_VIDEOS = [
+  {
+    id: 'vid_1',
+    school_id: 'sch_bdhs',
+    title: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় বার্ষিক ক্রীড়া ও সাংস্কৃতিক উৎসব ২০২৬',
+    duration: '12:45',
+    video_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    thumbnail: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&auto=format&fit=crop&q=80',
+    description: 'ফুলগাজী উপজেলা পর্যায়ে আয়োজিত বর্ণাঢ্য বার্ষিক ক্রীড়া প্রতিযোগিতা ও সাংস্কৃতিক অনুষ্ঠানের উল্লেখযোগ্য অংশ।'
+  },
+  {
+    id: 'vid_2',
+    school_id: 'sch_bdhs',
+    title: 'ভারপ্রাপ্ত প্রধান শিক্ষক জনাব বাহার উদ্দিন ভূঁইয়ার দিকনির্দেশনামূলক বক্তব্য',
+    duration: '08:20',
+    video_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    thumbnail: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=900&auto=format&fit=crop&q=80',
+    description: 'এসএসসি পরীক্ষার্থীদের সাফল্য ও নতুন শিক্ষাবর্ষের শৃঙ্খলা বিষয়ক দিকনির্দেশনামূলক ভাষণ।'
+  }
+];
+
 // Campus Facilities
 const SEED_FACILITIES = [
   {
@@ -1029,6 +1051,7 @@ export function initTenantStorage() {
   getTable('committee', SEED_COMMITTEE);
   getTable('routines', SEED_ROUTINES);
   getTable('gallery', SEED_GALLERY);
+  getTable('videos', SEED_VIDEOS);
   getTable('facilities', SEED_FACILITIES);
   getTable('users', SEED_USERS);
   getTable('students', SEED_STUDENTS);
@@ -1617,6 +1640,30 @@ export const TenantRepository = {
     const items = getTable('gallery', SEED_GALLERY);
     const remaining = items.filter(g => !(g.id === itemId && g.school_id === schoolId));
     saveTable('gallery', remaining);
+  },
+
+  // --- Video Gallery ---
+  getVideos(schoolId) {
+    const items = getTable('videos', SEED_VIDEOS);
+    return items.filter(v => v.school_id === schoolId);
+  },
+
+  createVideoItem(schoolId, item) {
+    const items = getTable('videos', SEED_VIDEOS);
+    const newItem = {
+      id: `vid_${Date.now()}`,
+      school_id: schoolId,
+      ...item
+    };
+    items.unshift(newItem);
+    saveTable('videos', items);
+    return newItem;
+  },
+
+  deleteVideoItem(schoolId, itemId) {
+    const items = getTable('videos', SEED_VIDEOS);
+    const remaining = items.filter(v => !(v.id === itemId && v.school_id === schoolId));
+    saveTable('videos', remaining);
   },
 
   // --- Facilities ---

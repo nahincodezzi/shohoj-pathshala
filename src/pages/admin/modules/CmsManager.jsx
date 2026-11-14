@@ -7,6 +7,7 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Badge from '../../../components/ui/Badge';
 import Modal from '../../../components/ui/Modal';
+import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
 import { 
   Globe, 
@@ -22,7 +23,8 @@ import {
   Trash2, 
   Plus, 
   ShieldAlert, 
-  RotateCcw 
+  RotateCcw,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export default function CmsManager() {
@@ -40,6 +42,7 @@ export default function CmsManager() {
   const [activeTab, setActiveTab] = useState('branding'); // 'branding', 'sliders', 'uniform', 'messages', 'about', 'contact', 'reset'
 
   const [themePref, setThemePref] = useState(school.theme || 'emerald');
+  const [logo, setLogo] = useState(settings.logo || school.logo || '');
   const [taglineBn, setTaglineBn] = useState(settings.tagline_bn || '');
   const [mottoBn, setMottoBn] = useState(settings.motto_bn || '');
   const [phone, setPhone] = useState(settings.phone || '');
@@ -58,9 +61,11 @@ export default function CmsManager() {
   const [headmasterName, setHeadmasterName] = useState(settings.headmaster_name || '');
   const [headmasterDesignation, setHeadmasterDesignation] = useState(settings.headmaster_designation || '');
   const [headmasterMessage, setHeadmasterMessage] = useState(settings.headmaster_message || '');
+  const [headmasterPhoto, setHeadmasterPhoto] = useState(settings.headmaster_photo || '');
   const [chairmanName, setChairmanName] = useState(settings.chairman_name || '');
   const [chairmanDesignation, setChairmanDesignation] = useState(settings.chairman_designation || '');
   const [chairmanMessage, setChairmanMessage] = useState(settings.chairman_message || '');
+  const [chairmanPhoto, setChairmanPhoto] = useState(settings.chairman_photo || '');
 
   // History & Vision
   const [historyBn, setHistoryBn] = useState(settings.history_bn || '');
@@ -112,8 +117,9 @@ export default function CmsManager() {
   const handleSave = (e) => {
     e.preventDefault();
     try {
-      TenantRepository.updateSchool(school.id, { theme: themePref });
+      TenantRepository.updateSchool(school.id, { theme: themePref, logo });
       TenantRepository.updateSettings(school.id, {
+        logo,
         tagline_bn: taglineBn,
         motto_bn: mottoBn,
         phone,
@@ -123,9 +129,11 @@ export default function CmsManager() {
         headmaster_name: headmasterName,
         headmaster_designation: headmasterDesignation,
         headmaster_message: headmasterMessage,
+        headmaster_photo: headmasterPhoto,
         chairman_name: chairmanName,
         chairman_designation: chairmanDesignation,
         chairman_message: chairmanMessage,
+        chairman_photo: chairmanPhoto,
         history_bn: historyBn,
         vision_bn: visionBn,
         mission_bn: missionBn,
@@ -182,7 +190,42 @@ export default function CmsManager() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* TAB 1: BRANDING & THEME */}
         {activeTab === 'branding' && (
-          <Card surface="surface" className="p-6 space-y-5 animate-fade-in">
+          <Card surface="surface" className="p-6 space-y-6 animate-fade-in">
+            {/* School Monogram / Logo Upload */}
+            <div className="p-5 rounded-2xl bg-surface-2 border border-border flex flex-col sm:flex-row items-center gap-6">
+              <div className="shrink-0 text-center">
+                <FileUpload
+                  label="স্কুলের অফিসিয়াল মনোগ্রাম / লোগো"
+                  helperText="1:1 স্কয়ার অনুপাত (স্বয়ংক্রিয় কম্প্রেস)"
+                  type="image"
+                  aspectRatio="square"
+                  circular
+                  value={logo}
+                  onChange={(val) => setLogo(val)}
+                />
+              </div>
+              <div className="space-y-1.5 text-center sm:text-left">
+                <h4 className="text-sm font-bold text-text">বিদ্যালয়ের প্রাতিষ্ঠানিক লোগো (Monogram)</h4>
+                <p className="text-xs text-muted max-w-lg leading-relaxed">
+                  ওয়েবসাইটের হেডার, ফুটার, অনলাইন ভর্তি প্রবেশপত্র, প্রশংসাপত্র এবং অ্যাডমিন প্যানেলে এই লোগোটি ব্যবহৃত হবে। PNG বা JPG ফাইল আপলোড করতে পারেন।
+                </p>
+                {logo && (
+                  <div className="pt-1 flex items-center justify-center sm:justify-start gap-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary-soft px-2.5 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3" /> লোগো আপলোড করা আছে
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setLogo('')}
+                      className="text-[11px] text-danger hover:underline cursor-pointer"
+                    >
+                      লোগো মুছে ফেলুন
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div>
               <label className="text-xs font-medium text-text block mb-2">স্কুলের কালার থিম (Theme)</label>
               <div className="grid grid-cols-2 gap-4 max-w-md">
@@ -279,11 +322,13 @@ export default function CmsManager() {
                   onChange={(e) => setNewSlide({ ...newSlide, tag: e.target.value })}
                 />
               </div>
-              <Input
-                label="ছবির URL"
-                placeholder="https://images.unsplash.com/..."
+              <FileUpload
+                label="স্লাইড ব্যানার ছবি আপলোড করুন"
+                helperText="ল্যান্ডস্কেপ ব্যানার ফরম্যাট (১৬:৯)। কম্পিউটার থেকে ছবি আপলোড করুন।"
+                type="image"
+                aspectRatio="banner"
                 value={newSlide.image}
-                onChange={(e) => setNewSlide({ ...newSlide, image: e.target.value })}
+                onChange={(val) => setNewSlide({ ...newSlide, image: val })}
               />
               <Input
                 label="উপ-শিরোনাম বা সংক্ষিপ্ত বিবরণ"
@@ -397,7 +442,7 @@ export default function CmsManager() {
         {activeTab === 'messages' && (
           <div className="space-y-6 animate-fade-in">
             <Card surface="surface" className="p-6 space-y-4">
-              <span className="text-xs font-mono font-bold text-primary uppercase">প্রধান শিক্ষকের তথ্য ও বাণী</span>
+              <span className="text-xs font-mono font-bold text-primary uppercase">প্রধান শিক্ষকের তথ্য, ছবি ও বাণী</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="প্রধান শিক্ষকের নাম"
@@ -410,6 +455,16 @@ export default function CmsManager() {
                   onChange={(e) => setHeadmasterDesignation(e.target.value)}
                 />
               </div>
+
+              <FileUpload
+                label="প্রধান শিক্ষকের অফিসিয়াল ছবি"
+                helperText="পাসপোর্ট বা ফরমাল ছবি (১:১ স্কয়ার)। হোমপেজে বাণীর সাথে প্রদর্শিত হবে।"
+                type="image"
+                aspectRatio="square"
+                value={headmasterPhoto}
+                onChange={(val) => setHeadmasterPhoto(val)}
+              />
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-text">প্রধান শিক্ষকের প্রাতিষ্ঠানিক বাণী:</label>
                 <textarea
@@ -422,7 +477,7 @@ export default function CmsManager() {
             </Card>
 
             <Card surface="surface" className="p-6 space-y-4">
-              <span className="text-xs font-mono font-bold text-indigo uppercase">পরিচালনা পর্ষদের সভাপতির তথ্য ও বাণী</span>
+              <span className="text-xs font-mono font-bold text-indigo uppercase">পরিচালনা পর্ষদের সভাপতির তথ্য, ছবি ও বাণী</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="সভাপতির নাম"
@@ -435,6 +490,16 @@ export default function CmsManager() {
                   onChange={(e) => setChairmanDesignation(e.target.value)}
                 />
               </div>
+
+              <FileUpload
+                label="সভাপতির অফিসিয়াল ছবি"
+                helperText="পাসপোর্ট বা ফরমাল ছবি (১:১ স্কয়ার)। হোমপেজে বাণীর সাথে প্রদর্শিত হবে।"
+                type="image"
+                aspectRatio="square"
+                value={chairmanPhoto}
+                onChange={(val) => setChairmanPhoto(val)}
+              />
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-text">সভাপতির উদ্বোধনী বাণী:</label>
                 <textarea
