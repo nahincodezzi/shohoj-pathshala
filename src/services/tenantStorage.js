@@ -473,11 +473,23 @@ const SEED_USERS = [
     must_change_password: false
   },
   {
+    id: 'usr_bdhs_asst_head',
+    school_id: 'sch_bdhs',
+    username: 'assthead',
+    password: 'password123',
+    name: 'জনাব সলিম উদ্দিন মজুমদার',
+    role: 'asst_headmaster',
+    active: true,
+    failed_attempts: 0,
+    locked_until: null,
+    must_change_password: false
+  },
+  {
     id: 'usr_bdhs_teacher',
     school_id: 'sch_bdhs',
     username: 'teacher',
     password: 'password123',
-    name: 'মোঃ সাইদুল ইসলাম',
+    name: 'জনাব জাহাঙ্গীর আলম',
     role: 'teacher',
     active: true,
     failed_attempts: 0,
@@ -489,7 +501,7 @@ const SEED_USERS = [
     school_id: 'sch_bdhs',
     username: 'office',
     password: 'password123',
-    name: 'কামাল হোসেন',
+    name: 'নুরুল কবির ভূঁইয়া',
     role: 'office_assistant',
     active: true,
     failed_attempts: 0,
@@ -577,67 +589,211 @@ const SEED_STUDENTS = [
 ];
 
 const SEED_TEACHERS = [
-  // BDHS Teachers
+  // BDHS Teachers & Staff (16 members from Master Spec §7.2 in exact canonical order)
   {
     id: 'tch_1',
     school_id: 'sch_bdhs',
+    order: 1,
     category: 'teacher',
-    name: 'জনাব বাহার উদ্দিন ভূঁইয়া',
     designation: 'ভারপ্রাপ্ত প্রধান শিক্ষক',
-    subject: 'গণিত ও পদার্থবিজ্ঞান',
-    qualification: 'বি.এসসি (অনার্স), এম.এসসি, বি.এড',
-    phone: '০১৮১১-১২৩৪৫৬',
-    email: 'headmaster@bdhs.edu.bd',
-    order: 1
+    name: 'জনাব বাহার উদ্দিন ভূঁইয়া',
+    subject: 'ইংরেজি',
+    qualification: 'বি.এ (ইংরেজি)',
+    phone: '+880 1819-204561',
+    email: 'bonduas106644@gmail.com'
   },
   {
     id: 'tch_2',
     school_id: 'sch_bdhs',
+    order: 2,
     category: 'teacher',
-    name: 'জনাব মোহাম্মদ শামসুল হক',
-    designation: 'সহকারী প্রধান শিক্ষক',
-    subject: 'ইংরেজি সাহিত্য',
-    qualification: 'বি.এ (অনার্স), এম.এ (ইংরেজি), বি.এড',
-    phone: '০১৮২২-২৩৪৫৬৭',
-    email: 'shamsul@bdhs.edu.bd',
-    order: 2
+    designation: 'ভারপ্রাপ্ত সহ প্রধান শিক্ষক',
+    name: 'জনাব সলিম উদ্দিন মজুমদার',
+    subject: 'ইংরেজি',
+    qualification: 'ইংরেজি, বি.এ, বি.এড (B.A., B.Ed.)',
+    phone: '+880 1818-450123',
+    email: 'bonduas106644@gmail.com'
   },
   {
     id: 'tch_3',
     school_id: 'sch_bdhs',
+    order: 3,
     category: 'teacher',
-    name: 'মোঃ সাইদুল ইসলাম',
-    designation: 'সিনিয়র সহকারী শিক্ষক',
-    subject: 'বাংলা ও সামাজিক বিজ্ঞান',
-    qualification: 'বি.এ (অনার্স), এম.এ (বাংলা)',
-    phone: '০১৮৩৩-৩৪৫৬৭৮',
-    email: 'saidul@bdhs.edu.bd',
-    order: 3
+    designation: 'সহকারী শিক্ষক',
+    name: 'জনাব জাহাঙ্গীর আলম',
+    subject: 'হিসাব বিজ্ঞান',
+    qualification: 'বি.কম, বি.এড (B.Com., B.Ed.)',
+    phone: '+880 1711-234567',
+    email: 'bonduas106644@gmail.com'
   },
   {
     id: 'tch_4',
     school_id: 'sch_bdhs',
+    order: 4,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'মো: জাফর উল্লাহ চৌধুরী',
+    subject: 'ইসলাম শিক্ষা',
+    qualification: 'এম.এ, ইসলাম শিক্ষা (M.A., Islamic Studies)',
+    phone: '+880 1815-998877',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_5',
+    school_id: 'sch_bdhs',
+    order: 5,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'হানিফ ভূঁইয়া',
+    subject: 'ইংরেজি, হিসাব বিজ্ঞান ও বাণিজ্য',
+    qualification: 'বি.কম, বি.এড, বি.পি.এড (B.Com., B.Ed., B.P.Ed.)',
+    phone: '+880 1715-667788',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_6',
+    school_id: 'sch_bdhs',
+    order: 6,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'আনোয়ার হোসেন',
+    subject: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+    qualification: 'বি.কম, বি.এড (B.Com., B.Ed.)',
+    phone: '+880 1912-334455',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_7',
+    school_id: 'sch_bdhs',
+    order: 7,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'আয়েশা ছিদ্দিকা',
+    subject: 'সমাজ বিজ্ঞান',
+    qualification: 'বি.এ, বি.এড (B.A., B.Ed.)',
+    phone: '+880 1823-112233',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_8',
+    school_id: 'sch_bdhs',
+    order: 8,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'রাশিদা আক্তার ফেরদৌস',
+    subject: 'সমাজ বিজ্ঞান',
+    qualification: 'সমাজ বিজ্ঞান (B.A., Social Science)',
+    phone: '+880 1817-554433',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_9',
+    school_id: 'sch_bdhs',
+    order: 9,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'রাবেয়া আক্তার',
+    subject: 'ভৌত বিজ্ঞান',
+    qualification: 'এম.এসসি, বি.এড (M.Sc., B.Ed.)',
+    phone: '+880 1716-443322',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_10',
+    school_id: 'sch_bdhs',
+    order: 10,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'রেদোয়ান উল্লাহ',
+    subject: 'গণিত',
+    qualification: 'এম.এসসি, বি.এড (M.Sc., B.Ed.)',
+    phone: '+880 1814-776655',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_11',
+    school_id: 'sch_bdhs',
+    order: 11,
+    category: 'teacher',
+    designation: 'সহকারী শিক্ষক',
+    name: 'চন্দন সরকার',
+    subject: 'বিজ্ঞান',
+    qualification: 'বি.এস.সি (B.Sc., Science)',
+    phone: '+880 1718-990011',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_12',
+    school_id: 'sch_bdhs',
+    order: 12,
     category: 'staff',
-    name: 'কামাল হোসেন',
-    designation: 'অফিস সহকারী কাম কম্পিউটার অপারেটর',
-    subject: 'অফিস প্রশাসন ও হিসাব',
-    qualification: 'এইচএসসি (ব্যবসায় শিক্ষা)',
-    phone: '০১৮৪৪-৪৫৬৭৮৯',
-    email: 'office@bdhs.edu.bd',
-    order: 4
+    designation: 'অফিস সহকারী',
+    name: 'নুরুল কবির ভূঁইয়া',
+    subject: 'প্রশাসনিক কার্যক্রম ও হিসাব',
+    qualification: 'বি.এ (B.A.)',
+    phone: '+880 1712-893042',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_13',
+    school_id: 'sch_bdhs',
+    order: 13,
+    category: 'staff',
+    designation: 'পিয়ন (অফিস সহায়ক)',
+    name: 'নুরুল আফসার',
+    subject: 'সাধারণ প্রাতিষ্ঠানিক সেবা',
+    qualification: 'অফিস সহায়ক',
+    phone: '+880 1819-001122',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_14',
+    school_id: 'sch_bdhs',
+    order: 14,
+    category: 'staff',
+    designation: 'নিরাপত্তা কর্মী',
+    name: 'আবদুল জলিল চৌধুরী',
+    subject: 'ক্যাম্পাস নিরাপত্তা ও শৃঙ্খলা',
+    qualification: 'নিরাপত্তা প্রহরী',
+    phone: '+880 1711-556677',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_15',
+    school_id: 'sch_bdhs',
+    order: 15,
+    category: 'staff',
+    designation: 'আয়া (পরিচ্ছন্নতাকর্মী)',
+    name: 'সুমি আক্তার',
+    subject: 'ক্যাম্পাস ও শিক্ষার্থী পরিচর্যা',
+    qualification: 'সহায়ক কর্মী',
+    phone: '+880 1813-223344',
+    email: 'bonduas106644@gmail.com'
+  },
+  {
+    id: 'tch_16',
+    school_id: 'sch_bdhs',
+    order: 16,
+    category: 'staff',
+    designation: 'পিয়ন (অফিস সহায়ক)',
+    name: 'বিবি হাজেরা',
+    subject: 'সাধারণ প্রাতিষ্ঠানিক সেবা',
+    qualification: 'অফিস সহায়ক',
+    phone: '+880 1714-889900',
+    email: 'bonduas106644@gmail.com'
   },
   // BAHS Teacher
   {
     id: 'tch_bahs_1',
     school_id: 'sch_bahs',
+    order: 1,
     category: 'teacher',
     name: 'ড. রফিকুল ইসলাম',
     designation: 'প্রধান শিক্ষক',
     subject: 'পদার্থবিজ্ঞান',
     qualification: 'পিএইচডি, এম.এসসি',
     phone: '০১৭৭৭-৮৮৮৯৯৯',
-    email: 'head@bahs.edu.bd',
-    order: 1
+    email: 'head@bahs.edu.bd'
   }
 ];
 
@@ -836,7 +992,18 @@ function getTable(name, defaultSeed) {
       storage.setItem(key, JSON.stringify(defaultSeed));
       return defaultSeed;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+
+    // Auto-migrate teachers table to include all 16 teachers in canonical order
+    if (name === 'teachers' && Array.isArray(parsed)) {
+      const bdhsTeachers = parsed.filter(t => t.school_id === 'sch_bdhs');
+      if (bdhsTeachers.length < 16 || !bdhsTeachers.some(t => t.name.includes('সলিম উদ্দিন'))) {
+        storage.setItem(key, JSON.stringify(defaultSeed));
+        return defaultSeed;
+      }
+    }
+
+    return parsed;
   } catch (err) {
     console.error(`Error reading ${key}:`, err);
     return defaultSeed;
@@ -1294,6 +1461,26 @@ export const TenantRepository = {
   getTeachers(schoolId) {
     const teachers = getTable('teachers', SEED_TEACHERS);
     return teachers.filter(t => t.school_id === schoolId).sort((a, b) => a.order - b.order);
+  },
+
+  addTeacher(teacherData) {
+    const teachers = getTable('teachers', SEED_TEACHERS);
+    const schoolTeachers = teachers.filter(t => t.school_id === teacherData.school_id);
+    const newTeacher = {
+      id: `tch_${Date.now()}`,
+      order: schoolTeachers.length + 1,
+      ...teacherData
+    };
+    teachers.push(newTeacher);
+    saveTable('teachers', teachers);
+    return newTeacher;
+  },
+
+  deleteTeacher(id, schoolId) {
+    let teachers = getTable('teachers', SEED_TEACHERS);
+    teachers = teachers.filter(t => !(t.id === id && t.school_id === schoolId));
+    saveTable('teachers', teachers);
+    return true;
   },
 
   // --- Notices ---

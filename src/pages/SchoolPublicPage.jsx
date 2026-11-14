@@ -47,7 +47,10 @@ import {
   ExternalLink,
   Sparkles,
   Shield,
-  Compass
+  Compass,
+  Star,
+  Briefcase,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function SchoolPublicPage() {
@@ -86,6 +89,10 @@ export default function SchoolPublicPage() {
 
   // Gallery Modal Lightbox
   const [lightboxImage, setLightboxImage] = useState(null);
+
+  // Faculty & Teachers filter & search
+  const [teacherFilter, setTeacherFilter] = useState('all'); // 'all', 'teacher', 'staff'
+  const [teacherSearch, setTeacherSearch] = useState('');
 
   // Result Search State
   const [resultQuery, setResultQuery] = useState({ classVal: '10', rollVal: '1', examVal: 'Annual', yearVal: '2026' });
@@ -154,7 +161,10 @@ export default function SchoolPublicPage() {
   // Sync hash with activeTab
   useEffect(() => {
     const handleHash = () => {
-      const hash = window.location.hash.replace('#', '');
+      let hash = window.location.hash.replace('#', '');
+      if (hash === 'faculty') hash = 'teachers';
+      if (hash === 'routines') hash = 'academics';
+      if (hash === 'facebookHub') hash = 'contact';
       const validTabs = ['home', 'about', 'committee', 'teachers', 'academics', 'uniform', 'notices', 'admission', 'results', 'gallery', 'contact'];
       if (validTabs.includes(hash)) {
         setActiveTab(hash);
@@ -1280,46 +1290,234 @@ export default function SchoolPublicPage() {
       {/* ========================================================================= */}
       {/* ================= TAB 4: FACULTY & STAFF (শিক্ষক ও কর্মচারী) ============= */}
       {/* ========================================================================= */}
-      {activeTab === 'teachers' && (
-        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in">
-          <div>
-            <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">FACULTY & STAFF</span>
-            <h2 className="text-3xl font-heading font-bold text-text mt-1 mb-2">
-              শিক্ষক ও কর্মচারীবৃন্দ
-            </h2>
-            <p className="text-xs sm:text-sm text-muted">আমাদের নিবেদিতপ্রাণ শিক্ষক ও কর্মকর্তা পরিষদ</p>
-          </div>
+      {activeTab === 'teachers' && (() => {
+        const filteredTeachers = teachers.filter((t) => {
+          if (teacherFilter !== 'all' && t.category !== teacherFilter) return false;
+          if (teacherSearch.trim()) {
+            const q = teacherSearch.toLowerCase();
+            const matchName = t.name?.toLowerCase().includes(q);
+            const matchDesig = t.designation?.toLowerCase().includes(q);
+            const matchSub = t.subject?.toLowerCase().includes(q);
+            const matchQual = t.qualification?.toLowerCase().includes(q);
+            return matchName || matchDesig || matchSub || matchQual;
+          }
+          return true;
+        });
 
-          {teachers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teachers.map((t) => (
-                <Card key={t.id} surface="surface" className="p-5 flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-surface-2 border border-border flex items-center justify-center text-primary shrink-0 font-bold text-lg">
-                    {t.name.split(' ').pop()?.[0] || 'শ'}
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <h4 className="text-sm font-bold text-text leading-tight truncate">{t.name}</h4>
-                    <p className="text-xs text-primary font-semibold">{t.designation}</p>
-                    <p className="text-[11px] text-muted truncate">{t.subject || t.qualification}</p>
-                    {t.qualification && (
-                      <p className="text-[10px] text-muted font-mono">{t.qualification}</p>
-                    )}
-                    {t.phone && (
-                      <div className="pt-1 flex items-center gap-1 text-[11px] text-muted font-mono">
-                        <Phone className="w-3 h-3 text-primary" /> {t.phone}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
+        const teacherCount = teachers.filter(t => t.category === 'teacher').length;
+        const staffCount = teachers.filter(t => t.category === 'staff').length;
+
+        return (
+          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-12 w-full space-y-8 animate-fade-in font-bangla">
+            {/* Header */}
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <div className="inline-flex items-center gap-1.5 bg-primary-soft text-primary text-xs font-bold px-4 py-1.5 rounded-full mb-3 shadow-xs border border-primary/20">
+                <Users className="w-3.5 h-3.5 text-primary" />
+                <span>শিক্ষক ও কর্মচারী পরিষদ</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-text leading-tight">
+                আমাদের দক্ষ ও নিবেদিতপ্রাণ শিক্ষক ও কর্মকর্তা-কর্মচারী
+              </h2>
+              <p className="text-xs sm:text-sm text-muted mt-2 leading-relaxed">
+                অভিজ্ঞ, উচ্চশিক্ষিত ও স্নেহশীল শিক্ষকদের নিবিড় তত্ত্বাবধানে {school.name_bn}-এর পাঠদান ও প্রশাসনিক কার্যক্রম পরিচালিত হয়।
+              </p>
             </div>
-          ) : (
-            <Card surface="surface" className="p-8 text-center">
-              <EmptyState title="শিক্ষক ও কর্মচারী তালিকা পাওয়া যায়নি" description="তালিকা শীঘ্রই হালনাগাদ করা হবে।" />
-            </Card>
-          )}
-        </main>
-      )}
+
+            {/* Toolbar (Segmented Filter + Search) */}
+            <div className="bg-surface p-3 sm:p-4 rounded-2xl border border-border flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
+              {/* Segmented Filter */}
+              <div className="flex flex-wrap sm:flex-nowrap bg-surface-2 p-1 rounded-xl border border-border text-xs font-semibold w-full md:w-auto gap-1">
+                <button
+                  type="button"
+                  onClick={() => setTeacherFilter('all')}
+                  className={`flex-1 md:flex-initial px-4 py-2 rounded-lg transition cursor-pointer whitespace-nowrap ${
+                    teacherFilter === 'all'
+                      ? 'bg-primary text-on-primary shadow-xs font-bold'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  সকল সদস্য ({teachers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTeacherFilter('teacher')}
+                  className={`flex-1 md:flex-initial px-4 py-2 rounded-lg transition cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 ${
+                    teacherFilter === 'teacher'
+                      ? 'bg-primary text-on-primary shadow-xs font-bold'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>শিক্ষক পরিষদ ({teacherCount})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTeacherFilter('staff')}
+                  className={`flex-1 md:flex-initial px-4 py-2 rounded-lg transition cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 ${
+                    teacherFilter === 'staff'
+                      ? 'bg-primary text-on-primary shadow-xs font-bold'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>কর্মচারীবৃন্দ ({staffCount})</span>
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full md:w-80">
+                <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="নাম, পদবি বা বিষয় দিয়ে খুঁজুন..."
+                  value={teacherSearch}
+                  onChange={(e) => setTeacherSearch(e.target.value)}
+                  className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-border bg-surface text-xs font-medium text-text placeholder:text-muted focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all"
+                />
+                {teacherSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setTeacherSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text p-0.5 rounded cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Grid */}
+            {filteredTeachers.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredTeachers.map((t) => {
+                  const isHeadmaster = t.order === 1;
+                  const isAsstHeadmaster = t.order === 2;
+
+                  return (
+                    <article
+                      key={t.id}
+                      className={`bg-surface rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col justify-between group shadow-xs hover:-translate-y-1 hover:shadow-xl ${
+                        isHeadmaster
+                          ? 'border-accent ring-2 ring-accent/30'
+                          : isAsstHeadmaster
+                          ? 'border-primary/40 hover:border-primary'
+                          : 'border-border hover:border-primary/40'
+                      }`}
+                    >
+                      {/* Visual Header */}
+                      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-deep via-deep to-primary flex flex-col items-center justify-center pb-5 select-none">
+                        {/* Glow & Rings */}
+                        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_40%,var(--accent),transparent_70%)]" />
+                        <div className="absolute w-40 h-40 rounded-full border border-dashed border-accent/20 pointer-events-none" />
+                        <div className="absolute w-28 h-28 rounded-full border border-accent/25 pointer-events-none" />
+
+                        {/* Serial Badge */}
+                        <span className="absolute top-3 left-3 z-20 bg-deep/90 text-white border border-white/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono backdrop-blur-xs">
+                          #{t.order}
+                        </span>
+
+                        {/* Star for Head / Asst Head */}
+                        {(isHeadmaster || isAsstHeadmaster) && (
+                          <div className="relative z-10 mb-1 opacity-90 w-5 h-5 rounded-full border border-accent/40 bg-deep/60 flex items-center justify-center shadow-xs">
+                            <Star className="w-2.5 h-2.5 text-accent fill-accent" />
+                          </div>
+                        )}
+
+                        {/* Avatar */}
+                        <div className={`relative z-10 w-20 h-20 rounded-full border-[3px] shadow-inner flex items-center justify-center transition-transform group-hover:scale-105 ${
+                          isHeadmaster 
+                            ? 'border-accent ring-4 ring-accent/20 bg-deep/90' 
+                            : 'border-white/40 ring-4 ring-white/10 bg-deep/90'
+                        }`}>
+                          {t.category === 'staff' ? (
+                            <Briefcase className="w-8 h-8 text-accent/90" />
+                          ) : (
+                            <GraduationCap className="w-8 h-8 text-accent drop-shadow-xs" />
+                          )}
+                        </div>
+
+                        {/* Designation Chip */}
+                        <div className="absolute bottom-2.5 inset-x-3 z-20 flex items-center justify-center">
+                          <span className={`text-[11px] font-bold px-3 py-1 rounded-full shadow-md inline-flex items-center gap-1.5 max-w-full truncate ${
+                            isHeadmaster
+                              ? 'bg-accent text-accent-ink font-bold'
+                              : isAsstHeadmaster
+                              ? 'bg-primary text-on-primary border border-accent/40 font-bold'
+                              : 'bg-surface-2/95 text-text border border-border backdrop-blur-xs font-medium'
+                          }`}>
+                            {isHeadmaster ? (
+                              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                            ) : isAsstHeadmaster ? (
+                              <Award className="w-3.5 h-3.5 shrink-0" />
+                            ) : null}
+                            <span className="truncate">{t.designation}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="p-4 space-y-2.5 bg-surface flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <h3 className="text-base font-bold text-text group-hover:text-primary transition-colors line-clamp-1 leading-snug">
+                            {t.name}
+                          </h3>
+
+                          {t.subject && (
+                            <div className="flex items-start gap-2 bg-primary-soft p-2 rounded-xl border border-primary/20 text-xs text-primary font-semibold">
+                              <BookOpen className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                              <span className="line-clamp-2 leading-tight">{t.subject}</span>
+                            </div>
+                          )}
+
+                          {t.qualification && (
+                            <div className="flex items-start gap-2 text-[11px] text-muted bg-surface-2 px-2.5 py-1.5 rounded-lg border border-border">
+                              <GraduationCap className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted" />
+                              <span className="line-clamp-2 font-mono leading-tight">{t.qualification}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer Contact */}
+                        <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted font-mono mt-auto">
+                          {t.phone ? (
+                            <a
+                              href={`tel:${t.phone}`}
+                              className="flex items-center gap-1.5 hover:text-primary font-semibold transition-colors"
+                              title={`কল করুন: ${t.phone}`}
+                            >
+                              <Phone className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-[11px]">{t.phone}</span>
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-muted">—</span>
+                          )}
+
+                          {t.email && (
+                            <a
+                              href={`mailto:${t.email}`}
+                              className="p-1.5 text-muted hover:text-primary hover:bg-surface-2 rounded-full transition-colors"
+                              title={`ইমেইল পাঠান: ${t.email}`}
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card surface="surface" className="p-12 text-center">
+                <EmptyState
+                  title="কোনো শিক্ষক বা কর্মচারী পাওয়া যায়নি"
+                  description={teacherSearch ? `"${teacherSearch}" দিয়ে কোনো তথ্য মেলেনি। অন্য কোনো নাম বা বিষয় লিখে চেষ্টা করুন।` : 'এই বিভাগে কোনো সদস্য তালিকাভুক্ত নেই।'}
+                />
+              </Card>
+            )}
+          </main>
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* ================= TAB 5: ACADEMICS & ROUTINES (একাডেমিক ও রুটিন) ========= */}

@@ -9,14 +9,14 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { UserCheck, Plus, Phone, Mail, Award } from 'lucide-react';
+import { UserCheck, Plus, Phone, Mail, Award, Trash2 } from 'lucide-react';
 
 export default function TeacherManager() {
   const { school, supportMode } = useOutletContext();
   const { showToast } = useToast();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const teachers = TenantRepository.getTeachers(school.id);
+  const [teachers, setTeachers] = useState(() => TenantRepository.getTeachers(school.id));
 
   const [form, setForm] = useState({
     name: '',
@@ -30,18 +30,28 @@ export default function TeacherManager() {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    const existing = TenantRepository.getTeachers(school.id);
-    const newTeacher = {
-      id: `tch_${Date.now()}`,
+    TenantRepository.addTeacher({
       school_id: school.id,
-      order: existing.length + 1,
       ...form
-    };
-    existing.push(newTeacher);
-    localStorage.setItem(`sp_tenant_teachers`, JSON.stringify(existing));
-
+    });
+    setTeachers(TenantRepository.getTeachers(school.id));
     showToast('নতুন শিক্ষক/কর্মচারী সফলভাবে যোগ করা হয়েছে!');
+    setForm({
+      name: '',
+      category: 'teacher',
+      designation: '',
+      subject: '',
+      qualification: '',
+      phone: '',
+      email: ''
+    });
     setAddModalOpen(false);
+  };
+
+  const handleDelete = (id, name) => {
+    TenantRepository.deleteTeacher(id, school.id);
+    setTeachers(TenantRepository.getTeachers(school.id));
+    showToast(`${name}-কে তালিকা থেকে অপসারণ করা হয়েছে।`);
   };
 
   return (
@@ -75,10 +85,26 @@ export default function TeacherManager() {
           },
           { key: 'designation', label: 'পদবি', width: '1.5fr' },
           { key: 'subject', label: 'বিষয়', width: '1.2fr' },
-          { key: 'phone', label: 'মোবাইল', width: '120px', fontMono: true }
+          { key: 'phone', label: 'মোবাইল', width: '130px', fontMono: true },
+          ...(!supportMode ? [{
+            key: 'actions',
+            label: 'কাজ',
+            width: '80px',
+            align: 'right',
+            render: (_, row) => (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={Trash2}
+                className="text-danger hover:bg-danger-soft p-1.5"
+                onClick={() => handleDelete(row.id, row.name)}
+                title="মুছে ফেলুন"
+              />
+            )
+          }] : [])
         ]}
         data={teachers}
-        minWidth="680px"
+        minWidth="760px"
       />
 
       {/* Add Modal */}
