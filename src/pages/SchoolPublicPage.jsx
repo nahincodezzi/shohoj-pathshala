@@ -13,6 +13,7 @@ import Stepper from '../components/ui/Stepper';
 import EmptyState from '../components/ui/EmptyState';
 import GridTable from '../components/ui/GridTable';
 import Modal from '../components/ui/Modal';
+import Alert from '../components/ui/Alert';
 import { useToast } from '../components/ui/ToastContext';
 import { 
   GraduationCap, 
@@ -33,10 +34,11 @@ import {
   Menu, 
   X, 
   Home, 
-  Award,
-  Download,
-  Copy,
-  ChevronRight
+  Award, 
+  Download, 
+  Copy, 
+  ChevronRight,
+  UserCheck
 } from 'lucide-react';
 
 export default function SchoolPublicPage() {

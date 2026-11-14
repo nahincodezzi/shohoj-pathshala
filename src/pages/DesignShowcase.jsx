@@ -118,12 +118,14 @@ export default function DesignShowcase() {
                   <Input 
                     label="মোবাইল নম্বর (ভুল ইনপুট টেস্ট)" 
                     value="017123" 
+                    onChange={() => {}}
                     error="মোবাইল নম্বর ১১ ডিজিট হতে হবে" 
                   />
                   <Input 
                     label="পাসওয়ার্ড" 
                     type="password" 
                     value="Secret123" 
+                    onChange={() => {}}
                     icon={Lock} 
                   />
                   <Select 
@@ -245,12 +247,14 @@ export default function DesignShowcase() {
                   <Input 
                     label="মোবাইল নম্বর (ভুল ইনপুট টেস্ট)" 
                     value="017123" 
+                    onChange={() => {}}
                     error="মোবাইল নম্বর ১১ ডিজিট হতে হবে" 
                   />
                   <Input 
                     label="পাসওয়ার্ড" 
                     type="password" 
                     value="Secret123" 
+                    onChange={() => {}}
                     icon={Lock} 
                   />
                   <Select 
@@ -367,3 +371,4 @@ export default function DesignShowcase() {
     </div>
   );
 }
+

@@ -279,3 +279,4 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
     </div>
   );
 }
+

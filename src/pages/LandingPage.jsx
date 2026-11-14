@@ -4,6 +4,7 @@ import { useTheme } from '../hooks/useTheme';
 import { TenantRepository } from '../services/tenantStorage';
 import ThemeToggle from '../components/common/ThemeToggle';
 import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
 import { 
@@ -469,3 +470,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

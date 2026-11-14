@@ -74,3 +74,4 @@ export const ownerTranslations = {
     temp_pass_alert: 'A temporary password has been generated for the Super Admin. This is shown only once, copy and save it:'
   }
 };
+
