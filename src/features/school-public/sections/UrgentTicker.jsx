@@ -43,7 +43,7 @@ export default function UrgentTicker({
 
         {/* Center: Streaming Ticker with Fade Mask */}
         <div 
-          className="flex-1 overflow-hidden relative cursor-pointer"
+          className="flex-1 min-w-0 overflow-hidden relative cursor-pointer"
           onClick={() => onOpenNotice && onOpenNotice(urgentNotice)}
           style={{
             maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',

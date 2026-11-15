@@ -27,12 +27,12 @@ export default function SchoolHeader({
   return (
     <>
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] backdrop-blur-md border-b border-[var(--border)] transition-colors duration-300">
-        <div className="max-w-[1240px] mx-auto px-6 h-18 sm:h-20 flex items-center justify-between gap-4">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2.5 sm:gap-4">
           {/* Logo & School Name */}
-          <a href="#home" className="flex items-center gap-3.5 group shrink-0 min-w-0">
-            <div className="relative">
+          <a href="#home" className="flex items-center gap-2.5 sm:gap-3.5 group min-w-0 flex-1 sm:flex-initial">
+            <div className="relative shrink-0">
               {school?.logo ? (
-                <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-tr from-[var(--primary)] via-[var(--accent)] to-[var(--primary)] shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 sm:w-[46px] sm:h-[46px] rounded-full p-[2px] bg-gradient-to-tr from-[var(--primary)] via-[var(--accent)] to-[var(--primary)] shadow-sm group-hover:scale-105 transition-transform">
                   <img
                     src={school.logo}
                     alt={schoolName}
@@ -40,18 +40,18 @@ export default function SchoolHeader({
                   />
                 </div>
               ) : (
-                <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-tr from-[var(--primary)] via-[var(--accent)] to-[var(--primary)] shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 sm:w-[46px] sm:h-[46px] rounded-full p-[2px] bg-gradient-to-tr from-[var(--primary)] via-[var(--accent)] to-[var(--primary)] shadow-sm group-hover:scale-105 transition-transform">
                   <InitialsAvatar name={schoolName} size="md" className="w-full h-full border-2 border-[var(--bg)]" />
                 </div>
               )}
             </div>
 
-            <div className="min-w-0">
-              <span className="text-base sm:text-lg font-extrabold text-[var(--text)] font-heading leading-tight truncate block group-hover:text-[var(--primary-text)] transition-colors">
+            <div className="min-w-0 flex-1">
+              <span className="text-sm sm:text-lg font-extrabold text-[var(--text)] font-heading leading-tight truncate block group-hover:text-[var(--primary-text)] transition-colors">
                 {schoolName}
               </span>
               {(estYear || locationText) && (
-                <span className="text-[11px] sm:text-xs text-[var(--subtle)] font-body truncate block mt-0.5">
+                <span className="text-[10px] sm:text-xs text-[var(--subtle)] font-body truncate block mt-0.5">
                   {estYear ? `${isBn ? 'স্থাপিত:' : 'Est:'} ${formatNumber(estYear, isBn)}` : ''}
                   {estYear && locationText ? ' • ' : ''}
                   {locationText}
