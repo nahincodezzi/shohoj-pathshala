@@ -304,7 +304,7 @@ export default function LandingPage() {
               </button>
               <a
                 href={`tel:${landingSettings.helpline_phone || '01812345678'}`}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-xs font-bold hover:brightness-110 shadow-sm transition-all"
+                className="btn-primary-action inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold hover:brightness-110 shadow-sm transition-all"
               >
                 <span>{lang === 'bn' ? 'এখনই কল দিন' : 'Call Now'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />

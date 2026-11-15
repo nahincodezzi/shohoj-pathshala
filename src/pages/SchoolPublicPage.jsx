@@ -18,6 +18,20 @@ import Alert from '../components/ui/Alert';
 import FileUpload from '../components/ui/FileUpload';
 import { useToast } from '../components/ui/ToastContext';
 import { toBengaliNumber, toEnglishNumber, toBengaliOrdinal } from '../utils/dateFormatter';
+
+// School Public Redesign Architecture
+import { usePublicSchool } from '../features/school-public/hooks/usePublicSchool';
+import { useSchoolPrefs } from '../features/school-public/hooks/useSchoolPrefs';
+import { useNavItems } from '../features/school-public/hooks/useNavItems';
+import SchoolMeta from '../features/school-public/seo/SchoolMeta';
+import SchoolNotFound from '../features/school-public/pages/SchoolNotFound';
+import SchoolClosed from '../features/school-public/pages/SchoolClosed';
+import FeatureUnavailable from '../features/school-public/pages/FeatureUnavailable';
+import SchoolHome from '../features/school-public/SchoolHome';
+import UtilityBar from '../features/school-public/sections/UtilityBar';
+import SchoolHeader from '../features/school-public/sections/SchoolHeader';
+import SchoolFooter from '../features/school-public/sections/SchoolFooter';
+import BottomTabBar from '../features/school-public/sections/BottomTabBar';
 import { 
   GraduationCap, 
   Users, 
@@ -64,20 +78,43 @@ import {
 
 export default function SchoolPublicPage() {
   const { slug } = useParams();
-  const school = TenantRepository.getSchoolBySlug(slug || '');
-  const { mode, theme, toggleMode } = useTheme({ slug, defaultTheme: school?.theme });
   const { showToast } = useToast();
-  const settings = school ? TenantRepository.getSettings(school.id) : null;
-  const teachers = school ? TenantRepository.getTeachers(school.id) : [];
-  const students = school ? TenantRepository.getStudents(school.id) : [];
-  const notices = school ? TenantRepository.getNotices(school.id) : [];
-  const sliders = school ? TenantRepository.getSliders(school.id) : [];
-  const uniform = school ? TenantRepository.getUniform(school.id) : null;
+
+  // Unified Multi-tenant Public School Hook
+  const {
+    availability,
+    school,
+    plan,
+    features,
+    sections,
+    sliders,
+    notices,
+    facilities,
+    gallery,
+    videos,
+    teachers,
+    students,
+    settings,
+    uniform,
+    stats,
+    urgentNotice,
+    headmaster,
+    academicGroups
+  } = usePublicSchool(slug);
+
+  // Tenant-isolated Preferences (dark/light, lang, fontSize)
+  const {
+    mode,
+    theme,
+    lang,
+    fontSize,
+    toggleMode,
+    toggleLang,
+    setFontSize
+  } = useSchoolPrefs(slug, school?.theme);
+
   const committee = school ? TenantRepository.getCommittee(school.id) : [];
   const routines = school ? TenantRepository.getRoutines(school.id) : [];
-  const gallery = school ? TenantRepository.getGallery(school.id) : [];
-  const videos = school ? TenantRepository.getVideos(school.id) : [];
-  const facilities = school ? TenantRepository.getFacilities(school.id) : [];
 
   // Active hash or mobile tab
   const [activeTab, setActiveTab] = useState('home'); 
@@ -190,10 +227,17 @@ export default function SchoolPublicPage() {
   const navigateToTab = (tabKey) => {
     setActiveTab(tabKey);
     window.location.hash = tabKey;
-    setOpenDropdown(null);
-    setMobileNavOpen(false);
+    if (typeof setOpenDropdown === 'function') setOpenDropdown(null);
+    if (typeof setMobileNavOpen === 'function') setMobileNavOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const { navItems, bottomTabs } = useNavItems({
+    features,
+    sections,
+    lang,
+    onNavigate: navigateToTab
+  });
 
   // Sync hash with activeTab
   useEffect(() => {
@@ -214,42 +258,29 @@ export default function SchoolPublicPage() {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // Dynamic Document Title
-  useEffect(() => {
-    if (school) {
-      document.title = `${school.name_bn} — অফিশিয়াল পোর্টাল`;
-    }
-  }, [school]);
-
-  if (!school) {
-    return (
-      <div className="min-h-screen bg-bg text-text flex flex-col items-center justify-center p-6 text-center">
-        <ShieldAlert className="w-14 h-14 text-danger mb-4" />
-        <h2 className="text-2xl font-heading font-bold mb-2">স্কুল পাওয়া যায়নি (404)</h2>
-        <p className="text-sm text-muted mb-6">"{slug}" স্লাগে কোনো পাবলিক ওয়েবসাইট রেজিস্টার করা নেই।</p>
-        <Link to="/"><Button variant="secondary" icon={ArrowLeft}>প্ল্যাটফর্ম হোমপেজে যান</Button></Link>
-      </div>
-    );
+  if (availability === 'not_found' || !school) {
+    return <SchoolNotFound slug={slug} lang={lang} />;
   }
 
-  // Urgent Notice for Header Ticker
-  const urgentNotice = notices.find(n => n.is_urgent && n.published);
+  if (availability === 'closed') {
+    return <SchoolClosed school={school} lang={lang} />;
+  }
 
   // Notice filtering
-  const filteredNotices = notices.filter(n => {
-    if (!n.published) return false;
+  const filteredNotices = (notices || []).filter(n => {
+    if (!n || !n.published) return false;
     if (activeNoticeFilter === 'all') return true;
     return n.category === activeNoticeFilter;
   });
 
   // Gallery filtering
-  const filteredGallery = gallery.filter(g => {
+  const filteredGallery = (gallery || []).filter(g => {
     if (activeGalleryFilter === 'all') return true;
     return g.category === activeGalleryFilter;
   });
 
   // Video filtering
-  const filteredVideos = videos.filter(v => {
+  const filteredVideos = (videos || []).filter(v => {
     if (activeGalleryFilter === 'all') return true;
     return v.category === activeGalleryFilter;
   });
@@ -557,1194 +588,99 @@ export default function SchoolPublicPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-200">
-      {/* Accessible Skip Link */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-on-primary focus:font-bold focus:rounded-lg focus:shadow-xl"
-      >
-        মূল কনটেন্টে যান (Skip to content)
-      </a>
-      
-      {/* ================= 1. INSTITUTIONAL TOP BAR ================= */}
-      <div className="bg-surface-2 border-b border-border py-1.5 text-xs text-muted">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span>EIIN: <strong className="text-text font-bold">{school.eiin}</strong></span>
-            <span>•</span>
-            <span>বোর্ড: <strong className="text-text">{school.board}</strong></span>
-            <span>•</span>
-            <span>জেলা: <strong className="text-text">{school.district}</strong></span>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans transition-colors duration-200 relative pb-16 xl:pb-0">
+      <SchoolMeta school={school} lang={lang} />
+
+      {activeTab === 'home' ? (
+        <SchoolHome
+          school={school}
+          settings={settings}
+          headmaster={headmaster}
+          academicGroups={academicGroups}
+          features={features}
+          sections={sections}
+          sliders={sliders}
+          notices={notices}
+          facilities={facilities}
+          gallery={gallery}
+          videos={videos}
+          teachers={teachers}
+          students={students}
+          uniform={uniform}
+          urgentNotice={urgentNotice}
+          stats={stats}
+          navItems={navItems}
+          bottomTabs={bottomTabs}
+          mode={mode}
+          theme={theme}
+          lang={lang}
+          fontSize={fontSize}
+          onToggleMode={toggleMode}
+          onToggleLang={toggleLang}
+          onSetFontSize={setFontSize}
+          onNavigate={navigateToTab}
+          onOpenNotice={(n) => setReadingNotice(n)}
+          onOpenLightbox={(img) => setLightboxImage(img)}
+          onOpenVideo={(v) => setSelectedVideo(v)}
+          onOpenTrackingModal={() => setTrackingModalOpen(true)}
+          onOpenUniform={() => navigateToTab('uniform')}
+          onQuickResultSearch={(q) => {
+            setResultQuery(prev => ({ ...prev, ...q }));
+            navigateToTab('results');
+          }}
+          onDirectApply={() => navigateToTab('admission')}
+        />
+      ) : (
+        <>
+          <UtilityBar
+            school={school}
+            lang={lang}
+            fontSize={fontSize}
+            onToggleLang={toggleLang}
+            onSetFontSize={setFontSize}
+          />
+          <SchoolHeader
+            school={school}
+            navItems={navItems}
+            mode={mode}
+            theme={theme}
+            lang={lang}
+            fontSize={fontSize}
+            onToggleMode={toggleMode}
+            onToggleLang={toggleLang}
+            onSetFontSize={setFontSize}
+          />
+
+          {/* Subpage Breadcrumb Navigation Strip */}
+          <div className="bg-[var(--surface)] border-b border-[var(--border)] py-3 transition-colors">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => navigateToTab('home')}
+                className="inline-flex items-center gap-2 text-xs font-bold text-[var(--muted)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>{lang === 'bn' ? '← মূল হোমপেজে ফিরে যান' : '← Back to Home'}</span>
+              </button>
+
+              <span className="text-xs font-mono font-bold text-[var(--subtle)] uppercase">
+                {activeTab}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
-            {/* Font Scaler */}
-            <div className="hidden sm:flex items-center gap-1 bg-surface px-2 py-0.5 rounded-md border border-border" aria-label="ফন্ট সাইজ পরিবর্তন">
-              <span className="text-[10px] text-muted mr-1 font-mono">ফন্ট:</span>
-              <button
-                type="button"
-                onClick={() => { document.documentElement.style.fontSize = '14px'; }}
-                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
-                title="ছোট ফন্ট"
-              >
-                A-
-              </button>
-              <button
-                type="button"
-                onClick={() => { document.documentElement.style.fontSize = '16px'; }}
-                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
-                title="স্বাভাবিক ফন্ট"
-              >
-                স্বাভাবিক
-              </button>
-              <button
-                type="button"
-                onClick={() => { document.documentElement.style.fontSize = '18px'; }}
-                className="px-1.5 py-0.5 rounded text-[10px] font-bold hover:bg-surface-2 hover:text-text cursor-pointer"
-                title="বড় ফন্ট"
-              >
-                A+
-              </button>
-            </div>
-
-            <Link to={`/${school.slug}/login`} className="hover:text-primary transition-colors flex items-center gap-1 font-semibold text-[11px]">
-              <Users className="w-3.5 h-3.5 text-primary" />
-              <span>অ্যাডমিন পোর্টাল লগইন</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ================= 2. MAIN HEADER & LOGO ================= */}
-      <header className="sticky top-0 z-40 bg-header-bg backdrop-blur-md border-b border-border shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          
-          {/* Logo & School Name */}
-          <Link to={`/${school.slug}`} onClick={() => navigateToTab('home')} className="flex items-center gap-3 group">
-            {(settings?.logo || school.logo) ? (
-              <img
-                src={settings?.logo || school.logo}
-                alt={school.name_bn}
-                className="w-12 h-12 rounded-2xl object-cover border border-border shadow-md shrink-0 bg-surface-2"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-2xl bg-primary text-on-primary font-heading font-extrabold text-xl flex items-center justify-center shadow-md shrink-0">
-                {school.name_bn[0]}
-              </div>
-            )}
-            <div>
-              <h1 className="text-base sm:text-lg font-heading font-bold text-text leading-tight group-hover:text-primary transition-colors">
-                {school.name_bn}
-              </h1>
-              <p className="text-[11px] text-muted">
-                স্থাপিত: {settings?.established || '১৯৯০'} • {settings?.recognized || 'কুমিল্লা শিক্ষাবোর্ড'}
-              </p>
-            </div>
-          </Link>
-
-          {/* Desktop Grouped Dropdown Navigation */}
-          <nav ref={navRef} className="hidden lg:flex items-center gap-1.5" aria-label="প্রধান নেভিগেশন">
-            {/* 1. Home */}
-            <button
-              type="button"
-              onClick={() => navigateToTab('home')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'home'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-muted hover:text-text hover:bg-surface-2'
-              }`}
-            >
-              হোম
-            </button>
-
-            {/* 2. Dropdown: আমাদের সম্পর্কে */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown(openDropdown === 'about' ? null : 'about')}
-                onMouseEnter={() => setOpenDropdown('about')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer ${
-                  navGroups.about.keys.includes(activeTab)
-                    ? 'bg-primary text-on-primary shadow-xs'
-                    : 'text-muted hover:text-text hover:bg-surface-2'
-                }`}
-                aria-expanded={openDropdown === 'about'}
-              >
-                <span>{navGroups.about.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === 'about' ? 'rotate-180' : ''}`} />
-              </button>
-
-              {openDropdown === 'about' && (
-                <div 
-                  onMouseLeave={() => setOpenDropdown(null)}
-                  className="absolute top-full left-0 mt-1.5 w-72 bg-surface/95 backdrop-blur-md border border-border rounded-xl shadow-xl p-2 z-50 animate-scale-in"
-                >
-                  {navGroups.about.items.map((sub) => {
-                    const SubIcon = sub.icon;
-                    const isActive = activeTab === sub.key;
-                    return (
-                      <button
-                        key={sub.key}
-                        type="button"
-                        onClick={() => navigateToTab(sub.key)}
-                        className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-colors cursor-pointer ${
-                          isActive 
-                            ? 'bg-primary-soft text-primary font-bold' 
-                            : 'hover:bg-surface-2 text-text'
-                        }`}
-                      >
-                        <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-primary text-on-primary' : 'bg-surface-2 text-muted'}`}>
-                          <SubIcon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold leading-tight">{sub.label}</div>
-                          <div className="text-[11px] text-muted line-clamp-1 mt-0.5">{sub.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* 3. Dropdown: একাডেমিক */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown(openDropdown === 'academics' ? null : 'academics')}
-                onMouseEnter={() => setOpenDropdown('academics')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer ${
-                  navGroups.academics.keys.includes(activeTab)
-                    ? 'bg-primary text-on-primary shadow-xs'
-                    : 'text-muted hover:text-text hover:bg-surface-2'
-                }`}
-                aria-expanded={openDropdown === 'academics'}
-              >
-                <span>{navGroups.academics.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openDropdown === 'academics' ? 'rotate-180' : ''}`} />
-              </button>
-
-              {openDropdown === 'academics' && (
-                <div 
-                  onMouseLeave={() => setOpenDropdown(null)}
-                  className="absolute top-full left-0 mt-1.5 w-72 bg-surface/95 backdrop-blur-md border border-border rounded-xl shadow-xl p-2 z-50 animate-scale-in"
-                >
-                  {navGroups.academics.items.map((sub) => {
-                    const SubIcon = sub.icon;
-                    const isActive = activeTab === sub.key;
-                    return (
-                      <button
-                        key={sub.key}
-                        type="button"
-                        onClick={() => navigateToTab(sub.key)}
-                        className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-colors cursor-pointer ${
-                          isActive 
-                            ? 'bg-primary-soft text-primary font-bold' 
-                            : 'hover:bg-surface-2 text-text'
-                        }`}
-                      >
-                        <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-primary text-on-primary' : 'bg-surface-2 text-muted'}`}>
-                          <SubIcon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold leading-tight">{sub.label}</div>
-                          <div className="text-[11px] text-muted line-clamp-1 mt-0.5">{sub.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* 4. Admission Action */}
-            <button
-              type="button"
-              onClick={() => navigateToTab('admission')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'admission'
-                  ? 'bg-accent text-white shadow-xs'
-                  : 'bg-accent-soft text-accent hover:bg-accent hover:text-white border border-accent-line'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>অনলাইন ভর্তি</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </button>
-
-            {/* 5. Results */}
-            <button
-              type="button"
-              onClick={() => navigateToTab('results')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'results'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-muted hover:text-text hover:bg-surface-2'
-              }`}
-            >
-              রেজাল্ট
-            </button>
-
-            {/* 6. Gallery */}
-            <button
-              type="button"
-              onClick={() => navigateToTab('gallery')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'gallery'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-muted hover:text-text hover:bg-surface-2'
-              }`}
-            >
-              গ্যালারি
-            </button>
-
-            {/* 7. Contact */}
-            <button
-              type="button"
-              onClick={() => navigateToTab('contact')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'contact'
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-muted hover:text-text hover:bg-surface-2'
-              }`}
-            >
-              যোগাযোগ
-            </button>
-          </nav>
-
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle mode={mode} toggleMode={toggleMode} lang="bn" />
-
-            {/* Mobile Hamburger Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className="lg:hidden p-2 rounded-lg text-muted hover:text-text cursor-pointer"
-              aria-label="মেনু খুলুন"
-            >
-              {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Drawer / Backdrop (Rendered via createPortal to prevent header clipping) */}
-        {mobileNavOpen && typeof document !== 'undefined' && createPortal(
-          <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-fade-in no-print">
-            <div className="w-4/5 max-w-sm h-full bg-surface border-l border-border p-5 flex flex-col justify-between overflow-y-auto">
-              <div>
-                <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center">
-                      {school.name_bn[0]}
-                    </div>
-                    <span className="font-heading font-bold text-sm text-text truncate max-w-[170px]">{school.name_bn}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setMobileNavOpen(false)}
-                    className="p-1.5 rounded-lg text-muted hover:text-text hover:bg-surface-2 cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Section: মূল মেনু */}
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">প্রধান মেনু</span>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('home')}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'home' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Home className="w-4 h-4" />
-                        <span>হোমপেজ</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('admission')}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                          activeTab === 'admission' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <GraduationCap className="w-4 h-4 text-accent" />
-                          <span>অনলাইন ভর্তি আবেদন</span>
-                        </div>
-                        <Badge variant="accent" size="sm">চলছে</Badge>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('results')}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'results' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <FileText className="w-4 h-4 text-info" />
-                        <span>রেজাল্ট ও মার্কশিট</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('notices')}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                          activeTab === 'notices' ? 'bg-primary text-on-primary' : 'text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Bell className="w-4 h-4 text-accent" />
-                          <span>প্রাতিষ্ঠানিক নোটিশ</span>
-                        </div>
-                        {urgentNotice && <span className="w-2 h-2 rounded-full bg-accent" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">আমাদের সম্পর্কে</span>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('about')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'about' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>বিদ্যালয় পরিচিতি ও ইতিহাস</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('committee')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'committee' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Shield className="w-4 h-4" />
-                        <span>পরিচালনা পর্ষদ</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('teachers')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'teachers' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Users className="w-4 h-4" />
-                        <span>শিক্ষক ও কর্মচারী পরিষদ</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-wider block mb-2">অন্যান্য</span>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('academics')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'academics' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Calendar className="w-4 h-4" />
-                        <span>ক্লাস ও পরীক্ষার রুটিন</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('uniform')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'uniform' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        <span>পোশাক নীতিমালা (Uniform)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('gallery')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'gallery' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                        <span>ফটো গ্যালারি</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('contact')}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-3 cursor-pointer ${
-                          activeTab === 'contact' ? 'bg-primary text-on-primary' : 'text-muted hover:text-text hover:bg-surface-2'
-                        }`}
-                      >
-                        <Phone className="w-4 h-4" />
-                        <span>যোগাযোগ ও লোকেশন</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Drawer Bottom Actions */}
-              <div className="pt-4 border-t border-border space-y-3">
-                <Link to={`/${school.slug}/login`} className="w-full block">
-                  <Button variant="primary" size="md" className="w-full" icon={Users}>
-                    অ্যাডমিন পোর্টাল লগইন
-                  </Button>
-                </Link>
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span>থিম পরিবর্তন</span>
-                  <ThemeToggle mode={mode} toggleMode={toggleMode} lang="bn" />
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-      </header>
-
-      {/* ================= 3. URGENT BREAKING NOTICE TICKER ================= */}
-      {urgentNotice && (
-        <div className="bg-accent-soft border-b border-accent-line text-accent py-2 px-4 text-xs font-medium">
-          <div className="max-w-7xl mx-auto flex items-center gap-3 overflow-hidden">
-            <span className="px-2 py-0.5 rounded-md bg-accent text-white font-bold text-[10px] shrink-0 uppercase tracking-wide">
-              জরুরি নোটিশ
-            </span>
-            <div className="truncate flex-1">
-              <span>{urgentNotice.title}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('notices');
-                window.location.hash = 'notices';
-                setReadingNotice(urgentNotice);
-              }}
-              className="underline text-[11px] font-bold shrink-0 hover:opacity-80 cursor-pointer"
-            >
-              বিস্তারিত দেখুন ›
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* ================= TAB 1: HOME TAB (FULL FEATURED HOMEPAGE) ============== */}
-      {/* ========================================================================= */}
-      {activeTab === 'home' && (
-        <main id="main" className="flex-1 space-y-12 pb-16 animate-fade-in">
-          
-          {/* Dynamic Hero Slider */}
-          <section className="relative overflow-hidden bg-surface-2 border-b border-border">
-            {sliders.length > 0 ? (
-              <div className="relative h-[420px] sm:h-[480px] lg:h-[540px] w-full">
-                {sliders.map((slide, idx) => (
-                  <div
-                    key={slide.id || idx}
-                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                      idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none invisible'
-                    }`}
-                  >
-                    <img
-                      src={slide.image}
-                      alt={slide.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/35" />
-
-                    <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                      <div className="max-w-3xl mx-auto space-y-4">
-                        {slide.tag && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold backdrop-blur-md">
-                            <Sparkles className="w-3.5 h-3.5 text-accent" />
-                            {slide.tag}
-                          </span>
-                        )}
-
-                        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-white leading-tight drop-shadow-lg">
-                          {slide.title}
-                        </h2>
-
-                        <p className="text-xs sm:text-base text-white/90 max-w-2xl mx-auto drop-shadow-md leading-relaxed font-medium">
-                          {slide.subtitle}
-                        </p>
-
-                        <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
-                          <Button 
-                            variant="primary" 
-                            size="lg"
-                            onClick={() => {
-                              setActiveTab('admission');
-                              window.location.hash = 'admission';
-                            }}
-                          >
-                            অনলাইন ভর্তি আবেদন
-                          </Button>
-                          <Button 
-                            variant="secondary" 
-                            size="lg"
-                            className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-xs"
-                            onClick={() => {
-                              setActiveTab('results');
-                              window.location.hash = 'results';
-                            }}
-                          >
-                            রেজাল্ট অনুসন্ধান
-                          </Button>
-                          <Button 
-                            variant="secondary" 
-                            size="lg"
-                            className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-xs"
-                            onClick={() => {
-                              setActiveTab('uniform');
-                              window.location.hash = 'uniform';
-                            }}
-                          >
-                            পোশাক নীতিমালা
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Slider Controls */}
-                {sliders.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentSlide(prev => (prev === 0 ? sliders.length - 1 : prev - 1))}
-                      className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-black/60 transition-colors cursor-pointer shadow-md"
-                      aria-label="আগের স্লাইড"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentSlide(prev => (prev + 1) % sliders.length)}
-                      className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-black/60 transition-colors cursor-pointer shadow-md"
-                      aria-label="পরের স্লাইড"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-
-                    {/* Indicator Dots (D38: Accessible 44px Tap Target) */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1">
-                      {sliders.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setCurrentSlide(i)}
-                          className="p-3 inline-flex items-center justify-center cursor-pointer select-none"
-                          aria-label={`স্লাইড ${i + 1}`}
-                        >
-                          <span
-                            className={`h-2.5 rounded-full transition-all block ${
-                              i === currentSlide ? 'w-7 bg-primary shadow-xs' : 'w-2.5 bg-white/50 hover:bg-white/80'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="relative py-20 px-6 sm:px-12 bg-gradient-to-br from-primary/15 via-surface to-surface-2 border-b border-border flex items-center justify-center text-center">
-                <div className="max-w-3xl mx-auto space-y-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary border border-primary/30 text-xs font-bold">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {settings?.tagline_bn || 'জ্ঞানে আলো, কর্মে সফলতা'}
-                  </span>
-                  <h2 className="text-3xl sm:text-5xl font-heading font-extrabold text-text leading-tight">
-                    {school.name_bn}
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
-                    {settings?.motto_bn || 'শিক্ষা, শান্তি ও প্রগতির অনন্য বিদ্যাপীঠ। গুণগত শিক্ষা নিশ্চিতকরণে আমরা অঙ্গীকারাবদ্ধ।'}
-                  </p>
-                  <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
-                    <Button 
-                      variant="primary" 
-                      size="lg"
-                      onClick={() => {
-                        setActiveTab('admission');
-                        window.location.hash = 'admission';
-                      }}
-                    >
-                      অনলাইন ভর্তি আবেদন
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      size="lg"
-                      onClick={() => {
-                        setActiveTab('results');
-                        window.location.hash = 'results';
-                      }}
-                    >
-                      রেজাল্ট অনুসন্ধান
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      size="lg"
-                      onClick={() => {
-                        setActiveTab('notices');
-                        window.location.hash = 'notices';
-                      }}
-                    >
-                      নোটিশ বোর্ড
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Quick Metrics Bar */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card surface="surface" className="text-center p-5 border-l-4 border-l-primary">
-                <span className="text-3xl sm:text-4xl font-mono font-extrabold text-primary block">
-                  {settings?.established || '১৯৯০'}
-                </span>
-                <span className="text-xs text-muted font-medium mt-1 block">প্রতিষ্ঠা সাল</span>
-              </Card>
-
-              <Card surface="surface" className="text-center p-5 border-l-4 border-l-success">
-                <span className="text-3xl sm:text-4xl font-mono font-extrabold text-success block">
-                  {settings?.capacity || (students.length > 0 ? `${toBengaliNumber(students.length)}+` : `${toBengaliNumber(school.max_students || 850)}+`)}
-                </span>
-                <span className="text-xs text-muted font-medium mt-1 block">নিবন্ধিত শিক্ষার্থী</span>
-              </Card>
-
-              <Card surface="surface" className="text-center p-5 border-l-4 border-l-accent">
-                <span className="text-3xl sm:text-4xl font-mono font-extrabold text-accent block">
-                  {settings?.pass_rate || '৯৮.৫%'}
-                </span>
-                <span className="text-xs text-muted font-medium mt-1 block">বোর্ড পাসের গড় হার</span>
-              </Card>
-
-              <Card surface="surface" className="text-center p-5 border-l-4 border-l-indigo">
-                <span className="text-3xl sm:text-4xl font-mono font-extrabold text-indigo block">
-                  ৩টি
-                </span>
-                <span className="text-xs text-muted font-medium mt-1 block">বিভাগ (বিজ্ঞান, ব্যবসা, মানবিক)</span>
-              </Card>
-            </div>
-          </section>
-
-          {/* ================= BENTO GRID (UI/UX Phase 3) ================= */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {/* Bento 1: Latest Notice (col-span-7) */}
-              <div className="md:col-span-7 bg-surface rounded-2xl border border-border p-6 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-xs font-bold border border-primary/20">
-                      <Bell className="w-3.5 h-3.5" />
-                      <span>সর্বশেষ নোটিশ</span>
-                    </div>
-                    {filteredNotices[0] && (
-                      <span className="text-xs text-muted font-mono">
-                        {filteredNotices[0].date}
-                      </span>
-                    )}
-                  </div>
-
-                  {filteredNotices[0] ? (
-                    <div className="space-y-2">
-                      <h4 className="text-lg sm:text-xl font-heading font-bold text-text line-clamp-2">
-                        {filteredNotices[0].title}
-                      </h4>
-                      <p className="text-xs sm:text-sm text-muted line-clamp-2 leading-relaxed">
-                        {filteredNotices[0].desc || 'জরুরি প্রাতিষ্ঠানিক নির্দেশনাবলি দেখতে সম্পূর্ণ নোটিশটি পড়ুন বা ডাউনলোড করুন।'}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted">বর্তমানে কোনো নতুন নোটিশ প্রকাশিত নেই।</p>
-                  )}
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
-                  {filteredNotices[0] ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setReadingNotice(filteredNotices[0])}
-                      >
-                        নোটিশ পড়ুন
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          showToast('নোটিশ পিডিএফ ডাউনলোড শুরু হয়েছে...', 'info');
-                        }}
-                        className="px-3 py-1.5 rounded-lg border border-border bg-surface-2 text-muted hover:text-text hover:bg-surface cursor-pointer text-xs flex items-center gap-1.5 font-semibold"
-                        title="পিডিএফ ডাউনলোড"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>পিডিএফ</span>
-                      </button>
-                    </div>
-                  ) : <div />}
-
-                  <button
-                    type="button"
-                    onClick={() => navigateToTab('notices')}
-                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    সকল নোটিশ দেখুন ({notices.length}) <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Bento 2: Quick Result Search (col-span-5) */}
-              <div className="md:col-span-5 bg-surface rounded-2xl border border-border p-6 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-soft text-accent text-xs font-bold border border-accent/25 mb-3">
-                    <Search className="w-3.5 h-3.5" />
-                    <span>দ্রুত রেজাল্ট অনুসন্ধান</span>
-                  </div>
-                  <h4 className="text-base sm:text-lg font-heading font-bold text-text mb-1">
-                    অনলাইনে ফলাফল জানুন
-                  </h4>
-                  <p className="text-xs text-muted mb-4">
-                    শ্রেণি ও রোল নম্বর দিয়ে তাৎক্ষণিক মার্কশিট ও জিপিএ দেখুন।
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="text-[11px] font-bold text-muted block mb-1">শ্রেণি</label>
-                      <select
-                        value={resultQuery.classVal}
-                        onChange={(e) => setResultQuery(prev => ({ ...prev, classVal: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-xl border border-border bg-surface text-xs font-medium text-text focus:ring-2 focus:ring-primary/40 focus:outline-none"
-                      >
-                        <option value="6">৬ষ্ঠ শ্রেণি</option>
-                        <option value="7">৭ম শ্রেণি</option>
-                        <option value="8">৮ম শ্রেণি</option>
-                        <option value="9">৯ম শ্রেণি</option>
-                        <option value="10">১০ম শ্রেণি</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-bold text-muted block mb-1">রোল নম্বর</label>
-                      <input
-                        type="text"
-                        placeholder="যেমন: ১"
-                        value={resultQuery.rollVal}
-                        onChange={(e) => setResultQuery(prev => ({ ...prev, rollVal: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-xl border border-border bg-surface text-xs font-medium text-text focus:ring-2 focus:ring-primary/40 focus:outline-none font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                  onClick={(e) => {
-                    handleResultSearch(e);
-                    navigateToTab('results');
-                  }}
-                >
-                  ফলাফল দেখুন
-                </Button>
-              </div>
-
-              {/* Bento 3: Admission Callout & Track (col-span-6) */}
-              <div className="md:col-span-6 bg-primary-soft border border-primary/25 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ADMISSION 2026</span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-success text-on-primary">ভর্তি চলছে</span>
-                  </div>
-                  <h4 className="text-lg sm:text-xl font-heading font-bold text-text mb-1">
-                    ২০২৬ শিক্ষাবর্ষে অনলাইনে ভর্তি আবেদন
-                  </h4>
-                  <p className="text-xs sm:text-sm text-muted leading-relaxed mb-4">
-                    ৬ষ্ঠ থেকে ১০ম শ্রেণিতে নতুন শিক্ষার্থী ভর্তি কার্যক্রম চলমান। ঘরে বসেই ৩টি সহজ ধাপে আবেদন করুন এবং ডিজিটাল প্রবেশপত্র ডাউনলোড করুন।
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => navigateToTab('admission')}
-                  >
-                    আবেদন ফরম পূরণ
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={() => setTrackingModalOpen(true)}
-                  >
-                    আবেদন ট্র্যাক ও প্রবেশপত্র
-                  </Button>
-                </div>
-              </div>
-
-              {/* Bento 4: Timetable & Direct Contact (col-span-6) */}
-              <div className="md:col-span-6 bg-surface border border-border rounded-2xl p-6 shadow-xs flex flex-col justify-between">
-                <div>
-                  <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider block mb-2">SCHEDULE & SUPPORT</span>
-                  <h4 className="text-lg sm:text-xl font-heading font-bold text-text mb-1">
-                    সময়সূচি ও অফিশিয়াল হেল্পলাইন
-                  </h4>
-                  <p className="text-xs sm:text-sm text-muted leading-relaxed mb-4">
-                    ক্লাস ও অফিসের সময়সূচিতে সরাসরি যোগাযোগ করতে পারেন অথবা যেকোনো প্রয়োজনে আমাদের হেল্পলাইনে কল করুন।
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-0.5">
-                      <span className="text-[10px] text-muted font-bold block">শ্রেণি পাঠদান</span>
-                      <span className="font-bold text-text font-mono">সকাল ৯:০০ - বিকাল ৪:০০</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-0.5">
-                      <span className="text-[10px] text-muted font-bold block">অফিসিয়াল কার্যক্রম</span>
-                      <span className="font-bold text-text font-mono">সকাল ৮:৩০ - বিকাল ৪:৩০</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border mt-4">
-                  <a href={`tel:${settings?.phone || '01812345678'}`} className="flex-1">
-                    <Button variant="secondary" size="sm" className="w-full" icon={Phone}>
-                      সরাসরি কল
-                    </Button>
-                  </a>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1 w-full"
-                    icon={Mail}
-                    onClick={() => navigateToTab('contact')}
-                  >
-                    বার্তা পাঠান
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Headmaster Message & About Snippet */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-surface border border-border rounded-2xl p-6 sm:p-10 shadow-xs">
-              <div className="lg:col-span-4 text-center lg:text-left">
-                <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl bg-surface-2 border-2 border-primary/30 mx-auto lg:mx-0 flex items-center justify-center text-primary mb-4 shadow-md overflow-hidden">
-                  {settings?.headmaster_photo ? (
-                    <img src={settings.headmaster_photo} alt={settings.headmaster_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Users className="w-16 h-16 opacity-75" />
-                  )}
-                </div>
-                <h3 className="text-lg font-heading font-bold text-text">
-                  {settings?.headmaster_name || 'ভারপ্রাপ্ত প্রধান শিক্ষক'}
-                </h3>
-                <p className="text-xs text-primary font-semibold">
-                  {settings?.headmaster_designation || 'প্রধান শিক্ষক'}
-                </p>
-                <p className="text-[11px] text-muted mt-0.5 font-mono">
-                  {school.name_bn}
-                </p>
-              </div>
-
-              <div className="lg:col-span-8 space-y-4">
-                <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">
-                  প্রধান শিক্ষকের বাণী
-                </span>
-                <h3 className="text-xl sm:text-2xl font-heading font-bold text-text leading-snug">
-                  জ্ঞান, নৈতিকতা ও আধুনিক প্রযুক্তির মেলবন্ধনে আমাদের পথচলা
-                </h3>
-                <p className="text-xs sm:text-sm text-muted leading-relaxed">
-                  {settings?.headmaster_message || 'আমাদের ঐতিহ্যবাহী শিক্ষাপ্রতিষ্ঠান শিক্ষার্থীদের নৈতিক ও মানবিক গুণে বিকশিত করতে অঙ্গীকারাবদ্ধ।'}
-                </p>
-                <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('about');
-                      window.location.hash = 'about';
-                    }}
-                    className="text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    আমাদের ইতিহাস ও লক্ষ্য দেখুন <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('teachers');
-                      window.location.hash = 'teachers';
-                    }}
-                    className="text-muted hover:text-text flex items-center gap-1 cursor-pointer"
-                  >
-                    শিক্ষক পরিষদের তালিকা <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Uniform Dress Code Teaser Card */}
-          {uniform && (
-            <section className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="bg-bg-alt border border-border rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="space-y-2">
-                  <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">
-                    DRESS CODE & DISCIPLINE
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-heading font-bold text-text">
-                    বিদ্যালয়ের নির্ধারিত ইউনিফর্ম ও পোশাক নীতিমালা
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted max-w-2xl leading-relaxed">
-                    ছাত্রদের নির্ধারিত সাদা শার্ট ও নেভি ব্লু প্যান্ট এবং ছাত্রীদের লাল ফ্রক/কামিজ, সাদা পায়জামা ও ওড়না পরিধান বাধ্যতামূলক।
-                  </p>
-                </div>
-                <div className="shrink-0">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => {
-                      setActiveTab('uniform');
-                      window.location.hash = 'uniform';
-                    }}
-                  >
-                    পূর্ণ পোশাক নির্দেশিকা দেখুন
-                  </Button>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Academic Disciplines (Science, Business, Humanities) */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-8">
-              <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">ACADEMICS</span>
-              <h3 className="text-2xl sm:text-3xl font-heading font-bold text-text mt-1">
-                মাধ্যমিক স্তরের শিক্ষাক্রম ও শাখাসমূহ
-              </h3>
-              <p className="text-xs text-muted mt-1">
-                ৬ষ্ঠ থেকে ১০ম শ্রেণি পর্যন্ত কুমিল্লা শিক্ষা বোর্ডের আধুনিক ও মানসম্মত কারিকুলাম
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card surface="surface" className="border-t-4 border-t-primary p-6 space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center font-bold text-sm">
-                  ০১
-                </div>
-                <h4 className="text-lg font-heading font-bold text-text">বিজ্ঞান বিভাগ (Science)</h4>
-                <p className="text-xs text-muted leading-relaxed">
-                  পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান ও উচ্চতর গণিত সহ আধুনিক বিজ্ঞানাগারে সরাসরি ব্যবহারিক ক্লাসের ব্যবস্থা।
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-primary font-semibold">
-                  ল্যাব প্র্যাকটিক্যাল • শেখ রাসেল ডিজিটাল ল্যাব
-                </div>
-              </Card>
-
-              <Card surface="surface" className="border-t-4 border-t-indigo p-6 space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-soft text-indigo flex items-center justify-center font-bold text-sm">
-                  ০২
-                </div>
-                <h4 className="text-lg font-heading font-bold text-text">ব্যবসায় শিক্ষা (Business Studies)</h4>
-                <p className="text-xs text-muted leading-relaxed">
-                  হিসাববিজ্ঞান, ফিন্যান্স ও ব্যাংকিং এবং ব্যবসায় উদ্যোগ বিষয়ে অভিজ্ঞ শিক্ষক দ্বারা হাতে-কলমে পাঠদান।
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-indigo font-semibold">
-                  বাণিজ্য শাখা • হিসাব লেজার ও প্রজেক্ট
-                </div>
-              </Card>
-
-              <Card surface="surface" className="border-t-4 border-t-success p-6 space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-success-soft text-success flex items-center justify-center font-bold text-sm">
-                  ০৩
-                </div>
-                <h4 className="text-lg font-heading font-bold text-text">মানবিক বিভাগ (Humanities)</h4>
-                <p className="text-xs text-muted leading-relaxed">
-                  ইতিহাস, ভূগোল ও পরিবেশ, পৌরনীতি ও অর্থনীতি বিষয়ে গভীর ও বিশ্লেষণধর্মী শিক্ষাদানের মাধ্যমে মেধার বিকাশ।
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-success font-semibold">
-                  মানবিক শাখা • সাধারণ জ্ঞান ও বিতর্ক
-                </div>
-              </Card>
-            </div>
-          </section>
-
-          {/* Campus Facilities Grid */}
-          {facilities.length > 0 && (
-            <section className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">CAMPUS FACILITIES</span>
-                <h3 className="text-2xl sm:text-3xl font-heading font-bold text-text mt-1">
-                  ক্যাম্পাসের অত্যাধুনিক সুবিধাসমূহ
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {facilities.map((fac) => (
-                  <Card key={fac.id} surface="surface" className="p-5 space-y-2">
-                    <h4 className="text-sm font-bold text-text">{fac.title}</h4>
-                    <span className="text-[11px] font-semibold text-primary block">{fac.subtitle}</span>
-                    <p className="text-xs text-muted leading-relaxed">{fac.desc}</p>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Recent Notices Preview */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl sm:text-2xl font-heading font-bold text-text">সর্বশেষ নোটিশ</h3>
-                <p className="text-xs text-muted">প্রাতিষ্ঠানিক ঘোষণা ও পরীক্ষার সময়সূচি</p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setActiveTab('notices');
-                  window.location.hash = 'notices';
-                }}
-              >
-                সব নোটিশ দেখুন
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {notices.slice(0, 3).map((n) => (
-                <Card key={n.id} surface="surface" className="p-5 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      {renderCategoryBadge(n.category)}
-                      <span className="text-[11px] font-mono text-muted">{n.date}</span>
-                    </div>
-                    <h4 className="text-sm font-bold text-text line-clamp-2">{n.title}</h4>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('notices');
-                      window.location.hash = 'notices';
-                      setReadingNotice(n);
-                    }}
-                    className="text-xs text-primary font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    সম্পূর্ণ নোটিশ পড়ুন ›
-                  </button>
-                </Card>
-              ))}
-            </div>
-          </section>
-
-          {/* Photo Gallery Preview */}
-          {gallery.length > 0 && (
-            <section className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-heading font-bold text-text">ফটো অ্যালবাম</h3>
-                  <p className="text-xs text-muted">বিদ্যালয় প্রাঙ্গণ ও সহশিক্ষা কার্যক্রমের চিত্র</p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setActiveTab('gallery');
-                    window.location.hash = 'gallery';
-                  }}
-                >
-                  পুরো গ্যালারি দেখুন
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {gallery.slice(0, 4).map((g) => (
-                  <div
-                    key={g.id}
-                    onClick={() => setLightboxImage(g)}
-                    className="group relative aspect-video rounded-xl overflow-hidden bg-surface-2 cursor-pointer shadow-xs border border-border"
-                  >
-                    <img
-                      src={g.image}
-                      alt={g.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex items-end">
-                      <span className="text-white text-xs font-medium line-clamp-1">{g.title}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Contact & Map Preview */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div className="space-y-4">
-                <span className="text-xs font-mono font-bold text-primary uppercase tracking-wider">CONTACT US</span>
-                <h3 className="text-2xl font-heading font-bold text-text">
-                  যোগাযোগ ও অবস্থান
-                </h3>
-                <div className="space-y-2 text-xs text-muted">
-                  <div className="flex items-start gap-2.5">
-                    <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <span>{settings?.address_bn}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Phone className="w-4 h-4 text-primary shrink-0" />
-                    <span className="font-mono">{settings?.phone} {settings?.phone_alt ? `• ${settings.phone_alt}` : ''}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Mail className="w-4 h-4 text-primary shrink-0" />
-                    <span className="font-mono">{settings?.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="w-4 h-4 text-primary shrink-0" />
-                    <span>{settings?.office_hours}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => {
-                      setActiveTab('contact');
-                      window.location.hash = 'contact';
-                    }}
-                  >
-                    যোগাযোগের বিস্তারিত ও মেসেজ পাঠান
-                  </Button>
-                </div>
-              </div>
-
-              {/* Map Embed or Card */}
-              <div className="rounded-xl overflow-hidden border border-border bg-surface-2 aspect-video flex items-center justify-center text-center p-4">
-                {settings?.map_embed_url ? (
-                  <iframe
-                    title="School Location Map"
-                    src={settings.map_embed_url}
-                    className="w-full h-full border-0"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="space-y-2">
-                    <MapPin className="w-8 h-8 text-primary mx-auto" />
-                    <p className="text-xs font-bold text-text">{school.name_bn}</p>
-                    <p className="text-[11px] text-muted">{settings?.address_bn}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        </main>
-      )}
+          {activeTab === 'admission' && !features.admissionForm ? (
+            <FeatureUnavailable
+              slug={slug}
+              title={lang === 'bn' ? 'অনলাইন ভর্তি বর্তমানে বন্ধ আছে' : 'Admissions Currently Closed'}
+            />
+          ) : activeTab === 'results' && !features.resultSearch ? (
+            <FeatureUnavailable
+              slug={slug}
+              title={lang === 'bn' ? 'অনলাইন ফলাফল বর্তমানে বন্ধ আছে' : 'Results Currently Unavailable'}
+            />
+          ) : (
+            <>
 
       {/* ========================================================================= */}
       {/* ================= TAB 2: ABOUT US (পরিচিতি) ============================= */}
@@ -3170,6 +2106,20 @@ export default function SchoolPublicPage() {
           </div>
         </main>
       )}
+            </>
+          )}
+
+          <SchoolFooter
+            school={school}
+            navItems={navItems}
+            lang={lang}
+          />
+          <BottomTabBar
+            tabs={bottomTabs}
+            lang={lang}
+          />
+        </>
+      )}
 
       {/* ================= MODAL 1: NOTICE FULL VIEW ================= */}
       {readingNotice && (
@@ -3536,132 +2486,6 @@ export default function SchoolPublicPage() {
         </Modal>
       )}
 
-      {/* ================= 12. INSTITUTIONAL FOOTER ================= */}
-      <footer className="border-t border-border bg-surface py-12 mt-auto mb-16 lg:mb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10 text-xs">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                {(settings?.logo || school.logo) ? (
-                  <img
-                    src={settings?.logo || school.logo}
-                    alt={school.name_bn}
-                    className="w-9 h-9 rounded-xl object-cover border border-border shrink-0 bg-surface-2"
-                  />
-                ) : (
-                  <div className="w-9 h-9 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center shrink-0">
-                    {school.name_bn[0]}
-                  </div>
-                )}
-                <h4 className="font-heading font-bold text-text text-sm">{school.name_bn}</h4>
-              </div>
-              <p className="text-muted leading-relaxed">
-                {settings?.motto_bn}
-              </p>
-              <p className="font-mono text-[11px] text-muted">
-                EIIN: {school.eiin} • MPO: {school.mpo_code} • কোড: {school.school_code}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <span className="font-bold text-text block uppercase font-mono text-[11px] tracking-wider">দ্রুত নেভিগেশন</span>
-              <ul className="space-y-1.5 text-muted">
-                <li><button type="button" onClick={() => navigateToTab('about')} className="hover:text-primary cursor-pointer">বিদ্যালয় পরিচিতি</button></li>
-                <li><button type="button" onClick={() => navigateToTab('committee')} className="hover:text-primary cursor-pointer">পরিচালনা পর্ষদ</button></li>
-                <li><button type="button" onClick={() => navigateToTab('teachers')} className="hover:text-primary cursor-pointer">শিক্ষক ও কর্মচারী পরিষদ</button></li>
-                <li><button type="button" onClick={() => navigateToTab('uniform')} className="hover:text-primary cursor-pointer">পোশাক নীতিমালা</button></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <span className="font-bold text-text block uppercase font-mono text-[11px] tracking-wider">একাডেমিক সেবা</span>
-              <ul className="space-y-1.5 text-muted">
-                <li><button type="button" onClick={() => navigateToTab('admission')} className="hover:text-primary cursor-pointer">অনলাইন ভর্তি আবেদন</button></li>
-                <li><button type="button" onClick={() => navigateToTab('results')} className="hover:text-primary cursor-pointer">রেজাল্ট ও মার্কশিট</button></li>
-                <li><button type="button" onClick={() => navigateToTab('academics')} className="hover:text-primary cursor-pointer">রুটিন ও সিলেবাস ডাউনলোড</button></li>
-                <li><button type="button" onClick={() => navigateToTab('notices')} className="hover:text-primary cursor-pointer">প্রাতিষ্ঠানিক নোটিশ</button></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <span className="font-bold text-text block uppercase font-mono text-[11px] tracking-wider">যোগাযোগের ঠিকানা</span>
-              <p className="text-muted leading-relaxed">{settings?.address_bn}</p>
-              <p className="font-mono text-muted">{settings?.phone}</p>
-              <p className="font-mono text-muted">{settings?.email}</p>
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-muted">
-            <p>© ২০২৬ {school.name_bn}। সর্বস্বত্ব সংরক্ষিত।</p>
-            <div className="flex items-center gap-4">
-              <span className="text-primary font-medium">সহজ পাঠশালা দ্বারা পরিচালিত</span>
-              <span>•</span>
-              <Link to={`/${school.slug}/login`} className="hover:underline">পোর্টাল লগইন</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* ================= 13. MOBILE STICKY BOTTOM 4-TAB NAVIGATION BAR (Master Prompt 7.3) ================= */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-lg px-2 py-1.5 flex items-center justify-around no-print" aria-label="মোবাইল দ্রুত মেনু">
-        {/* হোম */}
-        <button
-          type="button"
-          onClick={() => navigateToTab('home')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'home' ? 'text-primary font-bold' : 'text-muted hover:text-text'
-          }`}
-        >
-          <Home className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px]">হোম</span>
-        </button>
-
-        {/* নোটিশ */}
-        <button
-          type="button"
-          onClick={() => navigateToTab('notices')}
-          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'notices' ? 'text-primary font-bold' : 'text-muted hover:text-text'
-          }`}
-        >
-          <div className="relative">
-            <Bell className="w-5 h-5 mb-0.5" />
-            {urgentNotice && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
-            )}
-          </div>
-          <span className="text-[10px]">নোটিশ</span>
-        </button>
-
-        {/* ভর্তি */}
-        <button
-          type="button"
-          onClick={() => navigateToTab('admission')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'admission' ? 'text-primary font-bold' : 'text-muted hover:text-text'
-          }`}
-        >
-          <div className="relative">
-            <GraduationCap className="w-5 h-5 mb-0.5 text-accent" />
-            <span className="absolute -top-1.5 -right-2.5 text-[8px] bg-accent text-white font-bold px-1 rounded-full leading-tight">
-              নতুন
-            </span>
-          </div>
-          <span className="text-[10px]">ভর্তি</span>
-        </button>
-
-        {/* রেজাল্ট */}
-        <button
-          type="button"
-          onClick={() => navigateToTab('results')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'results' ? 'text-primary font-bold' : 'text-muted hover:text-text'
-          }`}
-        >
-          <FileText className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px]">রেজাল্ট</span>
-        </button>
-      </nav>
     </div>
   );
 }

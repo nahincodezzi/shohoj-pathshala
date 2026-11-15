@@ -239,6 +239,89 @@
   -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 35%, #000 30%, transparent 100%);
 }
 
+/* School Public Motion Utilities */
+@keyframes kenBurns {
+  0% { transform: scale(1) translate(0%, 0%); }
+  100% { transform: scale(1.14) translate(-2%, -1.5%); }
+}
+
+.ken-burns {
+  animation: kenBurns 14s ease-in-out alternate infinite;
+  will-change: transform;
+}
+
+@keyframes tickerScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: tickerScroll 26s linear infinite;
+  will-change: transform;
+}
+
+.ticker:hover, .ticker:focus-within {
+  animation-play-state: paused;
+}
+
+@keyframes bellSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+.bell-sway {
+  display: inline-block;
+  transform-origin: top center;
+  animation: bellSway 3s ease-in-out infinite;
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--primary) 50%,
+    var(--accent) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 6s linear infinite;
+}
+
+.img-zoom {
+  transition: transform 0.9s cubic-bezier(.22, 1, .36, 1);
+  will-change: transform;
+}
+
+.group:hover .img-zoom,
+.img-zoom:hover {
+  transform: scale(1.08);
+}
+
+.card-lift {
+  transition: transform var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+
+.card-lift:hover {
+  transform: translateY(-6px);
+  border-color: rgba(233, 185, 73, 0.45);
+  box-shadow: 0 24px 60px -28px var(--glow);
+}
+
+.arrow-nudge {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.group:hover .arrow-nudge {
+  transform: translateX(5px);
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   .animate-aurora-1,
@@ -246,7 +329,12 @@
   .animate-float,
   .animate-float-delayed,
   .text-shimmer,
+  .text-gold-shimmer,
   .animate-marquee,
+  .ken-burns,
+  .ticker,
+  .bell-sway,
+  .ring-spin,
   .ring-spin::before,
   .animate-ping-dot::after,
   .animate-orbit,
