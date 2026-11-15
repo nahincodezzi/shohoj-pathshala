@@ -115,7 +115,7 @@ export default function NoticeBoard({
               {displayNotices.slice(0, 6).map((notice, idx) => {
                 const dateVal = notice.date || notice.created_at || '2026-01-01';
                 const day = formatDate(dateVal, isBn, { dayOnly: true });
-                const monthYear = formatDate(dateVal, isBn, { monthYearOnly: true });
+                const monthYear = formatDate(dateVal, isBn, { monthYearOnly: true, shortMonth: true });
                 const isNew = isNewNotice(dateVal);
                 const title = isBn ? (notice.title_bn || notice.title) : (notice.title_en || notice.title);
 
