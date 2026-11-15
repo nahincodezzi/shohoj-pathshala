@@ -25,7 +25,9 @@ import {
   ShieldAlert, 
   RotateCcw,
   Image as ImageIcon,
-  Mail
+  Mail,
+  Edit2,
+  Building2
 } from 'lucide-react';
 
 export default function CmsManager() {
@@ -41,7 +43,7 @@ export default function CmsManager() {
     guidelines: []
   };
 
-  const [activeTab, setActiveTab] = useState('branding'); // 'branding', 'sliders', 'uniform', 'messages', 'about', 'contact', 'reset'
+  const [activeTab, setActiveTab] = useState('branding'); // 'branding', 'sliders', 'facilities', 'uniform', 'messages', 'about', 'contact', 'inbox', 'reset'
 
   const [themePref, setThemePref] = useState(school.theme || 'emerald');
   const [logo, setLogo] = useState(settings.logo || school.logo || '');
@@ -51,13 +53,24 @@ export default function CmsManager() {
   const [phoneAlt, setPhoneAlt] = useState(settings.phone_alt || '');
   const [email, setEmail] = useState(settings.email || '');
   const [officeHours, setOfficeHours] = useState(settings.office_hours || '');
+  const [addressBn, setAddressBn] = useState(settings.address_bn || '');
+  const [established, setEstablished] = useState(settings.established || '১৯৯০');
+  const [passRate, setPassRate] = useState(settings.pass_rate || '৯৮.৫%');
   
   // Uniform
   const [uniformData, setUniformData] = useState(currentUniform);
 
   // Sliders
-  const [sliders, setSliders] = useState(TenantRepository.getSliders(school.id));
+  const [sliders, setSliders] = useState(() => TenantRepository.getSliders(school.id));
   const [newSlide, setNewSlide] = useState({ title: '', subtitle: '', image: '', tag: 'নতুন' });
+  const [editingSlide, setEditingSlide] = useState(null);
+  const [editSlideModalOpen, setEditSlideModalOpen] = useState(false);
+
+  // Campus Facilities
+  const [facilities, setFacilities] = useState(() => TenantRepository.getFacilities(school.id));
+  const [facilityModalOpen, setFacilityModalOpen] = useState(false);
+  const [editingFacility, setEditingFacility] = useState(null);
+  const [facilityForm, setFacilityForm] = useState({ title: '', subtitle: '', desc: '' });
 
   // Headmaster & Chairman
   const [headmasterName, setHeadmasterName] = useState(settings.headmaster_name || '');
@@ -82,6 +95,7 @@ export default function CmsManager() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetConfirmCode, setResetConfirmCode] = useState('');
 
+  // --- Slider Handlers ---
   const handleAddSlide = () => {
     if (!newSlide.title || !newSlide.image) {
       showToast('স্লাইডের শিরোনাম ও ছবির লিংক দেওয়া আবশ্যক', 'error');
@@ -94,11 +108,75 @@ export default function CmsManager() {
     showToast('নতুন স্লাইড যুক্ত করা হয়েছে!');
   };
 
+  const handleOpenEditSlide = (slide) => {
+    setEditingSlide({ ...slide });
+    setEditSlideModalOpen(true);
+  };
+
+  const handleSaveEditSlide = (e) => {
+    e.preventDefault();
+    if (!editingSlide.title || !editingSlide.image) {
+      showToast('স্লাইডের শিরোনাম ও ছবির লিংক দেওয়া আবশ্যক', 'error');
+      return;
+    }
+    const updated = sliders.map(s => s.id === editingSlide.id ? editingSlide : s);
+    setSliders(updated);
+    TenantRepository.updateSliders(school.id, updated);
+    setEditSlideModalOpen(false);
+    setEditingSlide(null);
+    showToast('স্লাইড সফলভাবে হালনাগাদ করা হয়েছে!');
+  };
+
   const handleDeleteSlide = (slideId) => {
     const updated = sliders.filter(s => s.id !== slideId);
     setSliders(updated);
     TenantRepository.updateSliders(school.id, updated);
     showToast('স্লাইড মুছে ফেলা হয়েছে।');
+  };
+
+  // --- Campus Facilities Handlers ---
+  const handleOpenAddFacility = () => {
+    setEditingFacility(null);
+    setFacilityForm({ title: '', subtitle: '', desc: '' });
+    setFacilityModalOpen(true);
+  };
+
+  const handleOpenEditFacility = (fac) => {
+    setEditingFacility(fac);
+    setFacilityForm({ title: fac.title, subtitle: fac.subtitle, desc: fac.desc });
+    setFacilityModalOpen(true);
+  };
+
+  const handleSaveFacility = (e) => {
+    e.preventDefault();
+    if (!facilityForm.title.trim()) {
+      showToast('সুবিধার নাম / শিরোনাম আবশ্যক', 'error');
+      return;
+    }
+    try {
+      if (editingFacility) {
+        TenantRepository.updateFacility(school.id, editingFacility.id, facilityForm);
+        showToast('ক্যাম্পাস সুবিধা সফলভাবে হালনাগাদ হয়েছে!');
+      } else {
+        TenantRepository.createFacility(school.id, facilityForm);
+        showToast('নতুন ক্যাম্পাস সুবিধা যোগ হয়েছে!');
+      }
+      setFacilities(TenantRepository.getFacilities(school.id));
+      setFacilityModalOpen(false);
+      setEditingFacility(null);
+    } catch (err) {
+      showToast(err.message || 'সংরক্ষণে ত্রুটি হয়েছে', 'error');
+    }
+  };
+
+  const handleDeleteFacility = (facilityId) => {
+    try {
+      TenantRepository.deleteFacility(school.id, facilityId);
+      setFacilities(TenantRepository.getFacilities(school.id));
+      showToast('ক্যাম্পাস সুবিধা মুছে ফেলা হয়েছে।');
+    } catch (err) {
+      showToast(err.message || 'মুছে ফেলতে ত্রুটি হয়েছে', 'error');
+    }
   };
 
   const handleFactoryReset = () => {
@@ -128,6 +206,9 @@ export default function CmsManager() {
         phone_alt: phoneAlt,
         email,
         office_hours: officeHours,
+        address_bn: addressBn,
+        established,
+        pass_rate: passRate,
         headmaster_name: headmasterName,
         headmaster_designation: headmasterDesignation,
         headmaster_message: headmasterMessage,
@@ -146,7 +227,7 @@ export default function CmsManager() {
       TenantRepository.updateSliders(school.id, sliders);
       // Save local theme preference for tenant
       localStorage.setItem(`${school.slug}_theme`, themePref);
-      showToast('ওয়েবসাইট ও সিএমএস সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+      showToast('ওয়েবসাইট ও সিএমএস সেটিংস সফলভাবে সংরক্ষিত ও লাইভ হয়েছে!');
     } catch (err) {
       showToast(err.message || 'সেটিংস সংরক্ষণ ব্যর্থ হয়েছে', 'error');
     }
@@ -156,17 +237,18 @@ export default function CmsManager() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">ওয়েবসাইট ও সিএমএস কনফিগারেশন</h2>
-        <p className="text-xs text-muted">ব্র্যান্ডিং, স্লাইডার, পোশাক নীতিমালা, বাণী, ইতিহাস ও প্রাতিষ্ঠানিক তথ্য ডায়নামিক ম্যানেজমেন্ট</p>
+        <p className="text-xs text-muted">ব্র্যান্ডিং, স্লাইডার, ক্যাম্পাস সুবিধা, পোশাক নীতিমালা, বাণী, ইতিহাস ও প্রাতিষ্ঠানিক তথ্য সম্পূর্ণ ডায়নামিক ম্যানেজমেন্ট</p>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-border">
         {[
           { key: 'branding', label: 'ব্র্যান্ডিং ও মূলমন্ত্র', icon: Palette },
-          { key: 'sliders', label: 'হিরো স্লাইডার', icon: SlidersHorizontal },
+          { key: 'sliders', label: `হিরো স্লাইডার (${sliders.length})`, icon: SlidersHorizontal },
+          { key: 'facilities', label: `ক্যাম্পাস সুবিধাসমূহ (${facilities.length})`, icon: Building2 },
           { key: 'uniform', label: 'পোশাক নীতিমালা', icon: Sparkles },
           { key: 'messages', label: 'প্রধান শিক্ষক ও সভাপতির বাণী', icon: Award },
-          { key: 'about', label: 'ইতিহাস, ভিশন ও মিশন', icon: BookOpen },
+          { key: 'about', label: 'ইতিহাস, ভিশন ও মেট্রিয়া', icon: BookOpen },
           { key: 'contact', label: 'যোগাযোগ ও সোশ্যাল মিডিয়া', icon: MapPin },
           { key: 'inbox', label: `মেসেজ ইনবক্স (${contactMessages.length})`, icon: Mail },
           ...(currentUser?.role === 'school_superadmin' ? [{ key: 'reset', label: 'ফ্যাক্টরি রিসেট', icon: RotateCcw }] : [])
@@ -264,6 +346,7 @@ export default function CmsManager() {
               label="স্কুলের মূল ট্যাগলাইন (বাংলা)"
               value={taglineBn}
               onChange={(e) => setTaglineBn(e.target.value)}
+              placeholder="e.g. জ্ঞান ও আদর্শের বিদ্যাপীঠ"
             />
 
             <div className="flex flex-col gap-1.5">
@@ -272,6 +355,7 @@ export default function CmsManager() {
                 rows={3}
                 value={mottoBn}
                 onChange={(e) => setMottoBn(e.target.value)}
+                placeholder="e.g. শিক্ষা, শান্তি ও প্রগতি।"
                 className="w-full rounded-[10px] bg-surface-2 border border-border text-text p-3 text-xs outline-none focus:border-primary"
               />
             </div>
@@ -282,31 +366,49 @@ export default function CmsManager() {
         {activeTab === 'sliders' && (
           <div className="space-y-6 animate-fade-in">
             <Card surface="surface" className="p-6 space-y-4">
-              <span className="text-xs font-mono font-bold text-primary uppercase">বিদ্যমান হিরো স্লাইডসমূহ ({sliders.length}টি)</span>
-              <div className="space-y-3">
-                {sliders.map((s, idx) => (
-                  <div key={s.id || idx} className="p-4 rounded-xl bg-surface-2 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <img src={s.image} alt={s.title} className="w-16 h-12 rounded-lg object-cover border border-border shrink-0" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-text">{s.title}</span>
-                          {s.tag && <Badge variant="primary" size="sm">{s.tag}</Badge>}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-primary uppercase">বিদ্যমান হিরো স্লাইডসমূহ ({sliders.length}টি)</span>
+                <span className="text-xs text-muted">ওয়েবসাইটের মূল হোমপেজে স্বয়ংক্রিয়ভাবে পরিবর্তিত হবে</span>
+              </div>
+
+              {sliders.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted">কোনো স্লাইডার নেই। নিচে থেকে নতুন স্লাইড যোগ করুন।</div>
+              ) : (
+                <div className="space-y-3">
+                  {sliders.map((s, idx) => (
+                    <div key={s.id || idx} className="p-4 rounded-xl bg-surface-2 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <img src={s.image} alt={s.title} className="w-16 h-12 rounded-lg object-cover border border-border shrink-0" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-text">{s.title}</span>
+                            {s.tag && <Badge variant="primary" size="sm">{s.tag}</Badge>}
+                          </div>
+                          <p className="text-[11px] text-muted line-clamp-1 mt-0.5">{s.subtitle}</p>
                         </div>
-                        <p className="text-[11px] text-muted line-clamp-1 mt-0.5">{s.subtitle}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditSlide(s)}
+                          className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer"
+                          title="স্লাইড সম্পাদনা করুন"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSlide(s.id)}
+                          className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
+                          title="স্লাইড মুছে ফেলুন"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteSlide(s.id)}
-                      className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer shrink-0"
-                      title="স্লাইড মুছে ফেলুন"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             <Card surface="surface" className="p-6 space-y-4 border-2 border-dashed border-border">
@@ -327,7 +429,7 @@ export default function CmsManager() {
               </div>
               <FileUpload
                 label="স্লাইড ব্যানার ছবি আপলোড করুন"
-                helperText="ল্যান্ডস্কেপ ব্যানার ফরম্যাট (১৬:৯)। কম্পিউটার থেকে ছবি আপলোড করুন।"
+                helperText="ল্যান্ডস্কেপ ব্যানার ফরম্যাট (১৬:৯)। কম্পিউটার থেকে ছবি আপলোড করুন বা লিংক দিন।"
                 type="image"
                 aspectRatio="banner"
                 value={newSlide.image}
@@ -348,7 +450,60 @@ export default function CmsManager() {
           </div>
         )}
 
-        {/* TAB 3: UNIFORM DRESS CODE */}
+        {/* TAB 3: CAMPUS FACILITIES (ক্যাম্পাস সুবিধাসমূহ - Full CRUD) */}
+        {activeTab === 'facilities' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-text">ক্যাম্পাস সুবিধাসমূহ (Campus Facilities)</h3>
+                <p className="text-xs text-muted">ওয়েবসাইটের হোমপেজে প্রদর্শিত ল্যাব, লাইব্রেরি, খেলার মাঠ ও অন্যান্য সুবিধাসমূহ</p>
+              </div>
+              <Button type="button" variant="primary" size="sm" icon={Plus} onClick={handleOpenAddFacility}>
+                নতুন সুবিধা যোগ করুন
+              </Button>
+            </div>
+
+            {facilities.length === 0 ? (
+              <Card surface="surface" className="p-8 text-center text-muted text-xs">
+                কোনো ক্যাম্পাস সুবিধা যোগ করা নেই। উপরের বাটনে ক্লিক করে নতুন সুবিধা যুক্ত করুন।
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {facilities.map((fac) => (
+                  <Card key={fac.id} surface="surface" className="p-5 space-y-3 relative group">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-text">{fac.title}</h4>
+                        <span className="text-[11px] font-semibold text-primary block mt-0.5">{fac.subtitle}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditFacility(fac)}
+                          className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer"
+                          title="সম্পাদনা করুন"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFacility(fac.id)}
+                          className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
+                          title="মুছে ফেলুন"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted leading-relaxed line-clamp-3">{fac.desc}</p>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: UNIFORM DRESS CODE */}
         {activeTab === 'uniform' && (
           <div className="space-y-6 animate-fade-in">
             <Card surface="surface" className="p-6 space-y-4 border-t-4 border-t-primary">
@@ -441,7 +596,7 @@ export default function CmsManager() {
           </div>
         )}
 
-        {/* TAB 4: SPEECHES & MESSAGES */}
+        {/* TAB 5: SPEECHES & MESSAGES */}
         {activeTab === 'messages' && (
           <div className="space-y-6 animate-fade-in">
             <Card surface="surface" className="p-6 space-y-4">
@@ -516,9 +671,24 @@ export default function CmsManager() {
           </div>
         )}
 
-        {/* TAB 5: ABOUT, HISTORY & VISION */}
+        {/* TAB 6: ABOUT, HISTORY & METRICS */}
         {activeTab === 'about' && (
           <Card surface="surface" className="p-6 space-y-5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="বিদ্যালয়ের প্রতিষ্ঠা সাল (Established Year)"
+                placeholder="e.g. ১৯৯০"
+                value={established}
+                onChange={(e) => setEstablished(e.target.value)}
+              />
+              <Input
+                label="বোর্ড পরীক্ষার গড় পাসের হার (Pass Rate)"
+                placeholder="e.g. ৯৮.৫%"
+                value={passRate}
+                onChange={(e) => setPassRate(e.target.value)}
+              />
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-text">বিদ্যালয়ের ইতিহাস ও পটভূমি:</label>
               <textarea
@@ -553,9 +723,16 @@ export default function CmsManager() {
           </Card>
         )}
 
-        {/* TAB 6: CONTACT & SOCIAL */}
+        {/* TAB 7: CONTACT & SOCIAL */}
         {activeTab === 'contact' && (
           <Card surface="surface" className="p-6 space-y-4 animate-fade-in">
+            <Input
+              label="বিদ্যালয়ের প্রাতিষ্ঠানিক ঠিকানা (বাংলা)"
+              placeholder="e.g. ফেনী-পরশুরাম মহাসড়ক সংলগ্ন, আনন্দপুর, ফুলগাজী, ফেনী"
+              value={addressBn}
+              onChange={(e) => setAddressBn(e.target.value)}
+            />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="অফিসিয়াল প্রধান ফোন"
@@ -648,7 +825,7 @@ export default function CmsManager() {
           </Card>
         )}
 
-        {/* TAB 7: FACTORY RESET (SUPER ADMIN ONLY) */}
+        {/* TAB: FACTORY RESET (SUPER ADMIN ONLY) */}
         {activeTab === 'reset' && currentUser?.role === 'school_superadmin' && (
           <Card surface="surface" className="p-6 space-y-4 border-2 border-danger/40 animate-fade-in">
             <div className="flex items-start gap-3">
@@ -670,7 +847,7 @@ export default function CmsManager() {
         )}
 
         {/* Action Button */}
-        {!supportMode && activeTab !== 'reset' && (
+        {!supportMode && activeTab !== 'reset' && activeTab !== 'facilities' && (
           <div className="flex justify-end pt-2">
             <Button type="submit" variant="primary" size="lg" icon={Save}>
               সকল পরিবর্তন সংরক্ষণ ও লাইভ আপডেট করুন
@@ -678,6 +855,92 @@ export default function CmsManager() {
           </div>
         )}
       </form>
+
+      {/* Edit Slide Modal */}
+      {editSlideModalOpen && editingSlide && (
+        <Modal
+          isOpen={editSlideModalOpen}
+          onClose={() => setEditSlideModalOpen(false)}
+          title="হিরো স্লাইড সম্পাদনা করুন"
+          size="md"
+        >
+          <form onSubmit={handleSaveEditSlide} className="space-y-4 text-xs">
+            <Input
+              label="স্লাইড শিরোনাম"
+              value={editingSlide.title}
+              onChange={(e) => setEditingSlide({ ...editingSlide, title: e.target.value })}
+            />
+            <Input
+              label="ট্যাগ ব্যাজ (যেমন: ভর্তি চলছে / স্বাগতম)"
+              value={editingSlide.tag || ''}
+              onChange={(e) => setEditingSlide({ ...editingSlide, tag: e.target.value })}
+            />
+            <FileUpload
+              label="স্লাইড ব্যানার ছবি"
+              type="image"
+              aspectRatio="banner"
+              value={editingSlide.image}
+              onChange={(val) => setEditingSlide({ ...editingSlide, image: val })}
+            />
+            <Input
+              label="উপ-শিরোনাম বা সংক্ষিপ্ত বিবরণ"
+              value={editingSlide.subtitle}
+              onChange={(e) => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
+            />
+            <div className="flex justify-between pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setEditSlideModalOpen(false)}>
+                বাতিল করুন
+              </Button>
+              <Button type="submit" variant="primary" size="sm" icon={Save}>
+                পরিবর্তন সংরক্ষণ করুন
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Facility Add/Edit Modal */}
+      {facilityModalOpen && (
+        <Modal
+          isOpen={facilityModalOpen}
+          onClose={() => setFacilityModalOpen(false)}
+          title={editingFacility ? 'ক্যাম্পাস সুবিধা সম্পাদনা' : 'নতুন ক্যাম্পাস সুবিধা যোগ'}
+          size="md"
+        >
+          <form onSubmit={handleSaveFacility} className="space-y-4 text-xs">
+            <Input
+              label="সুবিধার নাম / শিরোনাম"
+              placeholder="e.g. কম্পিউটার ল্যাব / কেন্দ্রীয় পাঠাগার"
+              value={facilityForm.title}
+              onChange={(e) => setFacilityForm({ ...facilityForm, title: e.target.value })}
+            />
+            <Input
+              label="সংক্ষিপ্ত হাইলাইট / ক্যাপশন"
+              placeholder="e.g. ২০টি কম্পিউটার ও ব্রডব্যান্ড ইন্টারনেট"
+              value={facilityForm.subtitle}
+              onChange={(e) => setFacilityForm({ ...facilityForm, subtitle: e.target.value })}
+            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-text">বিস্তারিত বিবরণ:</label>
+              <textarea
+                rows={3}
+                placeholder="e.g. শিক্ষার্থীদের হাতে-কলমে তথ্যপ্রযুক্তি প্রশিক্ষণের জন্য..."
+                value={facilityForm.desc}
+                onChange={(e) => setFacilityForm({ ...facilityForm, desc: e.target.value })}
+                className="w-full rounded-[10px] bg-surface-2 border border-border text-text p-3 text-xs outline-none focus:border-primary"
+              />
+            </div>
+            <div className="flex justify-between pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setFacilityModalOpen(false)}>
+                বাতিল করুন
+              </Button>
+              <Button type="submit" variant="primary" size="sm" icon={Save}>
+                {editingFacility ? 'হালনাগাদ করুন' : 'যোগ করুন'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Factory Reset Modal */}
       {resetModalOpen && (

@@ -11,7 +11,7 @@ import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
-import { Bell, Plus, AlertCircle, Paperclip, FileText, Download, Trash2, Edit2 } from 'lucide-react';
+import { Bell, Plus, AlertCircle, Paperclip, FileText, Download, Trash2, Edit2, Printer } from 'lucide-react';
 
 export default function NoticeManager() {
   const { school, currentUser, supportMode } = useOutletContext();
@@ -20,6 +20,7 @@ export default function NoticeManager() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalNotice, setDeleteModalNotice] = useState(null);
   const [editNotice, setEditNotice] = useState(null);
+  const [printNotice, setPrintNotice] = useState(null);
   const [errors, setErrors] = useState({});
 
   const notices = TenantRepository.getNotices(school.id);
@@ -158,7 +159,7 @@ export default function NoticeManager() {
           {
             key: 'actions',
             label: 'অ্যাকশন',
-            width: '110px',
+            width: '130px',
             align: 'right',
             render: (_, row) => (
               !supportMode ? (
@@ -166,10 +167,18 @@ export default function NoticeManager() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    icon={Printer}
+                    title="প্রিন্ট / প্রিভিউ"
+                    onClick={() => setPrintNotice(row)}
+                    className="p-1.5 h-8 text-muted hover:text-text cursor-pointer"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     icon={Edit2}
                     title="সম্পাদনা করুন"
                     onClick={() => openEdit(row)}
-                    className="p-1.5 h-8 text-muted hover:text-primary"
+                    className="p-1.5 h-8 text-muted hover:text-primary cursor-pointer"
                   />
                   <Button
                     variant="ghost"
@@ -177,7 +186,7 @@ export default function NoticeManager() {
                     icon={Trash2}
                     title="মুছে ফেলুন"
                     onClick={() => setDeleteModalNotice(row)}
-                    className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft"
+                    className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft cursor-pointer"
                   />
                 </div>
               ) : (
@@ -295,6 +304,83 @@ export default function NoticeManager() {
               </Button>
               <Button variant="dangerSolid" size="sm" onClick={handleDeleteNotice}>
                 হ্যাঁ, মুছে ফেলুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Printable Notice Paper Modal */}
+      {printNotice && (
+        <Modal
+          isOpen={!!printNotice}
+          onClose={() => setPrintNotice(null)}
+          title="অফিসিয়াল নোটিশ প্রিন্ট ও প্রিভিউ"
+          subtitle={`প্রকাশকাল: ${printNotice.date} • ক্যাটাগরি: ${categoryMap[printNotice.category]?.label || printNotice.category}`}
+          maxWidth="max-w-2xl"
+        >
+          <div className="space-y-4">
+            <div className="printable-notice-paper printable-document page-fit-single p-5 sm:p-6 bg-white text-black rounded-xl border border-slate-300 font-sans text-xs space-y-4 shadow-xs">
+              {/* Institutional Header Letterhead */}
+              <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                <div className="flex items-center gap-3">
+                  {school.logo_url || school.logo ? (
+                    <img src={school.logo_url || school.logo} alt="School Logo" className="w-12 h-12 object-contain rounded-lg border border-slate-300 p-0.5 bg-white shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-emerald-700 text-white font-bold text-xl flex items-center justify-center shrink-0">
+                      {school.name_bn[0]}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-heading font-extrabold text-lg text-slate-900 leading-tight">
+                      {school.name_bn}
+                    </h3>
+                    <p className="text-[11px] text-slate-700">
+                      EIIN: {school.eiin} • {school.board} শিক্ষা বোর্ড • জেলা: {school.district}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="px-2.5 py-1 rounded bg-slate-100 font-bold text-[11px] border border-slate-300 block">
+                    অফিসিয়াল বিজ্ঞপ্তি
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono block mt-1">
+                    স্মারক: {school.code_prefix || 'SCH'}-বিজ্ঞপ্তি-{printNotice.id || '১'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Notice Metadata */}
+              <div className="flex justify-between items-center text-[11px] bg-slate-50 p-2.5 rounded border border-slate-200">
+                <span><strong>বিষয়:</strong> {printNotice.title}</span>
+                <span className="font-mono"><strong>তারিখ:</strong> {printNotice.date}</span>
+              </div>
+
+              {/* Notice Description Body */}
+              <div className="p-4 rounded bg-white leading-relaxed text-slate-900 whitespace-pre-wrap text-xs sm:text-sm min-h-[140px]">
+                {printNotice.description}
+              </div>
+
+              {/* Official Signatures */}
+              <div className="pt-8 flex justify-between items-end text-[11px] text-slate-600 border-t border-dashed border-slate-300">
+                <div className="text-center">
+                  <div className="w-32 border-b border-slate-400 mb-1 mx-auto" />
+                  <span>নোটিশ ইনচার্জ</span>
+                </div>
+                <div className="text-center">
+                  <div className="w-36 border-b border-slate-400 mb-1 mx-auto" />
+                  <strong className="text-slate-900 block font-heading">প্রধান শিক্ষক</strong>
+                  <span className="text-[10px]">{school.name_bn}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t border-border no-print">
+              <Button variant="secondary" size="sm" onClick={() => setPrintNotice(null)}>
+                বন্ধ করুন
+              </Button>
+              <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
+                প্রিন্ট করুন (A4)
               </Button>
             </div>
           </div>

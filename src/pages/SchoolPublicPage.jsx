@@ -1151,7 +1151,54 @@ export default function SchoolPublicPage() {
                   </>
                 )}
               </div>
-            ) : null}
+            ) : (
+              <div className="relative py-20 px-6 sm:px-12 bg-gradient-to-br from-primary/15 via-surface to-surface-2 border-b border-border flex items-center justify-center text-center">
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary border border-primary/30 text-xs font-bold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {settings?.tagline_bn || 'জ্ঞানে আলো, কর্মে সফলতা'}
+                  </span>
+                  <h2 className="text-3xl sm:text-5xl font-heading font-extrabold text-text leading-tight">
+                    {school.name_bn}
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
+                    {settings?.motto_bn || 'শিক্ষা, শান্তি ও প্রগতির অনন্য বিদ্যাপীঠ। গুণগত শিক্ষা নিশ্চিতকরণে আমরা অঙ্গীকারাবদ্ধ।'}
+                  </p>
+                  <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+                    <Button 
+                      variant="primary" 
+                      size="lg"
+                      onClick={() => {
+                        setActiveTab('admission');
+                        window.location.hash = 'admission';
+                      }}
+                    >
+                      অনলাইন ভর্তি আবেদন
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="lg"
+                      onClick={() => {
+                        setActiveTab('results');
+                        window.location.hash = 'results';
+                      }}
+                    >
+                      রেজাল্ট অনুসন্ধান
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="lg"
+                      onClick={() => {
+                        setActiveTab('notices');
+                        window.location.hash = 'notices';
+                      }}
+                    >
+                      নোটিশ বোর্ড
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Quick Metrics Bar */}
@@ -1370,15 +1417,15 @@ export default function SchoolPublicPage() {
                       সরাসরি কল
                     </Button>
                   </a>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1 w-full"
+                    icon={Mail}
                     onClick={() => navigateToTab('contact')}
-                    className="flex-1 cursor-pointer"
                   >
-                    <Button variant="secondary" size="sm" className="w-full" icon={Mail}>
-                      বার্তা পাঠান
-                    </Button>
-                  </button>
+                    বার্তা পাঠান
+                  </Button>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -58,6 +58,8 @@ export default function App() {
 
                 {/* 3. Platform Owner Portal (Indigo Enforced) */}
                 <Route path="/owner" element={<OwnerPanel />} />
+                <Route path="/owner/login" element={<Navigate to="/owner" replace />} />
+                <Route path="/owner/*" element={<OwnerPanel />} />
 
                 {/* 4. Individual School Login Screen */}
                 <Route path="/:slug/login" element={<SchoolLogin />} />

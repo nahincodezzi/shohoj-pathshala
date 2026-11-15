@@ -1,106 +1,142 @@
 /* ==========================================================================
-   সহজ পাঠশালা (Sohoj Pathshala) — Design System Color Tokens
+   সহজ পাঠশালা (Sohoj Pathshala) — Design System Color & Motion Tokens
    Master Tokens: Dark Mode (Default) & Light Mode
    Themes: Emerald (Default) & Indigo (School option / Owner enforced)
    ========================================================================== */
 
+:root {
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --dur-fast: 200ms;
+  --dur-base: 350ms;
+  --dur-slow: 800ms;
+  --font-heading: 'Anek Bangla', 'Hind Siliguri', sans-serif;
+  --font-body: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
+}
+
 /* ── ডার্ক মোড (ডিফল্ট) ── */
 .mode-dark {
-  --bg: #0B1215;
-  --bg-alt: #0E161A;
-  --surface: #121A1F;
-  --surface-2: #18232A;
-  --border: #24323A;
-  --border-strong: #33454F;
-  --text: #E6EDF0;
-  --muted: #9AABB3;
-  --subtle: #7D8E97;
-  --primary: #2DD4A7;
+  --bg: #07110E;
+  --bg-alt: #0A1612;
+  --surface: #0B1814;
+  --surface-2: #10221C;
+  --surface-hover: #0F211B;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #E8F3EF;
+  --muted: #A9BEB7;
+  --subtle: #8FA8A0;
+  --primary: #2EE6A6;
+  --primary-text: #2EE6A6;
   --primary-hover: #5EE3BE;
-  --primary-soft: rgba(45, 212, 167, 0.12);
-  --on-primary: #04201A;
+  --primary-soft: rgba(46, 230, 166, 0.12);
+  --on-primary: #052019;
   --accent: #F5B544;
   --accent-soft: rgba(245, 181, 68, 0.12);
   --accent-line: rgba(245, 181, 68, 0.25);
-  --success: #34D399;
-  --success-soft: rgba(52, 211, 153, 0.12);
-  --warning: #FBBF24;
-  --warning-soft: rgba(251, 191, 36, 0.12);
-  --warning-line: rgba(251, 191, 36, 0.3);
+  --success: #2EE6A6;
+  --success-soft: rgba(46, 230, 166, 0.12);
+  --warning: #FACC6B;
+  --warning-soft: rgba(250, 204, 107, 0.12);
+  --warning-line: rgba(250, 204, 107, 0.3);
   --danger: #F87171;
   --danger-soft: rgba(248, 113, 113, 0.12);
   --info: #60A5FA;
   --info-soft: rgba(96, 165, 250, 0.12);
-  --indigo: #818CF8;
-  --indigo-soft: rgba(129, 140, 248, 0.14);
-  --header-bg: rgba(11, 18, 21, 0.88);
-  --hero-fade-0: rgba(11, 18, 21, 0);
-  --hero-fade: rgba(11, 18, 21, 0.95);
-  --glass: rgba(11, 18, 21, 0.6);
+  --indigo: #7C83FD;
+  --indigo-soft: rgba(124, 131, 253, 0.14);
+  --ink-rgb: 255, 255, 255;
+  --header-bg: rgba(7, 17, 14, 0.65);
+  --glass: rgba(13, 26, 22, 0.85);
+  --glow: rgba(46, 230, 166, 0.35);
+  --hero-fade-0: rgba(7, 17, 14, 0);
+  --hero-fade: rgba(7, 17, 14, 0.95);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
 /* ── লাইট মোড ── */
 .mode-light {
-  --bg: #F7F9FC;
-  --bg-alt: #ECF8F3;
+  --bg: #F6FBF8;
+  --bg-alt: #EAF6F0;
   --surface: #FFFFFF;
-  --surface-2: #F1F5F9;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
-  --text: #0F172A;
-  --muted: #475569;
-  --subtle: #556477;
-  --primary: #047857;
-  --primary-hover: #065F46;
-  --primary-soft: rgba(4, 120, 87, 0.10);
+  --surface-2: #F1F8F4;
+  --surface-hover: #F0FAF5;
+  --border: rgba(8, 52, 38, 0.08);
+  --border-strong: rgba(8, 52, 38, 0.14);
+  --text: #0B2A20;
+  --muted: #4A6359;
+  --subtle: #5C736A;
+  --primary: #0A9A6A;
+  --primary-text: #0A8A5F;
+  --primary-hover: #087F56;
+  --primary-soft: rgba(10, 154, 106, 0.10);
   --on-primary: #FFFFFF;
   --accent: #B45309;
   --accent-soft: #FEF3C7;
   --accent-line: #FCD34D;
-  --success: #047857;
+  --success: #0A9A6A;
   --success-soft: #D1FAE5;
-  --warning: #B45309;
+  --warning: #A86200;
   --warning-soft: #FEF3C7;
   --warning-line: #FCD34D;
   --danger: #B91C1C;
   --danger-soft: #FEE2E2;
   --info: #1D4ED8;
   --info-soft: #DBEAFE;
-  --indigo: #4338CA;
+  --indigo: #5257D6;
   --indigo-soft: #E0E7FF;
-  --header-bg: rgba(255, 255, 255, 0.92);
-  --hero-fade-0: rgba(247, 249, 252, 0);
-  --hero-fade: rgba(247, 249, 252, 0.97);
-  --glass: rgba(255, 255, 255, 0.85);
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.10);
+  --ink-rgb: 8, 52, 38;
+  --header-bg: rgba(246, 251, 248, 0.75);
+  --glass: rgba(255, 255, 255, 0.9);
+  --glow: rgba(10, 138, 95, 0.22);
+  --hero-fade-0: rgba(246, 251, 248, 0);
+  --hero-fade: rgba(246, 251, 248, 0.97);
+  --shadow: 0 1px 2px rgba(8, 52, 38, 0.06), 0 16px 40px rgba(8, 52, 38, 0.10);
   color-scheme: light;
 }
 
-/* ── Indigo থিম (স্কুলের পছন্দে; Owner প্যানেলে সবসময়) ── */
+/* ── Indigo থিম (স্কুলের পছন্দে; Owner প্যানেলে সবসময়) ── */
 .mode-dark.theme-indigo {
-  --primary: #818CF8;
+  --primary: #7C83FD;
+  --primary-text: #7C83FD;
   --primary-hover: #A5B4FC;
-  --primary-soft: rgba(129, 140, 248, 0.14);
+  --primary-soft: rgba(124, 131, 253, 0.14);
   --on-primary: #0B1020;
 }
 
 .mode-light.theme-indigo {
-  --primary: #4338CA;
+  --primary: #5257D6;
+  --primary-text: #4338CA;
   --primary-hover: #3730A3;
-  --primary-soft: rgba(67, 56, 202, 0.10);
+  --primary-soft: rgba(82, 87, 214, 0.10);
   --on-primary: #FFFFFF;
 }
 
-/* বেস নিয়ম */
+/* View Transition circular reveal */
+::view-transition-new(root) {
+  animation: reveal 0.6s var(--ease-out);
+}
+@keyframes reveal {
+  from {
+    clip-path: circle(0 at var(--tx, 50%) var(--ty, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--tx, 50%) var(--ty, 50%));
+  }
+}
+::view-transition-old(root) {
+  animation: none;
+}
+
+/* বেস নিয়ম */
 body {
   margin: 0;
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Noto Sans Bengali', system-ui, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.7;
-  transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out;
+  transition: background-color 450ms ease-out, color 450ms ease-out, border-color 450ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -108,12 +144,15 @@ body {
     transition: none !important;
     animation-duration: 0.01ms !important;
   }
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 a {
-  color: var(--primary);
+  color: var(--primary-text);
   text-decoration: none;
-  transition: color 150ms ease-out;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
 a:hover {
@@ -123,6 +162,7 @@ a:hover {
 input::placeholder, textarea::placeholder {
   color: var(--subtle);
 }
+
 
 
 

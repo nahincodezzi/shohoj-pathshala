@@ -10,13 +10,14 @@ import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
-import { FileText, Plus, Download, Trash2, Calendar, BookOpen, Paperclip } from 'lucide-react';
+import { FileText, Plus, Download, Trash2, Edit2, Calendar, BookOpen, Paperclip } from 'lucide-react';
 
 export default function RoutineManager() {
   const { school, supportMode } = useOutletContext();
   const { showToast } = useToast();
 
-  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
   const routines = TenantRepository.getRoutines(school.id);
@@ -29,19 +30,42 @@ export default function RoutineManager() {
     file_url: ''
   });
 
-  const handleAddSubmit = (e) => {
+  const openAdd = () => {
+    setEditingRoutine(null);
+    setForm({
+      title: '',
+      category: 'class_routine',
+      effective_date: new Date().toISOString().slice(0, 10),
+      file_size: '১.২ MB',
+      file_url: ''
+    });
+    setModalOpen(true);
+  };
+
+  const openEdit = (routine) => {
+    setEditingRoutine(routine);
+    setForm({
+      title: routine.title,
+      category: routine.category,
+      effective_date: routine.effective_date,
+      file_size: routine.file_size || '১.২ MB',
+      file_url: routine.file_url || ''
+    });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     try {
-      TenantRepository.createRoutine(school.id, form);
-      showToast('রুটিন / সিলেবাস সফলভাবে প্রকাশিত হয়েছে!');
-      setAddModalOpen(false);
-      setForm({
-        title: '',
-        category: 'class_routine',
-        effective_date: new Date().toISOString().slice(0, 10),
-        file_size: '১.২ MB',
-        file_url: ''
-      });
+      if (editingRoutine) {
+        TenantRepository.updateRoutine(school.id, editingRoutine.id, form);
+        showToast('রুটিন / সিলেবাস সফলভাবে হালনাগাদ করা হয়েছে!');
+      } else {
+        TenantRepository.createRoutine(school.id, form);
+        showToast('রুটিন / সিলেবাস সফলভাবে প্রকাশিত হয়েছে!');
+      }
+      setModalOpen(false);
+      setEditingRoutine(null);
     } catch (err) {
       showToast(err.message || 'রুটিন সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
@@ -69,7 +93,7 @@ export default function RoutineManager() {
         </div>
 
         {!supportMode && (
-          <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
+          <Button variant="primary" size="md" icon={Plus} onClick={openAdd}>
             নতুন রুটিন যোগ করুন
           </Button>
         )}
@@ -94,18 +118,28 @@ export default function RoutineManager() {
           {
             key: 'id',
             label: 'অ্যাকশন',
-            width: '80px',
+            width: '100px',
             align: 'center',
-            render: (id) => (
+            render: (id, row) => (
               !supportMode && (
-                <button
-                  type="button"
-                  onClick={() => setDeleteId(id)}
-                  className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
-                  title="মুছে ফেলুন"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center justify-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openEdit(row)}
+                    className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer"
+                    title="সম্পাদনা করুন"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteId(id)}
+                    className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
+                    title="মুছে ফেলুন"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               )
             )
           }
@@ -114,15 +148,15 @@ export default function RoutineManager() {
         zebra
       />
 
-      {/* Add Modal */}
-      {addModalOpen && (
+      {/* Add / Edit Modal */}
+      {modalOpen && (
         <Modal
-          isOpen={addModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          title="নতুন রুটিন / সিলেবাস প্রকাশ করুন"
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={editingRoutine ? 'রুটিন / সিলেবাস সম্পাদনা' : 'নতুন রুটিন / সিলেবাস প্রকাশ করুন'}
           subtitle="পিডিএফ ফাইলের বিবরণ পূরণ করুন"
         >
-          <form onSubmit={handleAddSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="ফাইলের শিরোনাম"
               placeholder="e.g. বার্ষিক পরীক্ষা ২০২৬ এর সময়সূচি"
@@ -168,11 +202,11 @@ export default function RoutineManager() {
             />
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="secondary" onClick={() => setAddModalOpen(false)}>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>
                 বাতিল
               </Button>
               <Button type="submit" variant="primary">
-                প্রকাশ করুন
+                {editingRoutine ? 'হালনাগাদ করুন' : 'প্রকাশ করুন'}
               </Button>
             </div>
           </form>
@@ -205,4 +239,3 @@ export default function RoutineManager() {
     </div>
   );
 }
-

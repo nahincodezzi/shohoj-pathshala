@@ -1,0 +1,415 @@
+export const landingTranslations = {
+  bn: {
+    brand_title: 'সহজ পাঠশালা',
+    brand_sub: 'Sohoj Pathshala',
+    badge_new: 'নতুন',
+    badge_now_online: 'এখন অনলাইনে — ',
+    rotating_words: ['অনলাইন ভর্তি', 'রেজাল্ট প্রকাশ', 'ফি আদায়', 'নোটিশ বোর্ড', 'ক্লাস রুটিন'],
+    hero_title_line1: 'সব স্কুল,',
+    hero_title_line2: 'এক সহজ প্ল্যাটফর্মে।',
+    hero_sub: 'বাংলাদেশের প্রতিটি শিক্ষাপ্রতিষ্ঠানের জন্য সম্পূর্ণ ক্লাউডভিত্তিক আধুনিক ওয়েবসাইট, রেজাল্ট পাবলিশিং, অনলাইন ভর্তি ও প্রাতিষ্ঠানিক হিসাবরক্ষণ সমাধান।',
+    hero_cta_admin: 'স্কুল অ্যাডমিন প্যানেল',
+    hero_cta_features: 'প্ল্যাটফর্ম ফিচার দেখুন',
+    stat_modules: '৮টি',
+    stat_modules_label: 'ম্যানেজমেন্ট মডিউল',
+    stat_langs: '২টি',
+    stat_langs_label: 'ভাষা (বাংলা ও EN)',
+    stat_schools: 'অসীম',
+    stat_schools_label: 'স্কুল টেন্যান্ট নেটওয়ার্ক',
+    mockup_url: 'sohojpathshala.app/bdhs/admin',
+    mockup_title: 'সেন্ট্রাল ড্যাশবোর্ড',
+    mockup_stat_students: '১,২৮৫',
+    mockup_stat_students_label: 'মোট শিক্ষার্থী',
+    mockup_stat_attendance: '[আপনার তথ্য]%',
+    mockup_stat_attendance_label: 'আজকের উপস্থিতি',
+    mockup_chip_result_title: 'রেজাল্ট প্রকাশিত',
+    mockup_chip_result_sub: 'SSC মডেল টেস্ট ২০২৬',
+    mockup_chip_admission_title: 'নতুন ভর্তি আবেদন',
+    mockup_chip_admission_sub: 'এইমাত্র · ৬ষ্ঠ শ্রেণি',
+    nav_modules: 'মডিউল',
+    nav_flow: 'পদ্ধতি',
+    nav_security: 'নিরাপত্তা',
+    nav_schools: 'স্কুলসমূহ',
+    nav_pricing: 'প্ল্যান ও মূল্য',
+    nav_faq: 'প্রশ্নোত্তর',
+    btn_admin_login: 'অ্যাডমিন লগইন',
+    marquee_ending: 'আপনার স্কুল এখানে',
+    modules_tag: 'MODULES',
+    modules_title: '৮টি সম্পূর্ণ ইন্টিগ্রেটেড মডিউল',
+    modules_sub: 'বিদ্যালয় প্রশাসনের প্রতিটি শাখা নিখুঁতভাবে অটোমেশনের জন্য সমন্বিত সমাধান।',
+    onboarding_tag: 'ONBOARDING',
+    onboarding_title: '৪ ধাপে আপনার স্কুল অনলাইনে',
+    onboarding_sub: 'কোনো কারিগরি জটিলতা ছাড়াই অত্যন্ত সহজ ও ধাপে ধাপে প্রতিষ্ঠান ডিজিটালাইজেশন।',
+    security_tag: 'SECURITY & ISOLATION',
+    security_title: 'এক স্কুলের ডেটা আরেক স্কুল',
+    security_title_shimmer: 'কখনো দেখে না',
+    security_sub: 'কঠোর মাল্টি-টেন্যান্ট সিকিউরিটি ও ডেটা আইসোলেশন আর্কিটেকচার দ্বারা প্রতিটি প্রতিষ্ঠানের তথ্যের গোপনীয়তা শতভাগ সুরক্ষিত।',
+    security_check_1: 'রোলভিত্তিক পারমিশন (RBAC)',
+    security_check_1_sub: 'প্রধান শিক্ষক, সহকারী শিক্ষক, হিসাবরক্ষক ও অপারেটরের জন্য নির্ধারিত সুরক্ষিত এক্সেস।',
+    security_check_2: '৫ বার ভুল পাসওয়ার্ডে লকআউট',
+    security_check_2_sub: 'ব্রুট-ফোর্স আক্রমণ প্রতিরোধে ১৫ মিনিটের স্বয়ংক্রিয় লকআউট ও অডিট ট্রেইল সংরক্ষণ।',
+    security_check_3: '৩০ দিন সময়সীমা ও গ্রেস সুরক্ষা',
+    security_check_3_sub: 'লাইসেন্স মেয়াদ শেষ হলেও ৩০ দিন গ্রেস পিরিয়ড ও ডেটা ব্যাকআপের পূর্ণ নিশ্চয়তা।',
+    schools_tag: 'NETWORK SCHOOLS',
+    schools_title: 'প্ল্যাটফর্মে সংযুক্ত শিক্ষাপ্রতিষ্ঠানসমূহ',
+    schools_sub: 'সারাদেশের যে সকল প্রতিষ্ঠান সহজ পাঠশালা প্ল্যাটফর্মে পরিচালিত হচ্ছে।',
+    schools_search: 'স্কুলের নাম, ইআইআইএন বা জেলা দিয়ে খুঁজুন...',
+    pricing_tag: 'PRICING',
+    pricing_title: 'সহজ ও স্বচ্ছ মূল্যতালিকা',
+    pricing_sub: 'কোনো লুকানো চার্জ নেই। আপনার প্রতিষ্ঠানের প্রয়োজন অনুযায়ী মানানসই প্যাকেজ বেছে নিন।',
+    pricing_popular_badge: 'সবচেয়ে জনপ্রিয়',
+    pricing_per_year: '/ বছর',
+    faq_tag: 'FAQS',
+    faq_title: 'সচরাচর জিজ্ঞাসিত প্রশ্ন ও উত্তর',
+    faq_sub: 'সহজ পাঠশালা সম্পর্কে সাধারণ কিছু প্রশ্নের উত্তর জেনে নিন।',
+    cta_title: 'আপনার স্কুলকে ডিজিটাল করতে প্রস্তুত?',
+    cta_sub: 'কোনো উন্মুক্ত রেজিস্ট্রেশন নেই — শুধুমাত্র বিদ্যালয় পরিচালনা পর্ষদের যাচাইকৃত আবেদনে সুরক্ষিত অনবোর্ডিং।',
+    cta_btn_contact: 'যোগাযোগ ও অনবোর্ডিং',
+    cta_btn_schools: 'স্কুল তালিকা দেখুন',
+    footer_copy: '© ২০২৬ সহজ পাঠশালা (Sohoj Pathshala) — সর্বস্বত্ব সংরক্ষিত।',
+    footer_link_login: 'স্কুল অ্যাডমিন লগইন',
+    footer_link_owner: 'সুপার অ্যাডমিন ড্যাশবোর্ড',
+    footer_link_cms: 'ল্যান্ডিং পেজ (CMS)',
+    footer_link_support: 'ডিভাইস সহায়তা',
+
+    // Nested mapping support
+    security: {
+      badge: 'এন্টারপ্রাইজ-গ্রেড নিরাপত্তা',
+      title: 'এক স্কুলের ডেটা আরেক স্কুল',
+      titleHighlight: 'কখনো দেখে না',
+      subtitle: 'কঠোর মাল্টি-টেন্যান্ট সিকিউরিটি ও ডেটা আইসোলেশন আর্কিটেকচার দ্বারা প্রতিটি প্রতিষ্ঠানের তথ্যের গোপনীয়তা শতভাগ সুরক্ষিত।',
+      points: {
+        rbac: {
+          title: 'রোল ভিত্তিক নিয়ন্ত্রণ (RBAC)',
+          desc: 'হেডমাস্টার, শিক্ষক, ক্যাশিয়ার, অভিভাবক — যার যতটুকু প্রয়োজন ঠিক ততটুকুই দেখতে ও সম্পাদন করতে পারবেন।'
+        },
+        lockout: {
+          title: '৫ বার ভুল পাসওয়ার্ডে সাময়িক লকআউট',
+          desc: 'ব্রুট-ফোর্স আক্রমণ প্রতিরোধে স্বয়ংক্রিয় লকআউট ও সম্পূর্ণ সেশন ক্রিপ্টোগ্রাফিক সুরক্ষা।'
+        },
+        grace: {
+          title: '৩০ দিন সময়সীমা ও গ্রেস সুরক্ষা',
+          desc: 'সাবস্ক্রিপশন শেষে কোনো জরুরি ডেটা হারাবে না, নিরবচ্ছিন্ন ব্যাকআপ ও পূর্ণ ডেটা অখণ্ডতা বজায় থাকে।'
+        }
+      }
+    },
+    schools: {
+      badge: 'সংযুক্ত শিক্ষাপ্রতিষ্ঠান',
+      title: 'সহজ পাঠশালা নেটওয়ার্কের',
+      titleHighlight: 'স্কুলসমূহ',
+      subtitle: 'দেশজুড়ে বিভিন্ন স্কুলের ডিজিটাল পোর্টাল দেখুন এবং তাদের কার্যক্রম পর্যবেক্ষণ করুন।',
+      searchPlaceholder: 'স্কুলের নাম, ইআইআইএন বা জেলা দিয়ে খুঁজুন...',
+      activeStatus: 'চালু',
+      viewSite: 'ওয়েবসাইট ভিজিট',
+      adminPortal: 'অ্যাডমিন প্যানেল',
+      emptyTitle: 'কোনো স্কুল খুঁজে পাওয়া যায়নি',
+      emptyDesc: 'আপনার সার্চ কিওয়ার্ড পরিবর্তন করে পুনরায় চেষ্টা করুন।'
+    },
+    pricing: {
+      badge: 'স্বচ্ছ ও সাশ্রয়ী প্যাকেজ',
+      title: 'আপনার স্কুলের জন্য সঠিক',
+      titleHighlight: 'পরিকল্পনা',
+      subtitle: 'কোনো গোপন চার্জ নেই। বিনামূল্যে ১৪ দিনের ট্রায়াল সহ যেকোনো সময় আপগ্রেড বা বাতিল করুন।',
+      popularBadge: 'সবচেয়ে জনপ্রিয়',
+      plans: {
+        basic: {
+          name: 'বেসিক',
+          tagline: 'ছোট ও প্রাথমিক বিদ্যালয়ের জন্য আদর্শ',
+          price: '৩,৯৯৯',
+          period: '/ বছর',
+          f1: '২০০ জন শিক্ষার্থী পর্যন্ত',
+          f2: 'ভর্তি ও শিক্ষার্থী ব্যবস্থাপনা',
+          f3: 'ডিজিটাল হাজিরা ট্র্যাকিং',
+          f4: 'পরীক্ষার রেজাল্ট ও মার্কশিট প্রিন্ট',
+          f5: 'সাধারণ ইমেইল সাপোর্ট',
+          button: 'বেসিক বেছে নিন'
+        },
+        standard: {
+          name: 'স্ট্যান্ডার্ড',
+          tagline: 'মাঝারি ও উচ্চ বিদ্যালয়ের জন্য সবচেয়ে জনপ্রিয়',
+          price: '৭,৯৯৯',
+          period: '/ বছর',
+          f1: '১,০০০ জন শিক্ষার্থী পর্যন্ত',
+          f2: 'সম্পূর্ণ ফি ও ক্যাশ রসিদ ব্যবস্থাপনা',
+          f3: 'অটোমেটিক এসএমএস নোটিফিকেশন',
+          f4: 'অনলাইন অ্যাডমিট ও আইডি কার্ড জেনারেটর',
+          f5: 'কমিটি, শিক্ষক ও নোটিশ বোর্ড মডিউল',
+          f6: 'অগ্রাধিকার ফোন ও হোয়াটসঅ্যাপ সাপোর্ট',
+          button: 'স্ট্যান্ডার্ড শুরু করুন'
+        },
+        premium: {
+          name: 'প্রিমিয়াম',
+          tagline: 'বড় কলেজ ও একাধিক শাখার প্রতিষ্ঠানের জন্য',
+          price: '১৪,৯৯৯',
+          period: '/ বছর',
+          f1: 'অসীম শিক্ষার্থী ও শিক্ষক রেকর্ড',
+          f2: 'কাস্টম ডোমেইন সংযোগ ও ব্র্যান্ডিং',
+          f3: 'স্মার্ট গেট ও বায়োমেট্রিক ইন্টিগ্রেশন',
+          f4: 'সম্পূর্ণ ডাইনামিক CMS ও গ্যালারি',
+          f5: 'ডেডিকেটেড ২৪/৭ অ্যাকাউন্ট ম্যানেজার',
+          f6: 'অটোমেটেড ডেইলি ক্লাউড ব্যাকআপ',
+          button: 'প্রিমিয়াম বেছে নিন'
+        }
+      }
+    },
+    testimonials: {
+      badge: 'ব্যবহারকারীদের মতামত',
+      title: 'শিক্ষাপ্রতিষ্ঠান পরিচালকদের',
+      titleHighlight: 'অভিজ্ঞতা',
+      t1: {
+        quote: 'সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ভর্তি আবেদন গ্রহণ, পরীক্ষার ফলাফল প্রকাশ এবং শিক্ষার্থীদের ফি আদায় প্রক্রিয়া কয়েক ঘণ্টার মধ্যে শতভাগ নির্ভুলভাবে সম্পন্ন হচ্ছে।',
+        author: 'মো. বাহার উদ্দিন ভূঁইয়া',
+        role: 'প্রধান শিক্ষক',
+        school: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS)'
+      },
+      t2: {
+        quote: 'অভিভাবকরা তাৎক্ষণিক এসএমএস ও অনলাইন মার্কশিট প্রিন্ট পেয়ে দারুণ খুশি। কাগজের জটিল হিসাবের দিন এখন অতীত!',
+        author: 'শাহিনুর রহমান',
+        role: 'ম্যানেজিং কমিটি সভাপতি',
+        school: 'ধানমন্ডি মডেল হাই স্কুল'
+      }
+    },
+    faq: {
+      badge: 'সাধারণ প্রশ্নোত্তর',
+      title: 'সচরাচর জানতে চাওয়া',
+      titleHighlight: 'প্রশ্নসমূহ',
+      subtitle: 'সহজ পাঠশালা সম্পর্কে আপনার মনের জিজ্ঞাসাগুলোর সহজ সমাধান।',
+      items: {
+        q1: 'সহজ পাঠশালা চালু করতে কতক্ষণ সময় লাগে?',
+        a1: 'মাত্র ১০ মিনিটে আপনার স্কুলের মৌলিক তথ্য দিয়ে স্কুল পোর্টাল লাইভ করা সম্ভব। শিক্ষার্থী ও শিক্ষকদের তালিকা এক্সেল শিট আপলোডের মাধ্যমে নিমেষেই ডেটাবেজে যুক্ত করা যায়।',
+        q2: 'আমাদের ইন্টারনেটের গতি কম থাকলে কি এটি কাজ করবে?',
+        a2: 'হ্যাঁ, সহজ পাঠশালা অত্যন্ত লাইটওয়েট এবং ২G/৩G স্পিডেও মসৃণভাবে লোড হওয়ার জন্য অপ্টিমাইজ করা হয়েছে। অফলাইন ক্যাশিং সুবিধাও রয়েছে।',
+        q3: 'মার্কশিট, অ্যাডমিট কার্ড বা মানি রসিদ কি এক পাতায় প্রিন্ট হবে?',
+        a3: 'অবশ্যই! আমাদের সিস্টেমে রয়েছে ডেডিকেটেড ইউনিভার্সাল প্রিন্ট ইঞ্জিন। এমনকি ডার্ক মোডে থাকলেও প্রিন্ট কমান্ড দিলে স্বয়ংক্রিয়ভাবে ১০০% সাদা A4 কাগজে স্কুলের লেটারহেড সহ নির্ভুল ১ পাতায় প্রিন্ট হয়।',
+        q4: 'আমাদের স্কুলের জন্য কি নিজস্ব ডোমেইন বা নাম ব্যবহার করা যাবে?',
+        a4: 'হ্যাঁ, প্রতিটি স্কুলের জন্য নিজস্ব সাবডোমেইন (যেমন: bdhs.sohojpathshala.app) স্বয়ংক্রিয়ভাবে তৈরি হয় এবং যেকোনো কাস্টম ডোমেইন (যেমন: myschool.edu.bd) খুব সহজেই ম্যাপ করা যায়।',
+        q5: 'শিক্ষক বা কর্মীদের কি প্রশিক্ষণের ব্যবস্থা আছে?',
+        a5: 'হ্যাঁ! সহজ ও সাবলীল বাংলা ইন্টারফেসের পাশাপাশি আমরা ভিডিও টিউটোরিয়াল, ব্যবহারকারী গাইড এবং জুম/হোয়াটসঅ্যাপের মাধ্যমে ডেডিকেটেড প্রশিক্ষণ প্রদান করি।'
+      }
+    },
+    finalCta: {
+      badge: 'স্মার্ট বাংলাদেশ গড়ার অগ্রযাত্রায়',
+      title: 'আপনার স্কুলকে ডিজিটাল করতে',
+      titleHighlight: 'প্রস্তুত?',
+      subtitle: 'কাগজের জটিলতা দূর করুন, প্রশাসনিক সময় বাঁচান এবং শিক্ষক ও অভিভাবকদের জন্য উন্মোচন করুন এক আধুনিক অভিজ্ঞতা।',
+      primaryBtn: 'অনবোর্ডিং শুরু করুন',
+      secondaryBtn: 'বিদ্যমান স্কুল তালিকা দেখুন',
+      perk1: '১৪ দিনের সম্পূর্ণ ফ্রি ট্রায়াল',
+      perk2: '১০০% ক্লাউড ডেটা সিকিউরিটি',
+      perk3: '২৪/৭ সার্বক্ষণিক সহায়তা'
+    },
+    footer: {
+      brandDesc: 'বাংলাদেশের শিক্ষা প্রতিষ্ঠানসমূহের জন্য সম্পূর্ণ মাল্টি-টেন্যান্ট ক্লাউড এডুকেশন ম্যানেজমেন্ট ইকোসিস্টেম। সহজ, দ্রুত ও শতভাগ নিরাপদ।',
+      systemStatus: 'সকল সিস্টেম সক্রিয় ও কার্যকর (100% Operational)',
+      col1: { title: 'প্ল্যাটফর্ম' },
+      col2: { title: 'অ্যাক্সেস পোর্টাল' },
+      col3: { title: 'যোগাযোগ ও সহায়তা' }
+    }
+  },
+  en: {
+    brand_title: 'Sohoj Pathshala',
+    brand_sub: 'School Ecosystem',
+    badge_new: 'NEW',
+    badge_now_online: 'Now live online — ',
+    rotating_words: ['Online Admissions', 'Result Publishing', 'Fee Collection', 'Notice Board', 'Class Routine'],
+    hero_title_line1: 'All Schools,',
+    hero_title_line2: 'One Unified Platform.',
+    hero_sub: 'Modern cloud website, automatic result publishing, online admission, and fee accounting ecosystem for every school in Bangladesh.',
+    hero_cta_admin: 'School Admin Portal',
+    hero_cta_features: 'Explore Platform Features',
+    stat_modules: '8',
+    stat_modules_label: 'Integrated Modules',
+    stat_langs: '2',
+    stat_langs_label: 'Languages (BN & EN)',
+    stat_schools: 'Unlimited',
+    stat_schools_label: 'Tenant Network Capacity',
+    mockup_url: 'sohojpathshala.app/bdhs/admin',
+    mockup_title: 'Central Control Panel',
+    mockup_stat_students: '1,285',
+    mockup_stat_students_label: 'Total Students',
+    mockup_stat_attendance: '[Your Data]%',
+    mockup_stat_attendance_label: 'Daily Attendance',
+    mockup_chip_result_title: 'Results Published',
+    mockup_chip_result_sub: 'SSC Model Test 2026',
+    mockup_chip_admission_title: 'New Admission Form',
+    mockup_chip_admission_sub: 'Just now · Class 6',
+    nav_modules: 'Modules',
+    nav_flow: 'Workflow',
+    nav_security: 'Security',
+    nav_schools: 'Schools',
+    nav_pricing: 'Plans & Pricing',
+    nav_faq: 'FAQs',
+    btn_admin_login: 'Admin Login',
+    marquee_ending: 'Your School Here',
+    modules_tag: 'MODULES',
+    modules_title: '8 Fully Integrated Core Modules',
+    modules_sub: 'Harmonious solutions designed to streamline every facet of school management.',
+    onboarding_tag: 'ONBOARDING',
+    onboarding_title: 'Go Live in 4 Simple Steps',
+    onboarding_sub: 'Seamless step-by-step school digitization without technical friction.',
+    security_tag: 'SECURITY & ISOLATION',
+    security_title: 'One School Never Sees',
+    security_title_shimmer: 'Another School’s Data',
+    security_sub: 'Strict multi-tenant cryptographic isolation ensuring 100% data confidentiality for every school.',
+    security_check_1: 'Role-Based Access Control (RBAC)',
+    security_check_1_sub: 'Strict granular permissions for Headmasters, Teachers, Accountants, and Operators.',
+    security_check_2: 'Automatic Lockout after 5 Failed Attempts',
+    security_check_2_sub: 'Brute-force protection with automated lockout and audited activity logs.',
+    security_check_3: '30-Day Data Retention & Grace Protection',
+    security_check_3_sub: 'Automated daily backups and 30-day grace retention upon subscription cycle completion.',
+    schools_tag: 'NETWORK SCHOOLS',
+    schools_title: 'Schools Connected to the Platform',
+    schools_sub: 'Explore institutions successfully operating on the Sohoj Pathshala ecosystem.',
+    schools_search: 'Search by school name, EIIN, or district...',
+    pricing_tag: 'PRICING',
+    pricing_title: 'Transparent & Predictable Pricing',
+    pricing_sub: 'No hidden charges. Choose the tier that best matches your school’s scale.',
+    pricing_popular_badge: 'Most Popular',
+    pricing_per_year: '/ year',
+    faq_tag: 'FAQS',
+    faq_title: 'Frequently Asked Questions',
+    faq_sub: 'Get answers to common queries regarding Sohoj Pathshala implementation.',
+    cta_title: 'Ready to Digitize Your Institution?',
+    cta_sub: 'No open public signups — onboarding occurs via verified school committee authorizations.',
+    cta_btn_contact: 'Contact & Onboard',
+    cta_btn_schools: 'Explore Schools',
+    footer_copy: '© 2026 Sohoj Pathshala. All rights reserved.',
+    footer_link_login: 'School Admin Login',
+    footer_link_owner: 'Super Admin Dashboard',
+    footer_link_cms: 'Landing Page CMS',
+    footer_link_support: 'Device Support',
+
+    security: {
+      badge: 'Enterprise Security',
+      title: 'One School Never Sees',
+      titleHighlight: 'Another School’s Data',
+      subtitle: 'Strict multi-tenant security and cryptographic tenant isolation guaranteeing full data privacy.',
+      points: {
+        rbac: {
+          title: 'Role-Based Access Control (RBAC)',
+          desc: 'Headmasters, Teachers, Accountants, and Guardians only access what is explicitly authorized.'
+        },
+        lockout: {
+          title: 'Lockout after 5 Failed Password Attempts',
+          desc: 'Brute-force mitigation with secure session management and intrusion detection.'
+        },
+        grace: {
+          title: '30-Day Grace & Retention Protection',
+          desc: 'Zero data loss upon subscription expiration with continuous backups and audit integrity.'
+        }
+      }
+    },
+    schools: {
+      badge: 'Connected Institutions',
+      title: 'Network',
+      titleHighlight: 'Schools',
+      subtitle: 'Explore active digital portals across the Sohoj Pathshala educational network.',
+      searchPlaceholder: 'Search by school name, EIIN, or district...',
+      activeStatus: 'Active',
+      viewSite: 'Visit Website',
+      adminPortal: 'Admin Portal',
+      emptyTitle: 'No Schools Found',
+      emptyDesc: 'Try adjusting your search keywords.'
+    },
+    pricing: {
+      badge: 'Clear Pricing Tiers',
+      title: 'The Perfect Plan for',
+      titleHighlight: 'Your School',
+      subtitle: 'No surprise charges. Free 14-day trial with seamless upgrades.',
+      popularBadge: 'Most Popular',
+      plans: {
+        basic: {
+          name: 'Basic',
+          tagline: 'Ideal for small and primary institutions',
+          price: '3,999',
+          period: '/ yr',
+          f1: 'Up to 200 Students',
+          f2: 'Admission & Student Management',
+          f3: 'Digital Attendance Tracking',
+          f4: 'Exam Results & Marksheet Printing',
+          f5: 'Standard Email Support',
+          button: 'Select Basic'
+        },
+        standard: {
+          name: 'Standard',
+          tagline: 'Most popular for secondary and high schools',
+          price: '7,999',
+          period: '/ yr',
+          f1: 'Up to 1,000 Students',
+          f2: 'Fee & Money Receipt Collection',
+          f3: 'Automated SMS Alerts',
+          f4: 'Online Admit & ID Card Generator',
+          f5: 'Committee, Staff & Notice Board',
+          f6: 'Priority Phone & WhatsApp Support',
+          button: 'Get Started with Standard'
+        },
+        premium: {
+          name: 'Premium',
+          tagline: 'For large colleges & multi-branch campuses',
+          price: '14,999',
+          period: '/ yr',
+          f1: 'Unlimited Students & Staff Records',
+          f2: 'Custom Domain Mapping & Full Branding',
+          f3: 'Smart Gate & Biometric Integration',
+          f4: 'Dynamic CMS & Event Gallery',
+          f5: 'Dedicated 24/7 Account Manager',
+          f6: 'Automated Daily Cloud Backups',
+          button: 'Choose Premium'
+        }
+      }
+    },
+    testimonials: {
+      badge: 'Testimonials',
+      title: 'Trusted by School',
+      titleHighlight: 'Leaders',
+      t1: {
+        quote: 'Since implementing Sohoj Pathshala, our admission intake and marksheet publishing turnaround reduced from weeks to mere hours.',
+        author: 'Md. Bahar Uddin Bhuiyan',
+        role: 'Headmaster',
+        school: 'Bandua Daulatpur High School (BDHS)'
+      },
+      t2: {
+        quote: 'Parents are thrilled with instant SMS alerts and single-page online fee slips. Administrative chaos is truly gone!',
+        author: 'Shahinur Rahman',
+        role: 'Managing Committee President',
+        school: 'Dhanmondi Model High School'
+      }
+    },
+    faq: {
+      badge: 'Common Inquiries',
+      title: 'Frequently Asked',
+      titleHighlight: 'Questions',
+      subtitle: 'Answers to essential questions regarding the Sohoj Pathshala system.',
+      items: {
+        q1: 'How long does onboarding take?',
+        a1: 'Only 10 minutes to input your primary institutional details and bring your portal live.',
+        q2: 'Does it work under slow or intermittent connectivity?',
+        a2: 'Yes, Sohoj Pathshala is lightweight and optimized for 2G/3G speeds with offline caching.',
+        q3: 'Will receipts, marksheets and admit cards fit on a single page?',
+        a3: 'Yes, our Universal Print Engine guarantees precise 1-page A4 output with institutional letterheads.',
+        q4: 'Can we use our own custom school domain?',
+        a4: 'Yes, you receive a free subdomain immediately, and custom domains (e.g. school.edu.bd) map easily.',
+        q5: 'Is training provided for teachers and operators?',
+        a5: 'Yes, comprehensive video guides and live Zoom training are provided for all staff.'
+      }
+    },
+    finalCta: {
+      badge: 'Smart Education Initiative',
+      title: 'Ready to Transform Your',
+      titleHighlight: 'School?',
+      subtitle: 'Eliminate manual paperwork, save administrative hours, and deliver a modern experience for educators and parents.',
+      primaryBtn: 'Start Onboarding',
+      secondaryBtn: 'View Network Schools',
+      perk1: '14-Day Free Evaluation',
+      perk2: '100% Cryptographic Security',
+      perk3: '24/7 Dedicated Support'
+    },
+    footer: {
+      brandDesc: 'A unified multi-tenant cloud education platform for schools across Bangladesh. Fast, secure, and intuitive.',
+      systemStatus: 'All Systems Operational (100%)',
+      col1: { title: 'Platform' },
+      col2: { title: 'Access Portals' },
+      col3: { title: 'Contact & Support' }
+    }
+  }
+};

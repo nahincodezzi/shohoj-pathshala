@@ -111,8 +111,25 @@ export default function OwnerPanel() {
   const [resetModalSchool, setResetModalSchool] = useState(null);
   const [newTempPassword, setNewTempPassword] = useState('');
 
-  const schools = TenantRepository.getSchools();
-  const allStudents = TenantRepository.getStudents('sch_bdhs').concat(TenantRepository.getStudents('sch_bahs'));
+  const [schools, setSchools] = useState(() => TenantRepository.getSchools());
+
+  const refreshSchools = () => {
+    setSchools(TenantRepository.getSchools());
+  };
+
+  useEffect(() => {
+    const handleSync = () => {
+      refreshSchools();
+    };
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+    };
+  }, []);
+
+  const allStudents = schools.flatMap(s => TenantRepository.getStudents(s.id) || []);
   const auditLogs = TenantRepository.getAuditLogs(null);
 
   const activeSchools = schools.filter(s => s.status === 'active');
@@ -201,6 +218,7 @@ export default function OwnerPanel() {
         name: `অ্যাডমিন (${onboardForm.name_bn})`
       });
 
+      refreshSchools();
       setCreatedResult(result);
       showToast(lang === 'bn' ? 'নতুন স্কুল সফলভাবে অনবোর্ড করা হয়েছে!' : 'New school onboarded successfully!');
     } catch (err) {
@@ -579,7 +597,28 @@ export default function OwnerPanel() {
             {/* Schools Grid Table */}
             <GridTable
               columns={[
-                { key: 'name_bn', label: t.col_school, width: '2fr' },
+                { 
+                  key: 'name_bn', 
+                  label: t.col_school, 
+                  width: '2fr',
+                  render: (val, row) => (
+                    <div>
+                      <a 
+                        href={`/${row.slug}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="font-bold text-text hover:text-indigo inline-flex items-center gap-1.5 transition-colors group cursor-pointer"
+                        title={lang === 'bn' ? `${val}-এর ওয়েবসাইট দেখুন (নতুন ট্যাবে)` : `Visit ${val} website`}
+                      >
+                        <span className="group-hover:underline">{val}</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-muted group-hover:text-indigo opacity-70 group-hover:opacity-100 transition-opacity shrink-0" />
+                      </a>
+                      <span className="text-[11px] text-muted block font-mono">
+                        {row.name_en || row.slug} • {row.district || 'ঢাকা'}
+                      </span>
+                    </div>
+                  )
+                },
                 { key: 'slug', label: t.col_slug, width: '100px', fontMono: true },
                 { key: 'eiin', label: t.col_eiin, width: '90px', fontMono: true },
                 { 

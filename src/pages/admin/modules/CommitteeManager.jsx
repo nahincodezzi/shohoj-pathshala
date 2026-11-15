@@ -9,13 +9,14 @@ import Badge from '../../../components/ui/Badge';
 import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { Users, Plus, Phone, Trash2, Award, Shield } from 'lucide-react';
+import { Users, Plus, Phone, Trash2, Edit2, Award, Shield } from 'lucide-react';
 
 export default function CommitteeManager() {
   const { school, supportMode } = useOutletContext();
   const { showToast } = useToast();
 
-  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
   const committee = TenantRepository.getCommittee(school.id);
@@ -28,19 +29,42 @@ export default function CommitteeManager() {
     status: 'active'
   });
 
-  const handleAddSubmit = (e) => {
+  const openAdd = () => {
+    setEditingMember(null);
+    setForm({
+      name: '',
+      designation: '',
+      role_category: 'অভিভাবক প্রতিনিধি',
+      phone: '',
+      status: 'active'
+    });
+    setModalOpen(true);
+  };
+
+  const openEdit = (member) => {
+    setEditingMember(member);
+    setForm({
+      name: member.name,
+      designation: member.designation,
+      role_category: member.role_category,
+      phone: member.phone || '',
+      status: member.status || 'active'
+    });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     try {
-      TenantRepository.createCommitteeMember(school.id, form);
-      showToast('পরিচালনা পর্ষদের সদস্য সফলভাবে যুক্ত করা হয়েছে!');
-      setAddModalOpen(false);
-      setForm({
-        name: '',
-        designation: '',
-        role_category: 'অভিভাবক প্রতিনিধি',
-        phone: '',
-        status: 'active'
-      });
+      if (editingMember) {
+        TenantRepository.updateCommitteeMember(school.id, editingMember.id, form);
+        showToast('পরিচালনা পর্ষদের সদস্য তথ্য সফলভাবে হালনাগাদ করা হয়েছে!');
+      } else {
+        TenantRepository.createCommitteeMember(school.id, form);
+        showToast('পরিচালনা পর্ষদের সদস্য সফলভাবে যুক্ত করা হয়েছে!');
+      }
+      setModalOpen(false);
+      setEditingMember(null);
     } catch (err) {
       showToast(err.message || 'সদস্য সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
@@ -62,7 +86,7 @@ export default function CommitteeManager() {
         </div>
 
         {!supportMode && (
-          <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
+          <Button variant="primary" size="md" icon={Plus} onClick={openAdd}>
             নতুন সদস্য যোগ করুন
           </Button>
         )}
@@ -89,18 +113,28 @@ export default function CommitteeManager() {
           {
             key: 'id',
             label: 'অ্যাকশন',
-            width: '80px',
+            width: '100px',
             align: 'center',
-            render: (id) => (
+            render: (id, row) => (
               !supportMode && (
-                <button
-                  type="button"
-                  onClick={() => setDeleteId(id)}
-                  className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
-                  title="মুছে ফেলুন"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center justify-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openEdit(row)}
+                    className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer"
+                    title="সম্পাদনা করুন"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteId(id)}
+                    className="p-1.5 rounded-lg text-danger hover:bg-danger-soft transition-colors cursor-pointer"
+                    title="মুছে ফেলুন"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               )
             )
           }
@@ -109,15 +143,15 @@ export default function CommitteeManager() {
         zebra
       />
 
-      {/* Add Member Modal */}
-      {addModalOpen && (
+      {/* Add / Edit Member Modal */}
+      {modalOpen && (
         <Modal
-          isOpen={addModalOpen}
-          onClose={() => setAddModalOpen(false)}
-          title="পরিচালনা পর্ষদের নতুন সদস্য যুক্ত করুন"
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={editingMember ? 'কমিটি সদস্য তথ্য সম্পাদনা' : 'পরিচালনা পর্ষদের নতুন সদস্য যুক্ত করুন'}
           subtitle="ম্যানেজিং কমিটির তথ্যাবলী পূরণ করুন"
         >
-          <form onSubmit={handleAddSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="সদস্যের নাম"
               placeholder="e.g. জনাব মো. রফিকুল ইসলাম"
@@ -154,11 +188,11 @@ export default function CommitteeManager() {
             />
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="secondary" onClick={() => setAddModalOpen(false)}>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>
                 বাতিল
               </Button>
               <Button type="submit" variant="primary">
-                সংরক্ষণ করুন
+                {editingMember ? 'হালনাগাদ করুন' : 'সংরক্ষণ করুন'}
               </Button>
             </div>
           </form>
@@ -191,4 +225,3 @@ export default function CommitteeManager() {
     </div>
   );
 }
-

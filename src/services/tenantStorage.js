@@ -8,7 +8,7 @@
 
 const STORAGE_PREFIX = 'sp_tenant_';
 
-// Initial Seed Data for School 1 (BDHS) & School 2 (BAHS)
+// Initial Seed Data for School 1 (BDHS), School 2 (BAHS) & School 3 (DMHS — Demo)
 const SEED_SCHOOLS = [
   {
     id: 'sch_bdhs',
@@ -47,6 +47,25 @@ const SEED_SCHOOLS = [
     expires_at: '2027-06-30',
     max_students: 800,
     created_at: '2026-03-01'
+  },
+  {
+    id: 'sch_dmhs',
+    slug: 'dmhs',
+    name_bn: 'ধানমন্ডি মডেল হাই স্কুল',
+    name_en: 'Dhanmondi Model High School',
+    eiin: '998877',
+    school_code: '9988',
+    mpo_code: '0102030405',
+    board: 'ঢাকা',
+    district: 'ঢাকা',
+    code_prefix: 'DMHS',
+    logo_url: '/favicon.svg',
+    theme: 'emerald',
+    status: 'active',
+    plan: 'premium',
+    expires_at: '2027-12-31',
+    max_students: 2000,
+    created_at: '2026-11-15'
   }
 ];
 
@@ -215,6 +234,37 @@ const SEED_SETTINGS = [
     chairman_message: 'গুণগত শিক্ষা বিস্তারে পরিচালনা পর্ষদ সর্বদা নিবেদিত।',
     facebook_url: 'https://facebook.com',
     map_embed_url: ''
+  },
+  {
+    school_id: 'sch_dmhs',
+    address_bn: 'রোড # ২৭, ধানমন্ডি, ঢাকা-১২০৯',
+    address_en: 'Road # 27, Dhanmondi, Dhaka-1209',
+    phone: '০১৭০০-০০০০০০',
+    phone_alt: '০১৮০০-০০০০০০',
+    email: 'info@dmhs.edu.bd',
+    website: 'https://dmhs.edu.bd',
+    established: '২০০২',
+    recognized: '২০০৩',
+    tagline_bn: 'জ্ঞান, চরিত্র ও ডিজিটাল উৎকর্ষতা',
+    tagline_en: 'Knowledge, Character & Digital Excellence',
+    motto_bn: 'শিক্ষাই জাতির মেরুদণ্ড, নৈতিকতাই জীবনের ভূষণ।',
+    motto_en: 'Education is the backbone of a nation.',
+    office_hours: 'রবি–বৃহস্পতি সকাল ৮:৩০–দুপুর ৩:০০',
+    uniform_rules: 'ছাত্র: সাদা শার্ট ও নেভি ব্লু প্যান্ট | ছাত্রী: সাদা কামিজ ও নেভি ব্লু সালোয়ার/ওড়না',
+    pass_rate: '৯৯.৫%',
+    capacity: '২০০০+',
+    disciplines: ['বিজ্ঞান বিভাগ (Science)', 'ব্যবসায় শিক্ষা (Business Studies)', 'মানবিক বিভাগ (Humanities)'],
+    history_bn: '২০০২ সালে ঢাকার ধানমন্ডিতে প্রতিষ্ঠিত ধানমন্ডি মডেল হাই স্কুল রাজধানীর অন্যতম আধুনিক ও মানসম্পন্ন শিক্ষাপ্রতিষ্ঠান। ডিজিটাল শিক্ষার পথিকৃৎ এই বিদ্যালয়টি প্রতিষ্ঠার পর থেকেই একাডেমিক উৎকর্ষতা, নৈতিক শিক্ষা ও প্রযুক্তি নির্ভর পাঠদানের মাধ্যমে হাজারো শিক্ষার্থীর জীবন গড়ে দিচ্ছে।',
+    vision_bn: 'ডিজিটাল বাংলাদেশ গড়ার প্রত্যয়ে জ্ঞান, মেধা ও মূল্যবোধ সম্পন্ন আদর্শ নাগরিক তৈরির শ্রেষ্ঠ বিদ্যাপীঠ হওয়া।',
+    mission_bn: 'আধুনিক প্রযুক্তি ও নৈতিক শিক্ষার সমন্বয়ে প্রতিটি শিক্ষার্থীকে জাতীয় ও বৈশ্বিক চ্যালেঞ্জ মোকাবেলায় সক্ষম করে তোলা।',
+    headmaster_name: 'ড. খোন্দকার রফিকুল আলম',
+    headmaster_designation: 'প্রধান শিক্ষক',
+    headmaster_message: 'ধানমন্ডি মডেল হাই স্কুলে আপনাকে স্বাগতম। আমাদের বিদ্যালয়ে শিক্ষার্থীদের সামগ্রিক মেধা বিকাশ, নৈতিক মূল্যবোধ প্রতিষ্ঠা ও ডিজিটাল দক্ষতা নিশ্চিত করাই আমাদের মূল লক্ষ্য।',
+    chairman_name: 'আলহাজ্ব ড. রেজাউল করিম',
+    chairman_designation: 'সভাপতি, পরিচালনা পর্ষদ',
+    chairman_message: 'পরিচালনা পর্ষদের পক্ষ থেকে আমরা শিক্ষার্থীদের সর্বোচ্চ মানের শিক্ষা নিশ্চিত করতে দৃঢ়প্রতিজ্ঞ।',
+    facebook_url: 'https://facebook.com',
+    map_embed_url: ''
   }
 ];
 
@@ -259,6 +309,26 @@ const SEED_SLIDERS = [
     image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&auto=format&fit=crop&q=80',
     cta_text: 'ভর্তি ফরম',
     cta_link: '#admission'
+  },
+  {
+    id: 'sl_dmhs_1',
+    school_id: 'sch_dmhs',
+    tag: 'স্বাগতম',
+    title: 'ধানমন্ডি মডেল হাই স্কুলে স্বাগতম',
+    subtitle: 'গুণগত শিক্ষা, নৈতিক মূল্যবোধ ও ডিজিটাল অগ্রযাত্রায় আমরা প্রতিশ্রুতিবদ্ধ।',
+    image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1600&q=80',
+    cta_text: 'অনলাইন ভর্তি আবেদন',
+    cta_link: '#admission'
+  },
+  {
+    id: 'sl_dmhs_2',
+    school_id: 'sch_dmhs',
+    tag: 'ডিজিটাল শিক্ষা',
+    title: 'আধুনিক প্রযুক্তি ও কাটিং-এজ ক্যাম্পাস',
+    subtitle: 'স্মার্ট ক্লাসরুম, শেখ রাসেল ডিজিটাল ল্যাব ও উচ্চগতির ব্রডব্যান্ড নেটওয়ার্ক — ভবিষ্যৎ গড়ার প্রতিষ্ঠান।',
+    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80',
+    cta_text: 'ক্যাম্পাস সুবিধা দেখুন',
+    cta_link: '#facilities'
   }
 ];
 
@@ -308,6 +378,30 @@ const SEED_UNIFORMS = [
     winter: 'কালো সোয়েটার বা ব্লেজার।',
     guidelines: [
       '১. প্রতিদিন নির্ধারিত স্কুল ইউনিফর্ম পরিধান বাধ্যতামূলক।'
+    ]
+  },
+  {
+    school_id: 'sch_dmhs',
+    boys: {
+      shirt: 'সাদা রঙের হাফ/ফুল হাতা শার্ট (White Shirt)',
+      pant: 'নেভি ব্লু রঙের ফর্মাল প্যান্ট (Navy Blue Pant)',
+      badge: 'বাম পকেটে বিদ্যালয়ের মনোগ্রামযুক্ত প্রাতিষ্ঠানিক ব্যাজ',
+      shoes: 'কালো চামড়ার জুতা ও সাদা মোজা',
+      belt: 'কালো বেল্ট'
+    },
+    girls: {
+      dress: 'সাদা কামিজ (White Kamiz)',
+      salwar: 'নেভি ব্লু সালোয়ার (Navy Blue Salwar)',
+      orna: 'সাদা ওড়না (White Orna)',
+      badge: 'বিদ্যালয়ের মনোগ্রামযুক্ত ব্যাজ',
+      shoes: 'কালো জুতা ও সাদা মোজা',
+      hair: 'সাদা ফিতা (White Hair Ribbon)'
+    },
+    winter: 'শীতকালীন পোশাক: গাঢ় নেভি ব্লু ভি-নেক সোয়েটার / কার্ডিগান।',
+    guidelines: [
+      '১. সকল শিক্ষার্থীকে প্রতিদিন নির্ধারিত স্কুল ইউনিফর্ম পরিধান করে বিদ্যালয়ে উপস্থিত হওয়া বাধ্যতামূলক।',
+      '২. যথাযথ পোশাক ও ব্যাজ ব্যতীত কোনো শিক্ষার্থীকে ক্লাস বা প্রাত্যহিক সমাবেশে অংশগ্রহণ করতে দেওয়া হবে না।',
+      '৩. পোশাক সবসময় পরিষ্কার, পরিপাটি ও মার্জিত হতে হবে।'
     ]
   }
 ];
@@ -572,6 +666,18 @@ const SEED_USERS = [
     locked_until: null,
     must_change_password: false
   },
+  {
+    id: 'usr_superadmin',
+    school_id: null,
+    username: 'superadmin',
+    password: 'password123',
+    name: 'Super Admin',
+    role: 'platform_owner',
+    active: true,
+    failed_attempts: 0,
+    locked_until: null,
+    must_change_password: false
+  },
   // BDHS Users
   {
     id: 'usr_bdhs_super',
@@ -645,6 +751,19 @@ const SEED_USERS = [
     failed_attempts: 0,
     locked_until: null,
     must_change_password: false
+  },
+  // DMHS Users (Demo School)
+  {
+    id: 'usr_dmhs_admin',
+    school_id: 'sch_dmhs',
+    username: 'dmhs_admin',
+    password: 'password123',
+    name: 'ড. খোন্দকার রফিকুল আলম',
+    role: 'school_superadmin',
+    active: true,
+    failed_attempts: 0,
+    locked_until: null,
+    must_change_password: false
   }
 ];
 
@@ -710,6 +829,37 @@ const SEED_STUDENTS = [
     mobile: '01722334455',
     dob: '2010-04-12',
     address: 'বরুড়া সদর'
+  },
+  // DMHS Students (Demo School)
+  {
+    id: 'std_dmhs_1',
+    school_id: 'sch_dmhs',
+    student_id: 'DMHS-2026-1001',
+    name_bn: 'তানভীর আহমেদ',
+    name_en: 'Tanvir Ahmed',
+    father_name: 'মোঃ রফিকুল ইসলাম',
+    mother_name: 'নাজমা আক্তার',
+    class: '10',
+    group: 'Science',
+    roll: 1,
+    mobile: '01712345678',
+    dob: '2010-03-15',
+    address: 'ধানমন্ডি, ঢাকা'
+  },
+  {
+    id: 'std_dmhs_2',
+    school_id: 'sch_dmhs',
+    student_id: 'DMHS-2026-1002',
+    name_bn: 'নুসরাত জাহান',
+    name_en: 'Nusrat Jahan',
+    father_name: 'মোঃ আলম হোসেন',
+    mother_name: 'রোকেয়া বেগম',
+    class: '9',
+    group: 'Science',
+    roll: 1,
+    mobile: '01811223344',
+    dob: '2011-07-20',
+    address: 'মোহাম্মদপুর, ঢাকা'
   }
 ];
 
@@ -1128,19 +1278,99 @@ function getTable(name, defaultSeed) {
       }
     }
 
-    // Auto-migrate users table if empty or missing platform owner
+    // Auto-migrate users table: ensure platform owner and school admins from defaultSeed exist
     if (name === 'users' && Array.isArray(parsed)) {
-      if (parsed.length === 0 || !parsed.some(u => u.username === 'owner')) {
-        storage.setItem(key, JSON.stringify(defaultSeed));
-        return defaultSeed;
+      let updated = false;
+      const mergedUsers = [...parsed];
+      for (const su of defaultSeed) {
+        if (!mergedUsers.some(u => u.username === su.username && (u.school_id === su.school_id || (!u.school_id && !su.school_id)))) {
+          mergedUsers.push(su);
+          updated = true;
+        }
+      }
+      if (updated || mergedUsers.length === 0) {
+        storage.setItem(key, JSON.stringify(mergedUsers.length > 0 ? mergedUsers : defaultSeed));
+        return mergedUsers.length > 0 ? mergedUsers : defaultSeed;
       }
     }
 
-    // Auto-migrate schools table if empty
+    // Auto-migrate schools table: ensure any schools in defaultSeed (e.g. DMHS) exist dynamically
     if (name === 'schools' && Array.isArray(parsed)) {
-      if (parsed.length === 0 || !parsed.some(s => s.slug === 'bdhs')) {
-        storage.setItem(key, JSON.stringify(defaultSeed));
-        return defaultSeed;
+      let updated = false;
+      const mergedSchools = [...parsed];
+      for (const ss of defaultSeed) {
+        if (!mergedSchools.some(s => s.id === ss.id || s.slug.toLowerCase() === ss.slug.toLowerCase())) {
+          mergedSchools.push(ss);
+          updated = true;
+        }
+      }
+      if (updated || mergedSchools.length === 0) {
+        storage.setItem(key, JSON.stringify(mergedSchools.length > 0 ? mergedSchools : defaultSeed));
+        return mergedSchools.length > 0 ? mergedSchools : defaultSeed;
+      }
+    }
+
+    // Auto-migrate settings table: ensure school settings exist for all schools
+    if (name === 'settings' && Array.isArray(parsed)) {
+      let updated = false;
+      const mergedSettings = [...parsed];
+      for (const st of defaultSeed) {
+        if (!mergedSettings.some(s => s.school_id === st.school_id)) {
+          mergedSettings.push(st);
+          updated = true;
+        }
+      }
+      if (updated) {
+        storage.setItem(key, JSON.stringify(mergedSettings));
+        return mergedSettings;
+      }
+    }
+
+    // Auto-migrate campus facilities: ensure seed facilities exist
+    if (name === 'facilities' && Array.isArray(parsed)) {
+      let updated = false;
+      const mergedFacilities = [...parsed];
+      for (const sf of defaultSeed) {
+        if (!mergedFacilities.some(f => f.id === sf.id)) {
+          mergedFacilities.push(sf);
+          updated = true;
+        }
+      }
+      if (updated) {
+        storage.setItem(key, JSON.stringify(mergedFacilities));
+        return mergedFacilities;
+      }
+    }
+
+    // Auto-migrate hero sliders: ensure default sliders exist
+    if (name === 'sliders' && Array.isArray(parsed)) {
+      let updated = false;
+      const mergedSliders = [...parsed];
+      for (const sl of defaultSeed) {
+        if (!mergedSliders.some(s => s.id === sl.id)) {
+          mergedSliders.push(sl);
+          updated = true;
+        }
+      }
+      if (updated) {
+        storage.setItem(key, JSON.stringify(mergedSliders));
+        return mergedSliders;
+      }
+    }
+
+    // Auto-migrate uniforms: ensure uniform guidelines exist
+    if (name === 'uniforms' && Array.isArray(parsed)) {
+      let updated = false;
+      const mergedUniforms = [...parsed];
+      for (const su of defaultSeed) {
+        if (!mergedUniforms.some(u => u.school_id === su.school_id)) {
+          mergedUniforms.push(su);
+          updated = true;
+        }
+      }
+      if (updated) {
+        storage.setItem(key, JSON.stringify(mergedUniforms));
+        return mergedUniforms;
       }
     }
 
@@ -1294,6 +1524,29 @@ export const TenantRepository = {
     };
     users.push(newSuperAdmin);
     saveTable('users', users);
+
+    // Seed default hero slider for new school
+    const sliders = getTable('sliders', SEED_SLIDERS);
+    sliders.push({
+      id: `sl_${Date.now()}`,
+      school_id: schoolId,
+      title: `${newSchool.name_bn}-এ স্বাগতম`,
+      subtitle: 'গুণগত শিক্ষা, নৈতিক মূল্যবোধ ও ডিজিটাল উৎকর্ষতার অগ্রযাত্রায় আমরা প্রতিশ্রুতিবদ্ধ।',
+      image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1600&q=80',
+      tag: 'স্বাগতম'
+    });
+    saveTable('sliders', sliders);
+
+    // Seed default uniform for new school
+    const uniforms = getTable('uniforms', SEED_UNIFORMS);
+    uniforms.push({
+      school_id: schoolId,
+      boys: { shirt: 'সাদা হাফ হাতা শার্ট', pant: 'নেভি ব্লু ফুল প্যান্ট', shoes: 'কালো জুতো ও সাদা মোজা', badge: 'বাম পকেটে প্রাতিষ্ঠানিক ব্যাজ', belt: 'কালো বেল্ট' },
+      girls: { dress: 'নেভি ব্লু ফ্রক/কামিজ', salwar: 'সাদা সালোয়ার', orna: 'সাদা ওড়না ও বেল্ট', shoes: 'সাদা জুতো ও মোজা', hair: 'সাদা ফিতা দিয়ে চুল বাঁধা' },
+      winter: 'নেভি ব্লু সোয়েটার বা ব্লেজার',
+      guidelines: ['প্রতিদিন নির্ধারিত পরিষ্কার পোশাক পরিধান বাধ্যতামূলক।', 'আইডি কার্ড ও ব্যাজ দৃশ্যমান রাখতে হবে।']
+    });
+    saveTable('uniforms', uniforms);
 
     // Log Audit
     this.addAuditLog(null, 'owner', 'platform_owner', 'নতুন স্কুল তৈরি', 'School Created', 'owner', `স্কুল: ${newSchool.name_bn} (${newSchool.slug}) অনবোর্ড করা হয়েছে।`);
@@ -1952,6 +2205,15 @@ export const TenantRepository = {
     saveTable('committee', remaining);
   },
 
+  updateCommitteeMember(schoolId, memberId, updates) {
+    const members = getTable('committee', SEED_COMMITTEE);
+    const idx = members.findIndex(m => m.id === memberId && m.school_id === schoolId);
+    if (idx === -1) throw new Error('কমিটি সদস্য পাওয়া যায়নি।');
+    members[idx] = { ...members[idx], ...updates };
+    saveTable('committee', members);
+    return members[idx];
+  },
+
   // --- Routines & Syllabus ---
   getRoutines(schoolId) {
     const routines = getTable('routines', SEED_ROUTINES);
@@ -1969,6 +2231,15 @@ export const TenantRepository = {
     routines.unshift(newRoutine);
     saveTable('routines', routines);
     return newRoutine;
+  },
+
+  updateRoutine(schoolId, routineId, updates) {
+    const routines = getTable('routines', SEED_ROUTINES);
+    const idx = routines.findIndex(r => r.id === routineId && r.school_id === schoolId);
+    if (idx === -1) throw new Error('রুটিন পাওয়া যায়নি।');
+    routines[idx] = { ...routines[idx], ...updates };
+    saveTable('routines', routines);
+    return routines[idx];
   },
 
   deleteRoutine(schoolId, routineId) {
@@ -1995,6 +2266,15 @@ export const TenantRepository = {
     return newItem;
   },
 
+  updateGalleryItem(schoolId, itemId, updates) {
+    const items = getTable('gallery', SEED_GALLERY);
+    const idx = items.findIndex(g => g.id === itemId && g.school_id === schoolId);
+    if (idx === -1) throw new Error('ছবি পাওয়া যায়নি।');
+    items[idx] = { ...items[idx], ...updates };
+    saveTable('gallery', items);
+    return items[idx];
+  },
+
   deleteGalleryItem(schoolId, itemId) {
     const items = getTable('gallery', SEED_GALLERY);
     const remaining = items.filter(g => !(g.id === itemId && g.school_id === schoolId));
@@ -2019,16 +2299,53 @@ export const TenantRepository = {
     return newItem;
   },
 
+  updateVideoItem(schoolId, itemId, updates) {
+    const items = getTable('videos', SEED_VIDEOS);
+    const idx = items.findIndex(v => v.id === itemId && v.school_id === schoolId);
+    if (idx === -1) throw new Error('ভিডিও পাওয়া যায়নি।');
+    items[idx] = { ...items[idx], ...updates };
+    saveTable('videos', items);
+    return items[idx];
+  },
+
   deleteVideoItem(schoolId, itemId) {
     const items = getTable('videos', SEED_VIDEOS);
     const remaining = items.filter(v => !(v.id === itemId && v.school_id === schoolId));
     saveTable('videos', remaining);
   },
 
-  // --- Facilities ---
+  // --- Facilities (Campus Facilities) ---
   getFacilities(schoolId) {
     const fac = getTable('facilities', SEED_FACILITIES);
     return fac.filter(f => f.school_id === schoolId);
+  },
+
+  createFacility(schoolId, item) {
+    const fac = getTable('facilities', SEED_FACILITIES);
+    const newFac = {
+      id: `fac_${Date.now()}`,
+      school_id: schoolId,
+      ...item
+    };
+    fac.push(newFac);
+    saveTable('facilities', fac);
+    return newFac;
+  },
+
+  updateFacility(schoolId, facilityId, updates) {
+    const fac = getTable('facilities', SEED_FACILITIES);
+    const idx = fac.findIndex(f => f.id === facilityId && f.school_id === schoolId);
+    if (idx === -1) throw new Error('ক্যাম্পাস সুবিধা পাওয়া যায়নি।');
+    fac[idx] = { ...fac[idx], ...updates };
+    saveTable('facilities', fac);
+    return fac[idx];
+  },
+
+  deleteFacility(schoolId, facilityId) {
+    const fac = getTable('facilities', SEED_FACILITIES);
+    const remaining = fac.filter(f => !(f.id === facilityId && f.school_id === schoolId));
+    saveTable('facilities', remaining);
+    return true;
   },
 
   // Factory Reset (Restricted to specific school only!)
@@ -2037,7 +2354,7 @@ export const TenantRepository = {
       throw new Error('ফ্যাক্টরি রিসেট করতে "RESET" কোডটি সঠিকভাবে লিখুন।');
     }
     // Delete all data associated with ONLY this school_id
-    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions', 'sliders', 'uniforms', 'committee', 'routines', 'gallery'];
+    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions', 'sliders', 'uniforms', 'committee', 'routines', 'gallery', 'videos', 'facilities'];
     tables.forEach(tableName => {
       const current = getTable(tableName, []);
       const remaining = current.filter(record => record.school_id !== schoolId);

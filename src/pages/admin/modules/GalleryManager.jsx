@@ -9,7 +9,7 @@ import Badge from '../../../components/ui/Badge';
 import Modal from '../../../components/ui/Modal';
 import FileUpload from '../../../components/ui/FileUpload';
 import { useToast } from '../../../components/ui/ToastContext';
-import { Image, Plus, Trash2, Film, Play, ExternalLink } from 'lucide-react';
+import { Image, Plus, Trash2, Edit2, Film, Play, ExternalLink } from 'lucide-react';
 
 export default function GalleryManager() {
   const { school, supportMode } = useOutletContext();
@@ -18,7 +18,8 @@ export default function GalleryManager() {
   const [activeSubTab, setActiveSubTab] = useState('photos'); // 'photos', 'videos'
 
   // Photos state
-  const [addPhotoModalOpen, setAddPhotoModalOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState(null);
   const [deletePhotoId, setDeletePhotoId] = useState(null);
   const galleryItems = TenantRepository.getGallery(school.id);
 
@@ -30,7 +31,8 @@ export default function GalleryManager() {
   });
 
   // Videos state
-  const [addVideoModalOpen, setAddVideoModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [editingVideo, setEditingVideo] = useState(null);
   const [deleteVideoId, setDeleteVideoId] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
   const videoItems = TenantRepository.getVideos(school.id);
@@ -50,23 +52,46 @@ export default function GalleryManager() {
     cultural: 'সাংস্কৃতিক ও জাতীয় দিবস'
   };
 
-  // Submit Photo
-  const handleAddPhotoSubmit = (e) => {
+  // Open Photo Modals
+  const openAddPhoto = () => {
+    setEditingPhoto(null);
+    setPhotoForm({
+      title: '',
+      category: 'campus',
+      image: '',
+      description: ''
+    });
+    setPhotoModalOpen(true);
+  };
+
+  const openEditPhoto = (photo) => {
+    setEditingPhoto(photo);
+    setPhotoForm({
+      title: photo.title,
+      category: photo.category,
+      image: photo.image,
+      description: photo.description || ''
+    });
+    setPhotoModalOpen(true);
+  };
+
+  // Submit Photo (Add / Edit)
+  const handlePhotoSubmit = (e) => {
     e.preventDefault();
     if (!photoForm.image) {
       showToast('ছবির ফাইল আপলোড করা আবশ্যক', 'error');
       return;
     }
     try {
-      TenantRepository.createGalleryItem(school.id, photoForm);
-      showToast('ছবি সফলভাবে ফটো অ্যালবামে যুক্ত হয়েছে!');
-      setAddPhotoModalOpen(false);
-      setPhotoForm({
-        title: '',
-        category: 'campus',
-        image: '',
-        description: ''
-      });
+      if (editingPhoto) {
+        TenantRepository.updateGalleryItem(school.id, editingPhoto.id, photoForm);
+        showToast('ছবি সফলভাবে হালনাগাদ করা হয়েছে!');
+      } else {
+        TenantRepository.createGalleryItem(school.id, photoForm);
+        showToast('ছবি সফলভাবে ফটো অ্যালবামে যুক্ত হয়েছে!');
+      }
+      setPhotoModalOpen(false);
+      setEditingPhoto(null);
     } catch (err) {
       showToast(err.message || 'ছবি সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
@@ -78,24 +103,48 @@ export default function GalleryManager() {
     setDeletePhotoId(null);
   };
 
-  // Submit Video
-  const handleAddVideoSubmit = (e) => {
+  // Open Video Modals
+  const openAddVideo = () => {
+    setEditingVideo(null);
+    setVideoForm({
+      title: '',
+      category: 'campus',
+      embed_url: '',
+      duration: '০৩:৪৫',
+      description: ''
+    });
+    setVideoModalOpen(true);
+  };
+
+  const openEditVideo = (video) => {
+    setEditingVideo(video);
+    setVideoForm({
+      title: video.title,
+      category: video.category,
+      embed_url: video.embed_url,
+      duration: video.duration || '০৩:৪৫',
+      description: video.description || ''
+    });
+    setVideoModalOpen(true);
+  };
+
+  // Submit Video (Add / Edit)
+  const handleVideoSubmit = (e) => {
     e.preventDefault();
     if (!videoForm.embed_url) {
       showToast('ভিডিও আপলোড অথবা ভিডিও লিংক প্রদান আবশ্যক', 'error');
       return;
     }
     try {
-      TenantRepository.createVideoItem(school.id, videoForm);
-      showToast('ভিডিও সফলভাবে গ্যালারিতে যুক্ত হয়েছে!');
-      setAddVideoModalOpen(false);
-      setVideoForm({
-        title: '',
-        category: 'campus',
-        embed_url: '',
-        duration: '০৩:৪৫',
-        description: ''
-      });
+      if (editingVideo) {
+        TenantRepository.updateVideoItem(school.id, editingVideo.id, videoForm);
+        showToast('ভিডিও সফলভাবে হালনাগাদ করা হয়েছে!');
+      } else {
+        TenantRepository.createVideoItem(school.id, videoForm);
+        showToast('ভিডিও সফলভাবে গ্যালারিতে যুক্ত হয়েছে!');
+      }
+      setVideoModalOpen(false);
+      setEditingVideo(null);
     } catch (err) {
       showToast(err.message || 'ভিডিও সংরক্ষণে ত্রুটি হয়েছে', 'error');
     }
@@ -113,17 +162,17 @@ export default function GalleryManager() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-heading font-bold text-text">মিডিয়া ও গ্যালারি ব্যবস্থাপনা</h2>
-          <p className="text-xs text-muted">ফটোগ্রাফি অ্যালবাম এবং ভিডিও কর্নার কনটেন্ট আপলোড ও নিয়ন্ত্রণ</p>
+          <p className="text-xs text-muted">ফটোগ্রাফি অ্যালবাম এবং ভিডিও কর্নার কনটেন্ট আপলোড ও সম্পূর্ণ নিয়ন্ত্রণ</p>
         </div>
 
         {!supportMode && (
           <div className="flex items-center gap-2">
             {activeSubTab === 'photos' ? (
-              <Button variant="primary" size="md" icon={Plus} onClick={() => setAddPhotoModalOpen(true)}>
+              <Button variant="primary" size="md" icon={Plus} onClick={openAddPhoto}>
                 নতুন ছবি যুক্ত করুন
               </Button>
             ) : (
-              <Button variant="primary" size="md" icon={Plus} onClick={() => setAddVideoModalOpen(true)}>
+              <Button variant="primary" size="md" icon={Plus} onClick={openAddVideo}>
                 নতুন ভিডিও যুক্ত করুন
               </Button>
             )}
@@ -184,7 +233,15 @@ export default function GalleryManager() {
                 </div>
 
                 {!supportMode && (
-                  <div className="pt-2 flex justify-end border-t border-border/80">
+                  <div className="pt-2 flex items-center justify-end gap-2 border-t border-border/80">
+                    <button
+                      type="button"
+                      onClick={() => openEditPhoto(item)}
+                      className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer text-xs flex items-center gap-1 font-semibold"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>সম্পাদনা</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => setDeletePhotoId(item.id)}
@@ -247,7 +304,15 @@ export default function GalleryManager() {
                 </div>
 
                 {!supportMode && (
-                  <div className="pt-2 flex justify-end border-t border-border/80">
+                  <div className="pt-2 flex items-center justify-end gap-2 border-t border-border/80">
+                    <button
+                      type="button"
+                      onClick={() => openEditVideo(v)}
+                      className="p-1.5 rounded-lg text-primary hover:bg-primary-soft transition-colors cursor-pointer text-xs flex items-center gap-1 font-semibold"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>সম্পাদনা</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => setDeleteVideoId(v.id)}
@@ -264,15 +329,15 @@ export default function GalleryManager() {
         </div>
       )}
 
-      {/* ================= MODAL: ADD PHOTO ================= */}
-      {addPhotoModalOpen && (
+      {/* ================= MODAL: ADD / EDIT PHOTO ================= */}
+      {photoModalOpen && (
         <Modal
-          isOpen={addPhotoModalOpen}
-          onClose={() => setAddPhotoModalOpen(false)}
-          title="নতুন ছবি যুক্ত করুন"
+          isOpen={photoModalOpen}
+          onClose={() => setPhotoModalOpen(false)}
+          title={editingPhoto ? 'ছবি সম্পাদনা করুন' : 'নতুন ছবি যুক্ত করুন'}
           subtitle="ফটো ফাইল আপলোড করুন ও অ্যালবামের তথ্য দিন"
         >
-          <form onSubmit={handleAddPhotoSubmit} className="space-y-4">
+          <form onSubmit={handlePhotoSubmit} className="space-y-4">
             <Input
               label="ছবির শিরোনাম"
               placeholder="e.g. বার্ষিক বিজ্ঞান মেলা ও প্রজেক্ট প্রদর্শনী"
@@ -313,26 +378,26 @@ export default function GalleryManager() {
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="secondary" onClick={() => setAddPhotoModalOpen(false)}>
+              <Button variant="secondary" onClick={() => setPhotoModalOpen(false)}>
                 বাতিল
               </Button>
               <Button type="submit" variant="primary">
-                ফটো যুক্ত করুন
+                {editingPhoto ? 'হালনাগাদ করুন' : 'ফটো যুক্ত করুন'}
               </Button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* ================= MODAL: ADD VIDEO ================= */}
-      {addVideoModalOpen && (
+      {/* ================= MODAL: ADD / EDIT VIDEO ================= */}
+      {videoModalOpen && (
         <Modal
-          isOpen={addVideoModalOpen}
-          onClose={() => setAddVideoModalOpen(false)}
-          title="নতুন ভিডিও যুক্ত করুন"
+          isOpen={videoModalOpen}
+          onClose={() => setVideoModalOpen(false)}
+          title={editingVideo ? 'ভিডিও সম্পাদনা করুন' : 'নতুন ভিডিও যুক্ত করুন'}
           subtitle="ভিডিও ফাইল আপলোড করুন অথবা ইউটিউব ভিডিও লিঙ্ক দিন"
         >
-          <form onSubmit={handleAddVideoSubmit} className="space-y-4">
+          <form onSubmit={handleVideoSubmit} className="space-y-4">
             <Input
               label="ভিডিও শিরোনাম"
               placeholder="e.g. বার্ষিক সাংস্কৃতিক অনুষ্ঠান ও পুরস্কার বিতরণী"
@@ -389,11 +454,11 @@ export default function GalleryManager() {
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="secondary" onClick={() => setAddVideoModalOpen(false)}>
+              <Button variant="secondary" onClick={() => setVideoModalOpen(false)}>
                 বাতিল
               </Button>
               <Button type="submit" variant="primary">
-                ভিডিও যুক্ত করুন
+                {editingVideo ? 'হালনাগাদ করুন' : 'ভিডিও যুক্ত করুন'}
               </Button>
             </div>
           </form>

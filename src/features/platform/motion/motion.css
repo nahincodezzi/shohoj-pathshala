@@ -1,0 +1,259 @@
+/* ==========================================================================
+   Sohoj Pathshala — Pure CSS Motion System (Keyframes & Utilities)
+   Zero JS overhead for high-performance visual effects
+   ========================================================================== */
+
+/* Aurora Glow 1 */
+@keyframes aurora1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate(45px, 35px) scale(1.12);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-30px, 50px) scale(0.95);
+    opacity: 0.65;
+  }
+}
+
+/* Aurora Glow 2 */
+@keyframes aurora2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(-50px, -30px) scale(1.18);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(35px, -45px) scale(0.92);
+    opacity: 0.55;
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora1 18s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.animate-aurora-2 {
+  animation: aurora2 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.mode-light .animate-aurora-1,
+.mode-light .animate-aurora-2 {
+  opacity: 0.55;
+}
+
+/* Floating Chips */
+@keyframes floatY {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float {
+  animation: floatY 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatY 7s ease-in-out -2s infinite;
+}
+
+/* Shimmering Text Gradient */
+@keyframes shimmerText {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--primary-text) 0%,
+    var(--indigo) 35%,
+    var(--primary-text) 70%,
+    var(--indigo) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 6s linear infinite;
+}
+
+/* Continuous Marquee */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Spinning Conic Border */
+@keyframes conicSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.ring-spin {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.ring-spin::before {
+  content: '';
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    transparent 0deg 180deg,
+    var(--primary) 270deg,
+    var(--indigo) 330deg,
+    transparent 360deg
+  );
+  animation: conicSpin 5s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ring-spin > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ping Dot Ripple */
+@keyframes pingDot {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-ping-dot {
+  position: relative;
+}
+
+.animate-ping-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: currentColor;
+  animation: pingDot 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+/* Orbit Rotation */
+@keyframes orbitCW {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbitCCW {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-orbit {
+  animation: orbitCW 14s linear infinite;
+}
+
+.animate-orbit-reverse {
+  animation: orbitCCW 22s linear infinite;
+}
+
+/* Bar Grow for Dashboard Mockup */
+@keyframes barGrow {
+  0% {
+    transform: scaleY(0.15);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.bar-grow {
+  transform-origin: bottom;
+  animation: barGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Step Line Progress Pulse */
+@keyframes pulseLine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-line-pulse {
+  animation: pulseLine 3s ease-in-out infinite;
+}
+
+/* Dot Grid Background */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(var(--ink-rgb), 0.12) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 35%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 35%, #000 30%, transparent 100%);
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora-1,
+  .animate-aurora-2,
+  .animate-float,
+  .animate-float-delayed,
+  .text-shimmer,
+  .animate-marquee,
+  .ring-spin::before,
+  .animate-ping-dot::after,
+  .animate-orbit,
+  .animate-orbit-reverse,
+  .bar-grow,
+  .animate-line-pulse {
+    animation: none !important;
+    transform: none !important;
+  }
+}
