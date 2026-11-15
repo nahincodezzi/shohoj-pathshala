@@ -186,6 +186,7 @@ export default function LandingPage() {
         {/* 7. Connected Schools Directory with Live Search */}
         <Schools
           t={t}
+          lang={lang}
           schools={schools}
         />
 
