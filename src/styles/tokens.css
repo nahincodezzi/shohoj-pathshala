@@ -26,18 +26,18 @@
   --text: #EEF5F1;
   --muted: #A7BDB4;
   --subtle: #8AA399;
-  --primary: #34D399;
-  --primary-text: #34D399;
+  --primary: #2EE6A6;
+  --primary-text: #2EE6A6;
   --primary-hover: #5EE3BE;
-  --primary-soft: rgba(52, 211, 153, 0.12);
-  --on-primary: #03251A;
+  --primary-soft: rgba(46, 230, 166, 0.12);
+  --on-primary: #031D14;
   --accent: #E9B949;
   --accent-text: #E9B949;
   --on-accent: #2A1C00;
   --accent-soft: rgba(233, 185, 73, 0.14);
   --accent-line: rgba(233, 185, 73, 0.35);
-  --success: #34D399;
-  --success-soft: rgba(52, 211, 153, 0.12);
+  --success: #2EE6A6;
+  --success-soft: rgba(46, 230, 166, 0.12);
   --warning: #FACC6B;
   --warning-soft: rgba(250, 204, 107, 0.12);
   --warning-line: rgba(250, 204, 107, 0.3);
@@ -69,10 +69,10 @@
   --text: #10261D;
   --muted: #465E55;
   --subtle: #5A6E66;
-  --primary: #0B6E4F;
-  --primary-text: #0B6E4F;
-  --primary-hover: #085A40;
-  --primary-soft: rgba(11, 110, 79, 0.10);
+  --primary: #086142;
+  --primary-text: #086142;
+  --primary-hover: #064E35;
+  --primary-soft: rgba(8, 97, 66, 0.10);
   --on-primary: #FFFFFF;
   --accent: #E3A72F;
   --accent-text: #8A5A00;
@@ -164,26 +164,114 @@ a {
   text-decoration: inherit;
 }
 
-/* High-Contrast Solid Primary Action Buttons (Guarantees Crystal-Clear Text in Dark & Light Modes & Themes) */
+/* ==========================================================================
+   High-Contrast Solid Action Buttons (Guarantees Maximum Readability & WCAG AAA)
+   ========================================================================== */
 .btn-primary-action {
-  background-color: var(--primary) !important;
-  color: var(--on-primary) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700 !important;
   text-decoration: none !important;
+  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  letter-spacing: 0.01em;
+  background-color: #2EE6A6 !important;
+  color: #031D14 !important;
+  box-shadow: 0 4px 14px rgba(46, 230, 166, 0.28);
 }
 
-.btn-primary-action,
-.btn-primary-action:visited,
-.btn-primary-action:hover,
-.btn-primary-action:focus,
-.btn-primary-action:active {
-  color: var(--on-primary) !important;
+.btn-primary-action:hover {
+  background-color: #4BF0B8 !important;
+  color: #000000 !important;
 }
 
 .btn-primary-action *,
 .btn-primary-action span,
 .btn-primary-action svg {
-  color: inherit !important;
+  color: #031D14 !important;
+  stroke: #031D14 !important;
   fill: none;
+}
+
+/* Explicit Dark Mode */
+.mode-dark .btn-primary-action,
+[data-theme="dark"] .btn-primary-action {
+  background-color: #2EE6A6 !important;
+  color: #031D14 !important;
+  box-shadow: 0 4px 14px rgba(46, 230, 166, 0.28);
+}
+
+.mode-dark .btn-primary-action:hover,
+[data-theme="dark"] .btn-primary-action:hover {
+  background-color: #4BF0B8 !important;
+  color: #000000 !important;
+}
+
+.mode-dark .btn-primary-action *,
+.mode-dark .btn-primary-action span,
+.mode-dark .btn-primary-action svg,
+[data-theme="dark"] .btn-primary-action *,
+[data-theme="dark"] .btn-primary-action span,
+[data-theme="dark"] .btn-primary-action svg {
+  color: #031D14 !important;
+  stroke: #031D14 !important;
+  fill: none;
+}
+
+/* 2. LIGHT MODE: Solid Deep Forest Emerald (#086142) with 100% Snow White (#FFFFFF) Text */
+.mode-light .btn-primary-action,
+[data-theme="light"] .btn-primary-action {
+  background-color: #086142 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(8, 97, 66, 0.22);
+}
+
+.mode-light .btn-primary-action:hover,
+[data-theme="light"] .btn-primary-action:hover {
+  background-color: #064E35 !important;
+  color: #FFFFFF !important;
+}
+
+.mode-light .btn-primary-action *,
+.mode-light .btn-primary-action span,
+.mode-light .btn-primary-action svg,
+[data-theme="light"] .btn-primary-action *,
+[data-theme="light"] .btn-primary-action span,
+[data-theme="light"] .btn-primary-action svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  fill: none;
+}
+
+/* 3. INDIGO THEME (Owner Panel & Indigo Schools) */
+.mode-dark.theme-indigo .btn-primary-action,
+.mode-dark[data-school-theme="indigo"] .btn-primary-action,
+[data-theme="dark"][data-school-theme="indigo"] .btn-primary-action {
+  background-color: #818CF8 !important;
+  color: #080C24 !important;
+  box-shadow: 0 4px 14px rgba(129, 140, 248, 0.28);
+}
+
+.mode-dark.theme-indigo .btn-primary-action *,
+.mode-dark[data-school-theme="indigo"] .btn-primary-action *,
+[data-theme="dark"][data-school-theme="indigo"] .btn-primary-action * {
+  color: #080C24 !important;
+  stroke: #080C24 !important;
+}
+
+.mode-light.theme-indigo .btn-primary-action,
+.mode-light[data-school-theme="indigo"] .btn-primary-action,
+[data-theme="light"][data-school-theme="indigo"] .btn-primary-action {
+  background-color: #4338CA !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(67, 56, 202, 0.22);
+}
+
+.mode-light.theme-indigo .btn-primary-action *,
+.mode-light[data-school-theme="indigo"] .btn-primary-action *,
+[data-theme="light"][data-school-theme="indigo"] .btn-primary-action * {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 input::placeholder, textarea::placeholder {

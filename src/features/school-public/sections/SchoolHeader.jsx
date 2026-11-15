@@ -11,13 +11,20 @@ export default function SchoolHeader({
   navItems = [],
   lang,
   toggleLang,
+  onToggleLang,
   fontSize,
   setFontSize,
+  onSetFontSize,
   isDark,
-  toggleMode
+  mode,
+  toggleMode,
+  onToggleMode
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { scrollYProgress } = useScroll();
+
+  const handleToggleMode = toggleMode || onToggleMode;
+  const darkActive = isDark !== undefined ? isDark : mode === 'dark';
 
   const isBn = lang === 'bn';
   const schoolName = isBn ? (school?.name_bn || school?.name) : (school?.name_en || school?.name);
@@ -111,13 +118,13 @@ export default function SchoolHeader({
             {/* Theme Toggle Button (44x44px) */}
             <button
               type="button"
-              onClick={toggleMode}
+              onClick={handleToggleMode}
               className="w-11 h-11 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text)] transition-colors cursor-pointer relative overflow-hidden"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={isDark ? 'লাইট মোড চালু করুন' : 'ডার্ক মোড চালু করুন'}
+              aria-label={darkActive ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={darkActive ? 'লাইট মোড চালু করুন' : 'ডার্ক মোড চালু করুন'}
             >
               <AnimatePresence mode="wait">
-                {isDark ? (
+                {darkActive ? (
                   <motion.div
                     key="sun"
                     initial={{ rotate: -90, opacity: 0, scale: 0.7 }}
@@ -167,11 +174,11 @@ export default function SchoolHeader({
         navItems={navItems}
         school={school}
         lang={lang}
-        toggleLang={toggleLang}
+        toggleLang={toggleLang || onToggleLang}
         fontSize={fontSize}
-        setFontSize={setFontSize}
-        isDark={isDark}
-        toggleMode={toggleMode}
+        setFontSize={setFontSize || onSetFontSize}
+        isDark={darkActive}
+        toggleMode={handleToggleMode}
       />
     </>
   );
