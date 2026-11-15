@@ -38,7 +38,7 @@ export default function FinalCta({ t, onOpenOnboard }) {
                 <button
                   type="button"
                   onClick={onOpenOnboard}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-base hover:brightness-110 shadow-[0_4px_24px_var(--glow)] transition-all hover:scale-105 active:scale-95"
+                  className="btn-primary-action w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-extrabold text-base hover:brightness-110 shadow-[0_4px_24px_var(--glow)] transition-all hover:scale-105 active:scale-95"
                 >
                   <span>{t('finalCta.primaryBtn') || 'অনবোর্ডিং শুরু করুন'}</span>
                   <ArrowRight className="w-5 h-5" />

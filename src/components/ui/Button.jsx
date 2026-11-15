@@ -31,7 +31,7 @@ export default function Button({
   }[size] || "h-11 px-5 text-sm";
 
   const variantClasses = {
-    primary: "bg-primary text-on-primary hover:bg-primary-hover shadow-xs active:scale-[0.98]",
+    primary: "btn-primary-action hover:brightness-110 shadow-xs active:scale-[0.98]",
     secondary: "bg-transparent border border-border-strong text-text hover:bg-surface-2 hover:border-text active:scale-[0.98]",
     outline: "bg-transparent border border-primary/40 text-primary hover:bg-primary-soft hover:border-primary active:scale-[0.98]",
     outlineIndigo: "bg-transparent border border-indigo/40 text-indigo hover:bg-indigo-soft hover:border-indigo active:scale-[0.98]",

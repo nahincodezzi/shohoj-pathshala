@@ -152,9 +152,9 @@ export default function Header({
           <a
             href="#schools"
             onClick={(e) => handleNavClick(e, '#schools')}
-            className="hidden sm:inline-flex items-center justify-center h-11 px-5 text-xs font-bold rounded-[14px] bg-primary text-on-primary hover:bg-primary-hover shadow-xs active:scale-[0.98] transition-all cursor-pointer gap-1.5"
+            className="btn-primary-action hidden sm:inline-flex items-center justify-center h-11 px-5 text-xs font-bold rounded-[14px] hover:brightness-110 shadow-xs active:scale-[0.98] transition-all cursor-pointer gap-1.5"
           >
-            <span>{t.btn_admin_login}</span>
+            <span>{t.btn_admin_login || 'অ্যাডমিন লগইন'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
 
@@ -199,9 +199,9 @@ export default function Header({
                 <a
                   href="#schools"
                   onClick={(e) => handleNavClick(e, '#schools')}
-                  className="w-full flex items-center justify-center h-12 rounded-[14px] bg-primary text-on-primary font-bold text-sm"
+                  className="btn-primary-action w-full flex items-center justify-center h-12 rounded-[14px] font-bold text-sm"
                 >
-                  {t.btn_admin_login}
+                  <span>{t.btn_admin_login || 'অ্যাডমিন লগইন'}</span>
                 </a>
               </div>
             </div>

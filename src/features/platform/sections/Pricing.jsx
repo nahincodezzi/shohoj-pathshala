@@ -150,7 +150,7 @@ export default function Pricing({ t, pricingPlans = [] }) {
                       href="#contact"
                       className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-2xl text-sm font-bold transition-all duration-300 shadow-sm ${
                         isPopular
-                          ? 'bg-[var(--primary)] text-[var(--on-primary)] hover:brightness-110 shadow-[0_4px_20px_var(--glow)]'
+                          ? 'btn-primary-action hover:brightness-110 shadow-[0_4px_20px_var(--glow)]'
                           : 'bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--primary)]'
                       }`}
                     >

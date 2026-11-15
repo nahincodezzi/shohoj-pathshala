@@ -95,9 +95,9 @@ export default function Hero({ t, landing, lang = 'bn' }) {
                 <a
                   href="#schools"
                   onClick={(e) => handleScrollTo(e, '#schools')}
-                  className="group inline-flex items-center justify-center h-12 px-7 rounded-[14px] bg-primary text-on-primary font-bold text-sm shadow-[0_12px_32px_-8px_var(--glow)] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-8px_var(--glow)] active:scale-[0.98] transition-all duration-200 cursor-pointer gap-2"
+                  className="btn-primary-action group inline-flex items-center justify-center h-12 px-7 rounded-[14px] font-bold text-sm shadow-[0_12px_32px_-8px_var(--glow)] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-8px_var(--glow)] active:scale-[0.98] transition-all duration-200 cursor-pointer gap-2"
                 >
-                  <span>{t.hero_cta_admin}</span>
+                  <span>{t.hero_cta_admin || 'স্কুল অ্যাডমিন প্যানেল'}</span>
                   <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </a>
 

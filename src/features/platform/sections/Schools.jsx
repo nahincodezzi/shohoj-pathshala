@@ -114,14 +114,14 @@ export default function Schools({ t, schools = [] }) {
                     <div className="pt-6 mt-4 border-t border-[var(--border)] flex items-center justify-between gap-3">
                       <a
                         href={publicUrl}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] text-xs font-bold hover:brightness-110 transition-all shadow-sm"
+                        className="btn-primary-action flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold hover:brightness-110 active:scale-95 transition-all shadow-sm"
                       >
                         <span>{t('schools.viewSite') || 'ওয়েবসাইট ভিজিট'}</span>
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                       <a
                         href={adminUrl}
-                        className="inline-flex items-center justify-center p-2 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] text-xs font-medium hover:border-[var(--primary)] transition-all"
+                        className="inline-flex items-center justify-center p-2.5 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] text-xs font-medium hover:border-[var(--primary)] transition-all"
                         title={t('schools.adminPortal') || 'অ্যাডমিন প্যানেল'}
                       >
                         <Shield className="w-4 h-4 text-[var(--primary)]" />
