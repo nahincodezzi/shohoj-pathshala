@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Play, Pause, Sparkles, Shirt, FileText, Search } from 'lucide-react';
+import { ArrowRight, Play, Pause, Sparkles, Shirt, FileText, Search, Share2 } from 'lucide-react';
 import BrandPatternHero from '../fallbacks/BrandPatternHero';
 
 export default function HeroSlider({
@@ -11,7 +11,8 @@ export default function HeroSlider({
   sections = {},
   lang = 'bn',
   onOpenAdmission,
-  onOpenResult
+  onOpenResult,
+  onOpenUniform
 }) {
   const isBn = lang === 'bn';
 
@@ -92,15 +93,31 @@ export default function HeroSlider({
     });
   }
 
-  if (sections.uniform) {
+  if (sections?.uniform !== false) {
     buttons.push({
       id: 'uniform',
       label: isBn ? 'পোশাক নীতিমালা' : 'Dress Code',
       variant: buttons.length === 0 ? 'gold' : 'glass',
       icon: Shirt,
       onClick: () => {
-        const el = document.querySelector('#uniform');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        if (onOpenUniform) onOpenUniform();
+        else {
+          const el = document.querySelector('#uniform');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  }
+
+  const fbLink = settings?.facebook_group_url || settings?.facebook_url || 'https://www.facebook.com';
+  if (fbLink) {
+    buttons.push({
+      id: 'facebook',
+      label: isBn ? 'অফিসিয়াল ফেসবুক গ্রুপ' : 'Official Facebook Group',
+      variant: 'glass',
+      icon: Share2,
+      onClick: () => {
+        window.open(fbLink, '_blank', 'noopener,noreferrer');
       }
     });
   }

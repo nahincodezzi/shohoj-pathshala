@@ -110,15 +110,19 @@ export default function SchoolHome({
         {sliders && sliders.length > 0 ? (
           <HeroSlider
             school={school}
+            settings={settings}
             sliders={sliders}
             features={features}
+            sections={sections}
             lang={lang}
-            onApplyClick={() => onNavigate('admission')}
-            onResultClick={() => onNavigate('results')}
+            onOpenAdmission={() => onNavigate('admission')}
+            onOpenResult={() => onNavigate('results')}
+            onOpenUniform={() => onNavigate('uniform')}
           />
         ) : (
           <BrandPatternHero
             school={school}
+            settings={settings}
             lang={lang}
             onApplyClick={() => onNavigate('admission')}
             onResultClick={() => onNavigate('results')}

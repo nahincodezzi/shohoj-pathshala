@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { TenantRepository } from '../../../services/tenantStorage';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -10,7 +11,7 @@ import GridTable from '../../../components/ui/GridTable';
 import Modal from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
 import { toBengaliOrdinal, toBengaliNumber } from '../../../utils/dateFormatter';
-import { FileText, Plus, CheckCircle2, AlertTriangle, Eye, Printer, Trash2 } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, AlertTriangle, Eye, Printer, Trash2, Upload, FileSpreadsheet, Download } from 'lucide-react';
 
 export default function ResultManager() {
   const { school, currentUser, supportMode } = useOutletContext();
@@ -30,6 +31,16 @@ export default function ResultManager() {
   const [entryRoll, setEntryRoll] = useState('');
   const [entryExam, setEntryExam] = useState('Annual');
   const [entryYear, setEntryYear] = useState('2026');
+
+  // Excel Bulk Marks Import State
+  const [excelModalOpen, setExcelModalOpen] = useState(false);
+  const [excelExam, setExcelExam] = useState('Annual');
+  const [excelYear, setExcelYear] = useState('2026');
+  const [excelClass, setExcelClass] = useState('10');
+  const [excelGroup, setExcelGroup] = useState('Science');
+  const [excelData, setExcelData] = useState([]);
+  const [excelErrors, setExcelErrors] = useState([]);
+  const [excelFileName, setExcelFileName] = useState('');
 
   // Exam Types (Unified with Public Search - D12)
   const examOptions = [
@@ -192,6 +203,123 @@ export default function ResultManager() {
     setDeleteModalResult(null);
   };
 
+  const handleDownloadSampleMarksExcel = () => {
+    const subjects = getSubjectList(excelClass, excelGroup);
+    const headerRow = ['roll', ...subjects.map(s => s.code)];
+    const labelRow = ['রোল নম্বর', ...subjects.map(s => s.name)];
+    const sampleRow1 = [1, ...subjects.map(() => 85)];
+    const sampleRow2 = [2, ...subjects.map(() => 75)];
+
+    const wsData = [headerRow, labelRow, sampleRow1, sampleRow2];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Marks');
+    XLSX.writeFile(wb, `marks_import_sample_class_${excelClass}.xlsx`);
+  };
+
+  const handleExcelMarksUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExcelFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsName = wb.SheetNames[0];
+        const ws = wb.Sheets[wsName];
+        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+        if (rawRows.length < 3) {
+          setExcelErrors(['ফাইলে পর্যাপ্ত নম্বর এন্ট্রি পাওয়া যায়নি।']);
+          return;
+        }
+
+        const subjects = getSubjectList(excelClass, excelGroup);
+        const headerCodes = rawRows[0];
+        const dataRows = rawRows.slice(2);
+
+        const validated = [];
+        const errs = [];
+        const seenRolls = new Set();
+        const classStudents = students.filter(s => s.class === excelClass);
+
+        dataRows.forEach((r, idx) => {
+          const rowNum = idx + 3;
+          const roll = Number(r[0]);
+          if (!roll || isNaN(roll)) return;
+
+          if (seenRolls.has(roll)) {
+            errs.push(`সারি ${rowNum}: ফাইলে একই রোল ${roll} একাধিকবার পাওয়া গেছে।`);
+            return;
+          }
+          seenRolls.add(roll);
+
+          const student = classStudents.find(s => Number(s.roll) === roll);
+          if (!student) {
+            errs.push(`সারি ${rowNum}: শ্রেণি ${excelClass}-এ রোল ${roll} নম্বরের কোনো নিবন্ধিত শিক্ষার্থী পাওয়া যায়নি।`);
+            return;
+          }
+
+          const subjectsArray = subjects.map((subj, subjIdx) => {
+            const colIdx = headerCodes.findIndex(h => String(h).trim() === String(subj.code).trim());
+            const markVal = colIdx !== -1 ? Number(r[colIdx]) || 0 : (Number(r[subjIdx + 1]) || 0);
+            const calc = calculateGradeAndGpa(markVal);
+            return {
+              code: subj.code,
+              name: subj.name,
+              marks: markVal,
+              grade: calc.grade,
+              gpa: calc.gpa
+            };
+          });
+
+          const hasFail = subjectsArray.some(s => s.grade === 'F');
+          const totalGp = subjectsArray.reduce((acc, s) => acc + s.gpa, 0);
+          const avgGpa = hasFail ? 0.00 : Math.min(5.00, parseFloat((totalGp / subjectsArray.length).toFixed(2)));
+          const status = hasFail ? 'FAILED' : 'PASSED';
+
+          validated.push({
+            student_name: student.name_bn,
+            roll,
+            class: excelClass,
+            group: ['9', '10'].includes(excelClass) ? excelGroup : 'General',
+            exam: excelExam,
+            year: excelYear,
+            total_gpa: avgGpa.toFixed(2),
+            status,
+            published: true,
+            subjects: subjectsArray
+          });
+        });
+
+        setExcelData(validated);
+        setExcelErrors(errs);
+      } catch (err) {
+        showToast('মার্কস ফাইল প্রসেস করতে ব্যর্থ হয়েছে। সঠিক ফরম্যাটের ফাইল দিন।', 'error');
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleConfirmExcelMarksImport = () => {
+    if (excelData.length === 0) return;
+    try {
+      let importedCount = 0;
+      excelData.forEach(resPayload => {
+        TenantRepository.createResult(school.id, resPayload, currentUser?.name || 'শিক্ষক');
+        importedCount++;
+      });
+      showToast(`${toBengaliNumber(importedCount)} জন শিক্ষার্থীর পরীক্ষার ফলাফল সফলভাবে Excel থেকে সংরক্ষিত ও পাবলিশ হয়েছে!`);
+      setExcelModalOpen(false);
+      setExcelData([]);
+      setExcelErrors([]);
+      setExcelFileName('');
+    } catch (err) {
+      showToast(err.message || 'মার্কস ইমপোর্টে সমস্যা হয়েছে', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -200,11 +328,28 @@ export default function ResultManager() {
           <p className="text-xs text-muted">কুমিল্লা শিক্ষা বোর্ড গ্রেডিং স্কেল ও ফলাফল অনুমোদন</p>
         </div>
 
-        {!supportMode && (
-          <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
-            নতুন ফলাফল এন্ট্রি করুন
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!supportMode && (
+            <Button
+              variant="secondary"
+              size="md"
+              icon={FileSpreadsheet}
+              onClick={() => {
+                setExcelData([]);
+                setExcelErrors([]);
+                setExcelFileName('');
+                setExcelModalOpen(true);
+              }}
+            >
+              Excel (.xlsx) আপলোড
+            </Button>
+          )}
+          {!supportMode && (
+            <Button variant="primary" size="md" icon={Plus} onClick={() => setAddModalOpen(true)}>
+              নতুন ফলাফল এন্ট্রি করুন
+            </Button>
+          )}
+        </div>
       </div>
 
       <GridTable
@@ -562,6 +707,170 @@ export default function ResultManager() {
               </Button>
               <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
                 মার্কশিট প্রিন্ট করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Excel Bulk Marks Import Modal */}
+      {excelModalOpen && (
+        <Modal
+          isOpen={excelModalOpen}
+          onClose={() => setExcelModalOpen(false)}
+          title="📊 Excel ফাইল থেকে সম্পূর্ণ শ্রেণির পরীক্ষার নম্বর (Marks) আপলোড"
+          maxWidth="max-w-3xl"
+        >
+          <div className="space-y-5">
+            {/* Class, Exam, Year Selectors */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 rounded-xl bg-surface-2 border border-border">
+              <Select
+                label="শ্রেণি"
+                value={excelClass}
+                onChange={(e) => {
+                  setExcelClass(e.target.value);
+                  setExcelData([]);
+                  setExcelErrors([]);
+                }}
+                options={[
+                  { value: '6', label: '৬ষ্ঠ শ্রেণি' },
+                  { value: '7', label: '৭ম শ্রেণি' },
+                  { value: '8', label: '৮ম শ্রেণি' },
+                  { value: '9', label: '৯ম শ্রেণি' },
+                  { value: '10', label: '১০ম শ্রেণি' }
+                ]}
+              />
+
+              {['9', '10'].includes(excelClass) && (
+                <Select
+                  label="বিভাগ (Group)"
+                  value={excelGroup}
+                  onChange={(e) => {
+                    setExcelGroup(e.target.value);
+                    setExcelData([]);
+                    setExcelErrors([]);
+                  }}
+                  options={[
+                    { value: 'Science', label: 'বিজ্ঞান (Science)' },
+                    { value: 'Business Studies', label: 'ব্যবসায় শিক্ষা (Business)' },
+                    { value: 'Humanities', label: 'মানবিক (Humanities)' }
+                  ]}
+                />
+              )}
+
+              <Select
+                label="পরীক্ষার নাম"
+                value={excelExam}
+                onChange={(e) => setExcelExam(e.target.value)}
+                options={examOptions}
+              />
+
+              <Input
+                label="শিক্ষাবর্ষ"
+                value={excelYear}
+                onChange={(e) => setExcelYear(e.target.value)}
+                placeholder="2026"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-primary-soft/30 border border-primary/20">
+              <div>
+                <h4 className="text-xs font-bold text-text">শ্রেণিভিত্তিক এক্সেল টেমপ্লেট</h4>
+                <p className="text-[11px] text-muted">নির্বাচিত শ্রেণির বিষয়কোডসহ নমুনা শিট ডাউনলোড করে নম্বর বসান।</p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Download}
+                onClick={handleDownloadSampleMarksExcel}
+              >
+                নমুনা মার্কশিট ডাউনলোড
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-text block">পূরণকৃত Excel (.xlsx) ফাইল আপলোড করুন:</label>
+              <input
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                onChange={handleExcelMarksUpload}
+                className="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:opacity-90 cursor-pointer p-2 rounded-xl bg-surface-2 border border-dashed border-border"
+              />
+              {excelFileName && (
+                <div className="text-[11px] text-primary flex items-center gap-1 font-mono">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> নির্বাচিত ফাইল: {excelFileName}
+                </div>
+              )}
+            </div>
+
+            {/* Error List */}
+            {excelErrors.length > 0 && (
+              <div className="p-3.5 rounded-xl bg-danger-soft border border-danger/25 space-y-1.5 max-h-36 overflow-y-auto">
+                <div className="text-xs font-bold text-danger flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {excelErrors.length}টি ত্রুটি পাওয়া গেছে:
+                </div>
+                <ul className="text-[11px] text-danger/90 list-disc list-inside space-y-0.5 font-mono">
+                  {excelErrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Preview of Calculated Marks & GPAs */}
+            {excelData.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-text">
+                    যাচাইকৃত ফলাফল: <strong className="text-primary font-mono">{toBengaliNumber(excelData.length)} জন</strong> (কুমিল্লা বোর্ড গ্রেডিং হিসাবকৃত)
+                  </span>
+                </div>
+                <div className="max-h-52 overflow-y-auto border border-border rounded-xl bg-surface">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-surface-2 border-b border-border text-[11px] text-muted uppercase font-mono">
+                      <tr>
+                        <th className="p-2.5">রোল</th>
+                        <th className="p-2.5">শিক্ষার্থীর নাম</th>
+                        <th className="p-2.5 text-center">GPA</th>
+                        <th className="p-2.5 text-center">অবস্থা</th>
+                        <th className="p-2.5">বিষয়ভিত্তিক নম্বর</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-[11px]">
+                      {excelData.map((row, i) => (
+                        <tr key={i} className="hover:bg-surface-2/50">
+                          <td className="p-2.5 font-bold font-mono text-primary">{toBengaliNumber(row.roll)}</td>
+                          <td className="p-2.5 font-medium text-text">{row.student_name}</td>
+                          <td className="p-2.5 text-center font-bold font-mono text-text">{row.total_gpa}</td>
+                          <td className="p-2.5 text-center">
+                            <Badge variant={row.status === 'PASSED' ? 'success' : 'danger'}>
+                              {row.status === 'PASSED' ? 'কৃতকার্য' : 'অকৃতকার্য'}
+                            </Badge>
+                          </td>
+                          <td className="p-2.5 text-muted font-mono text-[10px]">
+                            {row.subjects.map(s => `${s.name}: ${s.marks} (${s.grade})`).join(', ')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+              <Button variant="secondary" size="sm" onClick={() => setExcelModalOpen(false)}>
+                বাতিল
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Upload}
+                disabled={excelData.length === 0}
+                onClick={handleConfirmExcelMarksImport}
+              >
+                ফলাফল পাবলিশ ও সংরক্ষণ করুন ({toBengaliNumber(excelData.length)} জন)
               </Button>
             </div>
           </div>

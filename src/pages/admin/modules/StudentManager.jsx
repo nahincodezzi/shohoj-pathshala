@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { TenantRepository } from '../../../services/tenantStorage';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -21,6 +22,9 @@ import {
   GraduationCap, 
   CheckCircle2, 
   Download,
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
   Edit2,
   Trash2
 } from 'lucide-react';
@@ -36,6 +40,12 @@ export default function StudentManager() {
   const [deleteModalStudent, setDeleteModalStudent] = useState(null);
   const [idCardStudent, setIdCardStudent] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Excel Bulk Import State
+  const [excelModalOpen, setExcelModalOpen] = useState(false);
+  const [excelData, setExcelData] = useState([]);
+  const [excelFileName, setExcelFileName] = useState('');
+  const [excelErrors, setExcelErrors] = useState([]);
 
   // Form State
   const [form, setForm] = useState({
@@ -165,6 +175,116 @@ export default function StudentManager() {
     showToast('শিক্ষার্থী তালিকা CSV আকারে এক্সপোর্ট হয়েছে!');
   };
 
+  const handleDownloadSampleExcel = () => {
+    const wsData = [
+      ['name_bn', 'name_en', 'class', 'roll', 'group', 'mobile', 'father_name', 'mother_name', 'blood_group', 'address'],
+      ['মো. তানভীর আহমেদ', 'Md. Tanvir Ahmed', '10', 1, 'Science', '01811223344', 'মো. রফিক উদ্দিন', 'রাশেদা বেগম', 'A+', 'ফুলগাজী, ফেনী'],
+      ['ফাতেমা আক্তার', 'Fatima Akter', '10', 2, 'Science', '01855667788', 'মো. আবুল কালাম', 'নুরজাহান বেগম', 'B+', 'আনন্দপুর, ফেনী'],
+      ['হাসান মাহমুদ', 'Hasan Mahmud', '9', 1, 'Business Studies', '01711223344', 'আব্দুল হামিদ', 'হোসনে আরা', 'O+', 'সদর, ফেনী']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Students');
+    XLSX.writeFile(wb, 'student_bulk_import_sample.xlsx');
+  };
+
+  const handleExcelUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExcelFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsName = wb.SheetNames[0];
+        const ws = wb.Sheets[wsName];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+        const existing = TenantRepository.getStudents(school.id);
+        const validated = [];
+        const errs = [];
+        const seenClassRoll = new Set();
+
+        rows.forEach((r, idx) => {
+          const rowNum = idx + 2;
+          const nameBn = String(r.name_bn || r['নাম (বাংলা)'] || r['নাম'] || '').trim();
+          const nameEn = String(r.name_en || r['Name'] || r['name'] || '').trim();
+          const cls = String(r.class || r['শ্রেণি'] || r['Class'] || '').replace(/[^0-9]/g, '');
+          const roll = Number(r.roll || r['রোল'] || r['Roll']);
+          const grp = String(r.group || r['বিভাগ'] || 'General').trim();
+          const mobile = String(r.mobile || r['মোবাইল'] || '').trim();
+          const father = String(r.father_name || r['পিতার নাম'] || '').trim();
+          const mother = String(r.mother_name || r['মাতার নাম'] || '').trim();
+          const blood = String(r.blood_group || r['রক্তের গ্রুপ'] || '').trim();
+          const addr = String(r.address || r['ঠিকানা'] || '').trim();
+
+          if (!nameBn) {
+            errs.push(`সারি ${rowNum}: শিক্ষার্থীর নাম (বাংলা) অনুপস্থিত।`);
+            return;
+          }
+          if (!cls || !['6', '7', '8', '9', '10'].includes(cls)) {
+            errs.push(`সারি ${rowNum}: সঠিক শ্রেণি (৬-১০) দিন।`);
+            return;
+          }
+          if (!roll || roll < 1 || roll > 9999) {
+            errs.push(`সারি ${rowNum}: রোল নম্বর ১-৯৯৯৯ এর মধ্যে হতে হবে।`);
+            return;
+          }
+
+          const key = `${cls}_${roll}`;
+          if (seenClassRoll.has(key)) {
+            errs.push(`সারি ${rowNum}: ফাইলে একই শ্রেণি ${cls}-এ ডুপ্লিকেট রোল ${roll} পাওয়া গেছে।`);
+            return;
+          }
+          seenClassRoll.add(key);
+
+          if (existing.some(s => s.class === cls && Number(s.roll) === roll)) {
+            errs.push(`সারি ${rowNum}: শ্রেণি ${cls}-এ রোল ${roll} ইতোমধ্যে ডেটাবেজে রয়েছে।`);
+            return;
+          }
+
+          validated.push({
+            name_bn: nameBn,
+            name_en: nameEn || nameBn,
+            class: cls,
+            roll,
+            group: ['9', '10'].includes(cls) ? (grp || 'Science') : 'General',
+            mobile,
+            father_name: father,
+            mother_name: mother,
+            blood_group: blood,
+            address: addr
+          });
+        });
+
+        setExcelData(validated);
+        setExcelErrors(errs);
+      } catch (err) {
+        showToast('ফাইলটি পড়তে সমস্যা হয়েছে। দয়া করে সঠিক .xlsx বা .csv ফাইল দিন।', 'error');
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleConfirmExcelImport = () => {
+    if (excelData.length === 0) return;
+    try {
+      let importedCount = 0;
+      excelData.forEach(st => {
+        TenantRepository.createStudent(school.id, st);
+        importedCount++;
+      });
+      showToast(`${toBengaliNumber(importedCount)} জন শিক্ষার্থীর তথ্য সফলভাবে Excel থেকে ইমপোর্ট করা হয়েছে!`);
+      setExcelModalOpen(false);
+      setExcelData([]);
+      setExcelErrors([]);
+      setExcelFileName('');
+    } catch (err) {
+      showToast(err.message || 'ইমপোর্টে ত্রুটি হয়েছে', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -174,10 +294,25 @@ export default function StudentManager() {
           <p className="text-xs text-muted">শ্রেণিভিত্তিক শিক্ষার্থী ডাটাবেস, আইডি কার্ড ও এনরোলমেন্ট</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" size="md" icon={Download} onClick={handleExportCsv}>
             CSV এক্সপোর্ট
           </Button>
+          {!supportMode && (
+            <Button 
+              variant="secondary" 
+              size="md" 
+              icon={FileSpreadsheet} 
+              onClick={() => {
+                setExcelData([]);
+                setExcelErrors([]);
+                setExcelFileName('');
+                setExcelModalOpen(true);
+              }}
+            >
+              Excel (.xlsx) আপলোড
+            </Button>
+          )}
           {!supportMode && (
             <Button 
               variant="primary" 
@@ -611,6 +746,118 @@ export default function StudentManager() {
               </Button>
               <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
                 আইডি কার্ড প্রিন্ট করুন
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Excel Bulk Import Modal */}
+      {excelModalOpen && (
+        <Modal
+          isOpen={excelModalOpen}
+          onClose={() => setExcelModalOpen(false)}
+          title="📊 Excel (.xlsx / .csv) ফাইল থেকে শিক্ষার্থী বাল্ক আপলোড"
+          maxWidth="max-w-2xl"
+        >
+          <div className="space-y-5">
+            <div className="p-4 rounded-xl bg-surface-2 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-xs font-bold text-text">নমুনা এক্সেল টেমপ্লেট</h4>
+                <p className="text-[11px] text-muted">সঠিক ফরম্যাটে তথ্য সাজাতে নমুনা ফাইলটি ডাউনলোড করে পূরণ করুন।</p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Download}
+                onClick={handleDownloadSampleExcel}
+              >
+                নমুনা টেমপ্লেট ডাউনলোড
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-text block">Excel (.xlsx) বা .csv ফাইল নির্বাচন করুন:</label>
+              <input
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                onChange={handleExcelUpload}
+                className="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:opacity-90 cursor-pointer p-2 rounded-xl bg-surface-2 border border-dashed border-border"
+              />
+              {excelFileName && (
+                <div className="text-[11px] text-primary flex items-center gap-1 font-mono">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> নির্বাচিত ফাইল: {excelFileName}
+                </div>
+              )}
+            </div>
+
+            {/* Error List */}
+            {excelErrors.length > 0 && (
+              <div className="p-3.5 rounded-xl bg-danger-soft border border-danger/25 space-y-1.5 max-h-36 overflow-y-auto">
+                <div className="text-xs font-bold text-danger flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {excelErrors.length}টি ত্রুটি পাওয়া গেছে (এগুলো সংশোধন করতে হবে):
+                </div>
+                <ul className="text-[11px] text-danger/90 list-disc list-inside space-y-0.5 font-mono">
+                  {excelErrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Preview of Valid Records */}
+            {excelData.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-text">
+                    ইমপোর্টের জন্য প্রস্তুত: <strong className="text-primary font-mono">{toBengaliNumber(excelData.length)} জন</strong>
+                  </span>
+                </div>
+                <div className="max-h-48 overflow-y-auto border border-border rounded-xl bg-surface">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-surface-2 border-b border-border text-[11px] text-muted uppercase font-mono">
+                      <tr>
+                        <th className="p-2.5">রোল</th>
+                        <th className="p-2.5">শ্রেণি</th>
+                        <th className="p-2.5">শিক্ষার্থীর নাম</th>
+                        <th className="p-2.5">বিভাগ</th>
+                        <th className="p-2.5">মোবাইল</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border font-mono text-[11px]">
+                      {excelData.slice(0, 10).map((row, i) => (
+                        <tr key={i} className="hover:bg-surface-2/50">
+                          <td className="p-2.5 font-bold text-primary">{toBengaliNumber(row.roll)}</td>
+                          <td className="p-2.5">{toBengaliOrdinal(row.class)}</td>
+                          <td className="p-2.5 font-sans font-medium text-text">{row.name_bn}</td>
+                          <td className="p-2.5">{row.group}</td>
+                          <td className="p-2.5 text-muted">{row.mobile || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {excelData.length > 10 && (
+                    <div className="p-2 text-center text-[10px] text-muted border-t border-border bg-surface-2/40">
+                      আরও {toBengaliNumber(excelData.length - 10)} জন শিক্ষার্থী তালিকায় রয়েছে...
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+              <Button variant="secondary" size="sm" onClick={() => setExcelModalOpen(false)}>
+                বাতিল
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Upload}
+                disabled={excelData.length === 0}
+                onClick={handleConfirmExcelImport}
+              >
+                ইমপোর্ট সম্পন্ন করুন ({toBengaliNumber(excelData.length)} জন)
               </Button>
             </div>
           </div>

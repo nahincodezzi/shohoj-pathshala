@@ -27,6 +27,7 @@ const GalleryManager = lazy(() => import('./pages/admin/modules/GalleryManager')
 const NoticeManager = lazy(() => import('./pages/admin/modules/NoticeManager'));
 const CmsManager = lazy(() => import('./pages/admin/modules/CmsManager'));
 const UserManager = lazy(() => import('./pages/admin/modules/UserManager'));
+const SchoolSettings = lazy(() => import('./pages/admin/modules/SchoolSettings'));
 
 /**
  * Helper component to scroll window to top on route change
@@ -78,7 +79,7 @@ export default function App() {
                   <Route path="notices" element={<NoticeManager />} />
                   <Route path="cms" element={<CmsManager />} />
                   <Route path="users" element={<UserManager />} />
-                  <Route path="settings" element={<CmsManager />} />
+                  <Route path="settings" element={<SchoolSettings />} />
                 </Route>
 
                 {/* 6. Individual School Public Portal */}
