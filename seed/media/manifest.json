@@ -1,0 +1,110 @@
+[
+  {
+    "school_slug": "bdhs",
+    "school_name": "বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/bdhs/logo.svg",
+    "seal": "/seed-media/bdhs/seal.svg",
+    "signature": "/seed-media/bdhs/signature.svg",
+    "hero_images": [
+      "/seed-media/bdhs/hero-1.svg",
+      "/seed-media/bdhs/hero-2.svg",
+      "/seed-media/bdhs/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "bahs",
+    "school_name": "বরুড়া আদর্শ উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/bahs/logo.svg",
+    "seal": "/seed-media/bahs/seal.svg",
+    "signature": "/seed-media/bahs/signature.svg",
+    "hero_images": [
+      "/seed-media/bahs/hero-1.svg",
+      "/seed-media/bahs/hero-2.svg",
+      "/seed-media/bahs/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "shaplagirls",
+    "school_name": "শাপলা মডেল বালিকা উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/shaplagirls/logo.svg",
+    "seal": "/seed-media/shaplagirls/seal.svg",
+    "signature": "/seed-media/shaplagirls/signature.svg",
+    "hero_images": [
+      "/seed-media/shaplagirls/hero-1.svg",
+      "/seed-media/shaplagirls/hero-2.svg",
+      "/seed-media/shaplagirls/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "chormohona",
+    "school_name": "চরমোহনা উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/chormohona/logo.svg",
+    "seal": "/seed-media/chormohona/seal.svg",
+    "signature": "/seed-media/chormohona/signature.svg",
+    "hero_images": [
+      "/seed-media/chormohona/hero-1.svg",
+      "/seed-media/chormohona/hero-2.svg",
+      "/seed-media/chormohona/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "taltola",
+    "school_name": "তালতলা গ্রামীণ উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/taltola/logo.svg",
+    "seal": "/seed-media/taltola/seal.svg",
+    "signature": "/seed-media/taltola/signature.svg",
+    "hero_images": [
+      "/seed-media/taltola/hero-1.svg",
+      "/seed-media/taltola/hero-2.svg",
+      "/seed-media/taltola/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "nobarun",
+    "school_name": "নবারুণ মাধ্যমিক বিদ্যালয়",
+    "logo": "/seed-media/nobarun/logo.svg",
+    "seal": "/seed-media/nobarun/seal.svg",
+    "signature": "/seed-media/nobarun/signature.svg",
+    "hero_images": [
+      "/seed-media/nobarun/hero-1.svg",
+      "/seed-media/nobarun/hero-2.svg",
+      "/seed-media/nobarun/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "surjomukhi",
+    "school_name": "সূর্যমুখী উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/surjomukhi/logo.svg",
+    "seal": "/seed-media/surjomukhi/seal.svg",
+    "signature": "/seed-media/surjomukhi/signature.svg",
+    "hero_images": [
+      "/seed-media/surjomukhi/hero-1.svg",
+      "/seed-media/surjomukhi/hero-2.svg",
+      "/seed-media/surjomukhi/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "kashbon",
+    "school_name": "কাশবন উচ্চ বিদ্যালয়",
+    "logo": "/seed-media/kashbon/logo.svg",
+    "seal": "/seed-media/kashbon/seal.svg",
+    "signature": "/seed-media/kashbon/signature.svg",
+    "hero_images": [
+      "/seed-media/kashbon/hero-1.svg",
+      "/seed-media/kashbon/hero-2.svg",
+      "/seed-media/kashbon/hero-3.svg"
+    ]
+  },
+  {
+    "school_slug": "qa-limit",
+    "school_name": "কিউএ সীমা বিদ্যালয়",
+    "logo": "/seed-media/qa-limit/logo.svg",
+    "seal": "/seed-media/qa-limit/seal.svg",
+    "signature": "/seed-media/qa-limit/signature.svg",
+    "hero_images": [
+      "/seed-media/qa-limit/hero-1.svg",
+      "/seed-media/qa-limit/hero-2.svg",
+      "/seed-media/qa-limit/hero-3.svg"
+    ]
+  }
+]

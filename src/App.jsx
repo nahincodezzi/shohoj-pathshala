@@ -12,6 +12,7 @@ const SchoolPublicPage = lazy(() => import('./pages/SchoolPublicPage'));
 const SchoolLogin = lazy(() => import('./pages/SchoolLogin'));
 const OwnerPanel = lazy(() => import('./pages/owner/OwnerPanel'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const DevSeedPage = lazy(() => import('./pages/dev/DevSeedPage'));
 
 // Lazy-loaded Admin Layout & Child Modules
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
@@ -85,7 +86,12 @@ export default function App() {
                 {/* 6. Individual School Public Portal */}
                 <Route path="/:slug" element={<SchoolPublicPage />} />
 
-                {/* 7. Dedicated 404 Not Found Page */}
+                {/* 7. Dev-Only Seed Hub */}
+                {import.meta.env.DEV && (
+                  <Route path="/__dev/seed" element={<DevSeedPage />} />
+                )}
+
+                {/* 8. Dedicated 404 Not Found Page */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

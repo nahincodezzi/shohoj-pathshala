@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" width="1600" height="800">
+  <defs>
+    <linearGradient id="hgrad_taltola_3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <pattern id="grid_taltola_3" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="0.75" opacity="0.07"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#hgrad_taltola_3)"/>
+  <rect width="100%" height="100%" fill="url(#grid_taltola_3)"/>
+  
+  <!-- Scenic Bangladeshi School Campus Shapes -->
+  <g opacity="0.25">
+    <circle cx="1400" cy="150" r="180" fill="#f59e0b"/>
+    <polygon points="100,750 350,450 600,750" fill="#ffffff" opacity="0.1"/>
+    <polygon points="450,750 700,500 950,750" fill="#ffffff" opacity="0.08"/>
+    <!-- Building silhouette -->
+    <rect x="900" y="420" width="550" height="330" fill="#ffffff" rx="8" opacity="0.12"/>
+    <rect x="950" y="460" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1060" y="460" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1170" y="460" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1280" y="460" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="950" y="560" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1060" y="560" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1170" y="560" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+    <rect x="1280" y="560" width="80" height="70" fill="#ffffff" opacity="0.2"/>
+  </g>
+  
+  <!-- Contextual Badge -->
+  <rect x="100" y="100" width="220" height="38" rx="19" fill="#ffffff" opacity="0.15"/>
+  <text x="210" y="124" fill="#ffffff" font-family="'Hind Siliguri', sans-serif" font-size="14" font-weight="600" text-anchor="middle">
+    🔬 বিজ্ঞানাগার ও ল্যাব
+  </text>
+  
+  <!-- Overlay Content -->
+  <text x="100" y="240" fill="#ffffff" font-family="'Hind Siliguri', sans-serif" font-size="44" font-weight="800">
+    তালতলা গ্রামীণ উচ্চ বিদ্যালয়
+  </text>
+  <text x="100" y="300" fill="#f59e0b" font-family="'Hind Siliguri', sans-serif" font-size="24" font-weight="600">
+    সহ-শিক্ষা কার্যক্রম ও সমৃদ্ধ ল্যাবরেটরি সুবিধা
+  </text>
+  <text x="100" y="340" fill="#e2e8f0" font-family="sans-serif" font-size="16" opacity="0.8">
+    EIIN: 923456 • Board: সিলেট • Est: ১৯৭৫ (Sohoj Pathshala Demo)
+  </text>
+</svg>
