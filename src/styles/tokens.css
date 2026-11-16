@@ -10,8 +10,8 @@
   --dur-fast: 200ms;
   --dur-base: 350ms;
   --dur-slow: 800ms;
-  --font-heading: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ── ডার্ক মোড (ডিফল্ট) ── */

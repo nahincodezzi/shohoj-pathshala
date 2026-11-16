@@ -162,9 +162,9 @@ export default function DashboardOverview() {
             <div className="space-y-3 pt-1">
               {classStats.map(stat => (
                 <div key={stat.className} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-text">{stat.className}</span>
-                    <span className="text-muted font-mono">{toBengaliNumber(stat.count)} জন ({toBengaliNumber(stat.pct)}%)</span>
+                  <div className="flex justify-between items-center gap-2 text-xs font-semibold">
+                    <span className="text-text shrink-0">{stat.className}</span>
+                    <span className="text-muted font-mono whitespace-nowrap">{toBengaliNumber(stat.count)} জন ({toBengaliNumber(stat.pct)}%)</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-surface-2 overflow-hidden border border-border">
                     <div 

@@ -7,6 +7,7 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import FileUpload from '../../../components/ui/FileUpload';
 import Modal from '../../../components/ui/Modal';
+import Badge from '../../../components/ui/Badge';
 import { useToast } from '../../../components/ui/ToastContext';
 import { 
   Settings, 
@@ -20,7 +21,10 @@ import {
   CheckCircle2, 
   Calendar,
   ShieldAlert,
-  Globe
+  Globe,
+  Quote,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export default function SchoolSettings() {
@@ -71,6 +75,41 @@ export default function SchoolSettings() {
   // Factory Reset State
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetCode, setResetCode] = useState('');
+
+  // Testimonials (Principal Endorsements)
+  const [testimonials, setTestimonials] = useState(() => {
+    const ls = TenantRepository.getLandingSettings(school.id);
+    return ls?.testimonials || settings.testimonials || [];
+  });
+  const [newTestimonial, setNewTestimonial] = useState({ quote: '', author: '', designation: '', meta: '', avatar: '' });
+
+  const handleAddTestimonial = () => {
+    if (!newTestimonial.quote.trim() || !newTestimonial.author.trim()) return;
+    const item = {
+      id: `t_${Date.now()}`,
+      quote: newTestimonial.quote.trim(),
+      author: newTestimonial.author.trim(),
+      designation: newTestimonial.designation.trim() || 'প্রধান শিক্ষক',
+      role: newTestimonial.designation.trim() || 'প্রধান শিক্ষক',
+      meta: newTestimonial.meta.trim(),
+      school: newTestimonial.meta.trim(),
+      avatar: newTestimonial.avatar.trim() || newTestimonial.author.trim().charAt(0),
+    };
+    setTestimonials(prev => [...prev, item]);
+    setNewTestimonial({ quote: '', author: '', designation: '', meta: '', avatar: '' });
+  };
+
+  const handleRemoveTestimonial = (index) => {
+    setTestimonials(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateTestimonial = (index, field, value) => {
+    setTestimonials(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
 
   const boardOptions = [
     { value: 'কুমিল্লা', label: 'কুমিল্লা শিক্ষা বোর্ড' },
@@ -137,6 +176,16 @@ export default function SchoolSettings() {
 
       // 3. Save Theme Preference for Tenant
       localStorage.setItem(`${school.slug}_theme`, themePref);
+
+      // 4. Save Testimonials to Landing Settings
+      try {
+        const ls = TenantRepository.getLandingSettings(school.id) || {};
+        TenantRepository.saveLandingSettings(school.id, {
+          ...ls,
+          testimonials,
+          testimonial: testimonials[0] || ls.testimonial || null
+        });
+      } catch (_) { /* landing settings optional */ }
 
       showToast('স্কুলের সাধারণ সেটিংস ও পরিচিতি সফলভাবে সংরক্ষিত হয়েছে!');
     } catch (err) {
@@ -465,6 +514,86 @@ export default function SchoolSettings() {
                   className="w-full rounded-xl border border-border bg-surface p-3 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
                 />
               </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ================= 3b. TESTIMONIALS MANAGEMENT ================= */}
+        <Card surface="surface" className="p-6 space-y-5 border border-border">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <Quote className="w-5 h-5 text-indigo" />
+              <div>
+                <h3 className="text-sm font-heading font-bold text-text">প্রশংসাপত্র ব্যবস্থাপনা (Testimonials)</h3>
+                <p className="text-[11px] text-muted">পাবলিক ওয়েবসাইটের 'অভিভাবক ও শিক্ষকের মন্তব্য' সেকশনে দেখাবে</p>
+              </div>
+            </div>
+            <Badge variant="secondary">{testimonials.length} টি প্রশংসাপত্র</Badge>
+          </div>
+
+          <div className="space-y-3">
+            {testimonials.map((tItem, idx) => (
+              <div key={tItem.id || idx} className="p-4 rounded-xl bg-surface-2 border border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold text-indigo">প্রশংসাপত্র #{idx + 1}</span>
+                  <Button
+                    variant="danger"
+                    size="xs"
+                    icon={Trash2}
+                    onClick={() => handleRemoveTestimonial(idx)}
+                  >
+                    মুছুন
+                  </Button>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-text">বাণী / মন্তব্য</label>
+                  <textarea
+                    rows={2}
+                    value={tItem.quote || ''}
+                    onChange={(e) => handleUpdateTestimonial(idx, 'quote', e.target.value)}
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <Input label="নাম" value={tItem.author || ''} onChange={(e) => handleUpdateTestimonial(idx, 'author', e.target.value)} />
+                  <Input label="পদবি ও প্রতিষ্ঠান" value={tItem.designation || tItem.role || ''} onChange={(e) => handleUpdateTestimonial(idx, 'designation', e.target.value)} />
+                  <Input label="EIIN ও জেলা" value={tItem.meta || tItem.school || ''} onChange={(e) => handleUpdateTestimonial(idx, 'meta', e.target.value)} />
+                  <Input label="প্রোফাইল ইনিশিয়াল" value={tItem.avatar || ''} onChange={(e) => handleUpdateTestimonial(idx, 'avatar', e.target.value)} />
+                </div>
+              </div>
+            ))}
+
+            {/* Add New Testimonial */}
+            <div className="p-4 rounded-xl border border-dashed border-border bg-surface/50 space-y-3">
+              <h4 className="text-xs font-heading font-bold text-text flex items-center gap-2">
+                <Plus className="w-4 h-4 text-indigo" />
+                নতুন প্রশংসাপত্র যোগ করুন
+              </h4>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-text">বাণী / মন্তব্য</label>
+                <textarea
+                  rows={2}
+                  placeholder="প্রধান শিক্ষক বা অংশীদারের মন্তব্য লিখুন..."
+                  value={newTestimonial.quote}
+                  onChange={(e) => setNewTestimonial({ ...newTestimonial, quote: e.target.value })}
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Input placeholder="নাম (যেমন: মো. বাহার উদ্দিন)" value={newTestimonial.author} onChange={(e) => setNewTestimonial({ ...newTestimonial, author: e.target.value })} />
+                <Input placeholder="পদবি ও প্রতিষ্ঠান" value={newTestimonial.designation} onChange={(e) => setNewTestimonial({ ...newTestimonial, designation: e.target.value })} />
+                <Input placeholder="EIIN ও জেলা (যেমন: BDHS • ফেনী)" value={newTestimonial.meta} onChange={(e) => setNewTestimonial({ ...newTestimonial, meta: e.target.value })} />
+                <Input placeholder="ইনিশিয়াল (যেমন: ব)" value={newTestimonial.avatar} onChange={(e) => setNewTestimonial({ ...newTestimonial, avatar: e.target.value })} />
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Plus}
+                onClick={handleAddTestimonial}
+                disabled={!newTestimonial.quote.trim() || !newTestimonial.author.trim()}
+              >
+                প্রশংসাপত্র যোগ করুন
+              </Button>
             </div>
           </div>
         </Card>
