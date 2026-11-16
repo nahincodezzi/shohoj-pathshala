@@ -83,6 +83,13 @@ export default function OwnerPanel() {
   const [landingForm, setLandingForm] = useState(() => TenantRepository.getLandingSettings());
   const [cmsSaved, setCmsSaved] = useState(false);
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
+  const [newTestimonial, setNewTestimonial] = useState({
+    quote: '',
+    author: '',
+    designation: '',
+    meta: '',
+    avatar: ''
+  });
 
   // Onboarding Modal State
   const [onboardModalOpen, setOnboardModalOpen] = useState(false);
@@ -176,6 +183,56 @@ export default function OwnerPanel() {
     setLandingForm(prev => ({
       ...prev,
       faqs: prev.faqs.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddTestimonial = () => {
+    if (!newTestimonial.quote.trim() || !newTestimonial.author.trim()) return;
+    const newItem = {
+      id: Date.now(),
+      quote: newTestimonial.quote.trim(),
+      author: newTestimonial.author.trim(),
+      designation: newTestimonial.designation.trim() || 'প্রধান শিক্ষক',
+      role: newTestimonial.designation.trim() || 'প্রধান শিক্ষক',
+      meta: newTestimonial.meta.trim(),
+      school: newTestimonial.meta.trim() || 'বিদ্যালয়',
+      avatar: newTestimonial.avatar.trim() || newTestimonial.author.trim().charAt(0),
+      rating: 5
+    };
+    const updatedList = [...(landingForm.testimonials || []), newItem];
+    setLandingForm(prev => ({
+      ...prev,
+      testimonials: updatedList,
+      testimonial: updatedList[0]
+    }));
+    setNewTestimonial({ quote: '', author: '', designation: '', meta: '', avatar: '' });
+  };
+
+  const handleRemoveTestimonial = (index) => {
+    const updatedList = (landingForm.testimonials || []).filter((_, i) => i !== index);
+    setLandingForm(prev => ({
+      ...prev,
+      testimonials: updatedList,
+      testimonial: updatedList[0] || null
+    }));
+  };
+
+  const handleUpdateTestimonial = (index, field, value) => {
+    const updatedList = [...(landingForm.testimonials || [])];
+    if (!updatedList[index]) return;
+    updatedList[index] = {
+      ...updatedList[index],
+      [field]: value
+    };
+    if (field === 'designation') updatedList[index].role = value;
+    if (field === 'meta') updatedList[index].school = value;
+    setLandingForm(prev => ({
+      ...prev,
+      testimonials: updatedList,
+      testimonial: index === 0 ? {
+        ...(prev.testimonial || {}),
+        [field]: value
+      } : prev.testimonial
     }));
   };
 
@@ -1044,59 +1101,116 @@ export default function OwnerPanel() {
               </div>
             </Card>
 
-            {/* Section 4: Principal Testimonial */}
+            {/* Section 4: Testimonials Management */}
             <Card surface="surface" className="p-6 space-y-6 border border-border">
-              <div className="flex items-center gap-2 pb-3 border-b border-border">
-                <Quote className="w-5 h-5 text-indigo" />
-                <h3 className="text-base font-heading font-bold text-text">প্রধান শিক্ষকের প্রশংসাপত্র (Testimonial)</h3>
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Quote className="w-5 h-5 text-indigo" />
+                  <h3 className="text-base font-heading font-bold text-text">প্রধান শিক্ষকের প্রশংসাপত্র (Testimonial Management)</h3>
+                </div>
+                <Badge variant="secondary">{landingForm.testimonials?.length || 0} টি প্রশংসাপত্র</Badge>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text">বাণী / মন্তব্য (Quote)</label>
-                <textarea
-                  rows={3}
-                  value={landingForm.testimonial?.quote || ''}
-                  onChange={(e) => setLandingForm({
-                    ...landingForm,
-                    testimonial: { ...(landingForm.testimonial || {}), quote: e.target.value }
-                  })}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
-                />
-              </div>
+              <div className="space-y-4">
+                {(landingForm.testimonials || []).map((tItem, idx) => (
+                  <div key={tItem.id || idx} className="p-4 rounded-xl bg-surface-2 border border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-indigo">প্রশংসাপত্র #{idx + 1}</span>
+                      <Button
+                        variant="danger"
+                        size="xs"
+                        icon={Trash2}
+                        onClick={() => handleRemoveTestimonial(idx)}
+                      >
+                        মুছে ফেলুন
+                      </Button>
+                    </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Input
-                  label="নাম"
-                  value={landingForm.testimonial?.author || ''}
-                  onChange={(e) => setLandingForm({
-                    ...landingForm,
-                    testimonial: { ...(landingForm.testimonial || {}), author: e.target.value }
-                  })}
-                />
-                <Input
-                  label="পদবি ও প্রতিষ্ঠান"
-                  value={landingForm.testimonial?.designation || ''}
-                  onChange={(e) => setLandingForm({
-                    ...landingForm,
-                    testimonial: { ...(landingForm.testimonial || {}), designation: e.target.value }
-                  })}
-                />
-                <Input
-                  label="EIIN ও জেলা"
-                  value={landingForm.testimonial?.meta || ''}
-                  onChange={(e) => setLandingForm({
-                    ...landingForm,
-                    testimonial: { ...(landingForm.testimonial || {}), meta: e.target.value }
-                  })}
-                />
-                <Input
-                  label="প্রোফাইল ইনিশিয়াল"
-                  value={landingForm.testimonial?.avatar || ''}
-                  onChange={(e) => setLandingForm({
-                    ...landingForm,
-                    testimonial: { ...(landingForm.testimonial || {}), avatar: e.target.value }
-                  })}
-                />
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-text">বাণী / মন্তব্য (Quote)</label>
+                      <textarea
+                        rows={3}
+                        value={tItem.quote || ''}
+                        onChange={(e) => handleUpdateTestimonial(idx, 'quote', e.target.value)}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <Input
+                        label="নাম"
+                        value={tItem.author || ''}
+                        onChange={(e) => handleUpdateTestimonial(idx, 'author', e.target.value)}
+                      />
+                      <Input
+                        label="পদবি"
+                        value={tItem.designation || tItem.role || ''}
+                        onChange={(e) => handleUpdateTestimonial(idx, 'designation', e.target.value)}
+                      />
+                      <Input
+                        label="বিদ্যালয় ও EIIN"
+                        value={tItem.meta || tItem.school || ''}
+                        onChange={(e) => handleUpdateTestimonial(idx, 'meta', e.target.value)}
+                      />
+                      <Input
+                        label="প্রোফাইল ইনিশিয়াল"
+                        value={tItem.avatar || ''}
+                        onChange={(e) => handleUpdateTestimonial(idx, 'avatar', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add New Testimonial Form */}
+                <div className="p-4 rounded-xl border border-dashed border-border bg-surface/50 space-y-3">
+                  <h4 className="text-xs font-heading font-bold text-text flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-indigo" />
+                    নতুন প্রশংসাপত্র যোগ করুন
+                  </h4>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-text">বাণী / মন্তব্য</label>
+                    <textarea
+                      rows={2}
+                      placeholder="প্রধান শিক্ষক বা অংশীদারের মন্তব্য লিখুন..."
+                      value={newTestimonial.quote}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, quote: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus:outline-none focus:ring-2 focus:ring-indigo/40"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <Input
+                      placeholder="নাম (যেমন: মো. বাহার উদ্দিন)"
+                      value={newTestimonial.author}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, author: e.target.value })}
+                    />
+                    <Input
+                      placeholder="পদবি (যেমন: প্রধান শিক্ষক)"
+                      value={newTestimonial.designation}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, designation: e.target.value })}
+                    />
+                    <Input
+                      placeholder="বিদ্যালয় ও EIIN (যেমন: BDHS • ফেনী)"
+                      value={newTestimonial.meta}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, meta: e.target.value })}
+                    />
+                    <Input
+                      placeholder="ইনিশিয়াল (যেমন: ব)"
+                      value={newTestimonial.avatar}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, avatar: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Plus}
+                      onClick={handleAddTestimonial}
+                      disabled={!newTestimonial.quote.trim() || !newTestimonial.author.trim()}
+                    >
+                      প্রশংসাপত্র যুক্ত করুন
+                    </Button>
+                  </div>
+                </div>
               </div>
             </Card>
 

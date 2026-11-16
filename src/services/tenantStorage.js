@@ -147,6 +147,30 @@ export const SEED_LANDING_SETTINGS = {
     meta: 'EIIN: ১০৫৮৬৫ • ফেনী সদর, ফেনী',
     avatar: 'বূ'
   },
+  testimonials: [
+    {
+      id: 1,
+      quote: 'সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ভর্তি আবেদন গ্রহণ, পরীক্ষার ফলাফল প্রকাশ এবং শিক্ষার্থীদের ফি আদায় প্রক্রিয়া কয়েক ঘণ্টার মধ্যে শতভাগ নির্ভুলভাবে সম্পন্ন হচ্ছে। শিক্ষক ও অভিভাবক উভয়েই এই ডিজিটাল রূপান্তরে অত্যন্ত সন্তুষ্ট।',
+      author: 'মো. বাহার উদ্দিন ভূঁইয়া',
+      designation: 'প্রধান শিক্ষক',
+      role: 'প্রধান শিক্ষক',
+      school: 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয় (BDHS)',
+      meta: 'EIIN: ১০৫৮৬৫ • ফেনী সদর, ফেনী',
+      avatar: 'বূ',
+      rating: 5
+    },
+    {
+      id: 2,
+      quote: 'সহজ পাঠশালা ব্যবহারের পর থেকে আমাদের বিদ্যালয়ের ফি আদায় ও রেজাল্ট প্রস্তুতের সময় প্রায় ৮০% কমে গেছে। শিক্ষকদের কাজ এখন অনেক সহজ!',
+      author: 'জনাব নজরুল ইসলাম',
+      designation: 'প্রধান শিক্ষক',
+      role: 'প্রধান শিক্ষক',
+      school: 'বাংলাদেশ আদর্শ উচ্চ বিদ্যালয় (BAHS)',
+      meta: 'EIIN: ১০৬৬৪৪ • কুমিল্লা সদর',
+      avatar: 'ন',
+      rating: 5
+    }
+  ],
   faqs: [
     {
       q: 'সহজ পাঠশালায় স্কুল অনবোর্ড করতে কত সময় লাগে?',
@@ -1586,19 +1610,51 @@ export const TenantRepository = {
   // --- Platform Landing Page CMS Settings ---
   getLandingSettings() {
     const stored = localStorage.getItem('sp_landing_settings');
+    let data = { ...SEED_LANDING_SETTINGS };
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        data = { ...SEED_LANDING_SETTINGS, ...parsed };
       } catch (e) {
         // fallback to default
       }
     }
-    return { ...SEED_LANDING_SETTINGS };
+    // Ensure testimonials is an array
+    if (!data.testimonials || !Array.isArray(data.testimonials) || data.testimonials.length === 0) {
+      if (data.testimonial) {
+        data.testimonials = [
+          {
+            id: 1,
+            quote: data.testimonial.quote,
+            author: data.testimonial.author,
+            designation: data.testimonial.designation || 'প্রধান শিক্ষক',
+            role: data.testimonial.designation || 'প্রধান শিক্ষক',
+            school: data.testimonial.meta || 'বন্দুয়া দৌলতপুর উচ্চ বিদ্যালয়',
+            meta: data.testimonial.meta || '',
+            avatar: data.testimonial.avatar || 'বূ',
+            rating: 5
+          }
+        ];
+      } else {
+        data.testimonials = [...SEED_LANDING_SETTINGS.testimonials];
+      }
+    }
+    return data;
   },
 
   updateLandingSettings(updates) {
     const current = this.getLandingSettings();
     const updated = { ...current, ...updates };
+    if (updated.testimonials && updated.testimonials.length > 0) {
+      const first = updated.testimonials[0];
+      updated.testimonial = {
+        quote: first.quote,
+        author: first.author,
+        designation: first.designation || first.role || '',
+        meta: first.meta || first.school || '',
+        avatar: first.avatar || (first.author ? first.author.charAt(0) : 'শ')
+      };
+    }
     localStorage.setItem('sp_landing_settings', JSON.stringify(updated));
     return updated;
   },

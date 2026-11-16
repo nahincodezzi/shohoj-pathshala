@@ -67,14 +67,14 @@ export default function Testimonial({ t, testimonials = [] }) {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-6 border-t border-[var(--border)]">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-[var(--primary)] flex items-center justify-center font-bold text-xl font-heading shadow-inner">
-                    {active.author ? active.author.charAt(0) : 'শ'}
+                    {active.avatar || (active.author ? active.author.charAt(0) : 'শ')}
                   </div>
                   <div>
                     <h4 className="font-extrabold text-[var(--text)] text-lg sm:text-xl font-heading">
                       {active.author}
                     </h4>
                     <p className="text-xs sm:text-sm text-[var(--muted)] font-body">
-                      {active.role} • <span className="text-[var(--primary-text)] font-semibold">{active.school}</span>
+                      {active.role || active.designation || 'প্রধান শিক্ষক'} • <span className="text-[var(--primary-text)] font-semibold">{active.school || active.meta}</span>
                     </p>
                   </div>
                 </div>

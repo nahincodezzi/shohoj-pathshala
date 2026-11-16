@@ -41,10 +41,10 @@
   --color-indigo: var(--indigo);
   --color-indigo-soft: var(--indigo-soft);
 
-  --font-heading: 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
-  --font-body: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', sans-serif;
+  --font-heading: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+  --font-body: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   --font-mono: 'Inter', monospace;
-  --font-sans: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Custom Utilities for Sohoj Pathshala */

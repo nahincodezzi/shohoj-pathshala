@@ -144,10 +144,10 @@ export default function ContactMap({ school, lang = 'bn', onOpenContactModal }) 
                 <div className="relative z-10 pt-8 mt-6 border-t border-white/20">
                   <a
                     href={`tel:${school.phone || '01812345678'}`}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-[var(--primary)] hover:bg-neutral-100 text-sm font-black shadow-lg transition-transform active:scale-[0.98]"
+                    className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-[#064E3B] hover:bg-emerald-50 text-sm font-black shadow-lg transition-all active:scale-[0.98]"
                   >
-                    <Phone className="w-4 h-4" />
-                    <span>{t.sendMsg}</span>
+                    <Phone className="w-4 h-4 text-[#064E3B] shrink-0" />
+                    <span className="text-[#064E3B] font-bold">{t.sendMsg}</span>
                   </a>
                 </div>
               </div>
