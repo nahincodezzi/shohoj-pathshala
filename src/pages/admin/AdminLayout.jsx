@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { useParams, Link, useNavigate, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
 import { TenantRepository, hashPassword } from '../../services/tenantStorage';
@@ -81,16 +81,9 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Redirect directly to login if not authenticated (eliminates annoying intermediate screen)
   if (!currentUser && !supportMode) {
-    return (
-      <div className="min-h-screen bg-bg text-text p-6 flex flex-col items-center justify-center text-center">
-        <AlertTriangle className="w-12 h-12 text-warning mb-3" />
-        <h2 className="text-2xl font-heading font-bold mb-2">লগইন প্রয়োজন</h2>
-        <p className="text-xs text-muted mb-6">এই প্যানেলে প্রবেশ করতে আগে লগইন করুন।</p>
-        <Link to={`/${school.slug}/login`}><Button variant="primary">লগইন পেজে যান</Button></Link>
-      </div>
-    );
+    return <Navigate to={`/${school.slug}/login`} replace state={{ from: location }} />;
   }
 
   // D01: Check Multi-Tenant Cross-School Access

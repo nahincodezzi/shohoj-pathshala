@@ -23,7 +23,7 @@ export default function GridTable({
   const gridTemplateColumns = columns.map(c => c.width || '1fr').join(' ');
 
   return (
-    <div className={`w-full overflow-x-auto rounded-xl border border-border bg-surface ${className}`}>
+    <div className={`w-full overflow-x-auto rounded-2xl border border-border/80 bg-surface shadow-xs ${className}`}>
       <div 
         role="table" 
         className="w-full text-xs sm:text-sm"
@@ -32,14 +32,14 @@ export default function GridTable({
         {/* Table Header */}
         <div 
           role="row" 
-          className="grid items-center bg-surface-2 text-muted font-semibold border-b border-border min-h-[44px] px-4 py-2.5"
+          className="grid items-center bg-surface-2/90 text-muted font-bold border-b border-border/80 min-h-[48px] px-5 py-3 text-[11px] sm:text-xs uppercase tracking-wider select-none"
           style={{ gridTemplateColumns }}
         >
           {columns.map((col, idx) => (
             <div 
               key={idx} 
               role="columnheader"
-              className={`${col.noTruncate ? '' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
+              className={`${col.noTruncate ? 'overflow-visible' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
             >
               {col.label}
             </div>
@@ -48,22 +48,22 @@ export default function GridTable({
 
         {/* Table Body */}
         {data.length === 0 ? (
-          <div className="p-8 text-center text-muted font-medium">
+          <div className="p-12 text-center text-muted font-medium">
             {emptyText}
           </div>
         ) : (
-          <div role="rowgroup">
+          <div role="rowgroup" className="divide-y divide-border/60">
             {data.map((row, rowIdx) => {
               if (renderRow) return renderRow(row, rowIdx);
 
               const isOdd = rowIdx % 2 !== 0;
-              const zebraClass = zebra && isOdd ? 'bg-surface-2/60' : 'bg-surface hover:bg-surface-2/40';
+              const zebraClass = zebra && isOdd ? 'bg-surface-2/40' : 'bg-surface hover:bg-surface-2/60';
 
               return (
                 <div
                   key={row[keyField] || rowIdx}
                   role="row"
-                  className={`grid items-center min-h-[48px] px-4 py-2 border-b border-border/80 transition-colors ${zebraClass}`}
+                  className={`grid items-center min-h-[52px] px-5 py-3 transition-colors ${zebraClass}`}
                   style={{ gridTemplateColumns }}
                 >
                   {columns.map((col, colIdx) => {
@@ -74,7 +74,7 @@ export default function GridTable({
                       <div
                         key={colIdx}
                         role="cell"
-                        className={`${col.noTruncate ? '' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
+                        className={`${col.noTruncate ? 'overflow-visible' : 'truncate'} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                       >
                         {col.render ? (
                           col.render(val, row, rowIdx)

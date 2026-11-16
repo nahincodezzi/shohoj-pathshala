@@ -10,8 +10,8 @@
   --dur-fast: 200ms;
   --dur-base: 350ms;
   --dur-slow: 800ms;
-  --font-heading: 'Anek Bangla', 'Hind Siliguri', sans-serif;
-  --font-body: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
+  --font-heading: 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
+  --font-body: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', system-ui, sans-serif;
 }
 
 /* ── ডার্ক মোড (ডিফল্ট) ── */
@@ -146,6 +146,9 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   transition: background-color 450ms ease-out, color 450ms ease-out, border-color 450ms ease-out;
 }
 

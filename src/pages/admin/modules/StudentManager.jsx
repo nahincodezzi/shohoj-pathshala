@@ -252,47 +252,97 @@ export default function StudentManager() {
       {/* Students Grid Table */}
       <GridTable
         columns={[
-          { key: 'student_id', label: 'আইডি নম্বর', width: '130px', fontMono: true },
-          { key: 'roll', label: 'রোল', width: '70px', fontMono: true, align: 'center', render: (val) => toBengaliNumber(val) },
+          { 
+            key: 'student_id', 
+            label: 'আইডি নম্বর', 
+            width: '145px', 
+            fontMono: true,
+            render: (val) => (
+              <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-surface-2 border border-border/80 text-text">
+                {val}
+              </span>
+            )
+          },
+          { 
+            key: 'roll', 
+            label: 'রোল', 
+            width: '65px', 
+            fontMono: true, 
+            align: 'center', 
+            render: (val) => (
+              <span className="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-md bg-surface-2/90 font-mono text-xs font-bold text-text border border-border/70 shadow-2xs">
+                {toBengaliNumber(val)}
+              </span>
+            ) 
+          },
           { 
             key: 'name_bn', 
             label: 'শিক্ষার্থীর নাম', 
-            width: '200px',
+            width: '1.4fr',
             render: (val, row) => (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 {row.photo ? (
-                  <img src={row.photo} alt={val} className="w-8 h-8 rounded-full object-cover border border-border shrink-0" />
+                  <img src={row.photo} alt={val} className="w-9 h-9 rounded-full object-cover border border-border shrink-0 shadow-2xs" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary-soft text-primary font-bold text-xs flex items-center justify-center shrink-0">
-                    {val.split(' ').pop()?.[0] || 'ছাত্র'}
+                  <div className="w-9 h-9 rounded-full bg-primary-soft text-primary font-bold text-xs flex items-center justify-center shrink-0 border border-primary/20">
+                    {val?.split(' ').pop()?.[0] || 'ছাত্র'}
                   </div>
                 )}
-                <div>
-                  <strong className="text-text block">{val}</strong>
-                  <span className="text-[10px] text-muted font-mono">{row.name_en || '—'}</span>
+                <div className="min-w-0">
+                  <strong className="text-text font-bold text-sm block truncate">{val}</strong>
+                  <span className="text-[11px] text-muted font-mono block truncate">{row.name_en || '—'}</span>
                 </div>
               </div>
             )
           },
-          { key: 'class', label: 'শ্রেণি', width: '90px', render: (val) => toBengaliOrdinal(val) },
-          { key: 'group', label: 'বিভাগ', width: '100px' },
-          { key: 'mobile', label: 'মোবাইল', width: '120px', fontMono: true },
+          { 
+            key: 'class', 
+            label: 'শ্রেণি', 
+            width: '100px', 
+            render: (val) => (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-soft text-primary-text border border-primary/25">
+                {toBengaliOrdinal(val)} শ্রেণি
+              </span>
+            ) 
+          },
+          { 
+            key: 'group', 
+            label: 'বিভাগ', 
+            width: '95px',
+            render: (val) => (
+              <span className="text-xs text-muted font-medium">
+                {val || 'সাধারণ'}
+              </span>
+            )
+          },
+          { 
+            key: 'mobile', 
+            label: 'মোবাইল', 
+            width: '125px', 
+            fontMono: true,
+            render: (val) => (
+              <span className="font-mono text-xs text-muted">
+                {val || '—'}
+              </span>
+            ) 
+          },
           {
             key: 'action',
             label: 'অ্যাকশন',
-            width: '150px',
+            width: '180px',
             align: 'right',
+            noTruncate: true,
             render: (_, row) => (
-              <div className="flex items-center justify-end gap-1.5">
+              <div className="flex items-center justify-end gap-1.5 shrink-0">
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  icon={CreditCard}
+                  icon={Printer}
                   onClick={() => setIdCardStudent(row)}
-                  title="আইডি কার্ড"
-                  className="px-2.5 h-8 text-xs"
+                  title="আইডি কার্ড প্রিন্ট"
+                  className="px-2.5 h-8 text-xs font-semibold shrink-0 gap-1.5"
                 >
-                  কার্ড
+                  আইডি কার্ড
                 </Button>
                 {!supportMode && (
                   <>
@@ -302,7 +352,7 @@ export default function StudentManager() {
                       icon={Edit2}
                       onClick={() => openEdit(row)}
                       title="সম্পাদনা করুন"
-                      className="p-1.5 h-8 text-muted hover:text-primary"
+                      className="p-1.5 h-8 text-muted hover:text-primary shrink-0"
                     />
                     <Button 
                       variant="ghost" 
@@ -310,7 +360,7 @@ export default function StudentManager() {
                       icon={Trash2}
                       onClick={() => setDeleteModalStudent(row)}
                       title="মুছে ফেলুন"
-                      className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft"
+                      className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft shrink-0"
                     />
                   </>
                 )}
@@ -319,7 +369,7 @@ export default function StudentManager() {
           }
         ]}
         data={filteredStudents}
-        minWidth="860px"
+        minWidth="940px"
       />
 
       {/* ================= ADD / EDIT STUDENT MODAL ================= */}

@@ -66,7 +66,7 @@ export default function SchoolFooter({ school, navItems = [], lang = 'bn' }) {
             {/* School Admin Quick Access */}
             <div className="pt-2">
               <a
-                href={`/${school.slug}/admin`}
+                href={`/${school.slug}/login`}
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] hover:border-[var(--primary)] text-xs font-semibold text-[var(--text)] transition-all shadow-2xs"
               >
                 <Shield className="w-3.5 h-3.5 text-[var(--primary)]" />

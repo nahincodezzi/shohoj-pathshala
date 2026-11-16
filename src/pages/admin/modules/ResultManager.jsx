@@ -209,35 +209,61 @@ export default function ResultManager() {
 
       <GridTable
         columns={[
-          { key: 'class', label: 'শ্রেণি', width: '90px', render: (val) => toBengaliOrdinal(val) },
-          { key: 'roll', label: 'রোল', width: '80px', fontMono: true, align: 'center', render: (val) => toBengaliNumber(val) },
+          { 
+            key: 'class', 
+            label: 'শ্রেণি', 
+            width: '100px', 
+            render: (val) => (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-soft text-primary-text border border-primary/25">
+                {toBengaliOrdinal(val)} শ্রেণি
+              </span>
+            )
+          },
+          { 
+            key: 'roll', 
+            label: 'রোল', 
+            width: '65px', 
+            fontMono: true, 
+            align: 'center', 
+            render: (val) => (
+              <span className="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-md bg-surface-2/90 font-mono text-xs font-bold text-text border border-border/70 shadow-2xs">
+                {toBengaliNumber(val)}
+              </span>
+            )
+          },
           { 
             key: 'student_name_bn', 
             label: 'শিক্ষার্থীর নাম', 
             width: '1.5fr',
             render: (val, row) => (
               <div>
-                <strong className="text-text block">{val || 'শিক্ষার্থী'}</strong>
-                <span className="text-[10px] text-muted font-mono">{row.group || 'General'}</span>
+                <strong className="text-text font-bold text-sm block">{val || 'শিক্ষার্থী'}</strong>
+                <span className="text-[11px] text-muted font-mono">{row.group || 'General'}</span>
               </div>
             )
           },
           { 
             key: 'exam', 
             label: 'পরীক্ষা', 
-            width: '130px',
+            width: '140px',
             render: (val) => {
               const matched = examOptions.find(e => e.value === val);
-              return matched ? matched.label : val;
+              return <span className="text-xs font-medium text-text">{matched ? matched.label : val}</span>;
             }
           },
-          { key: 'year', label: 'বছর', width: '80px', fontMono: true, render: (val) => toBengaliNumber(val) },
+          { 
+            key: 'year', 
+            label: 'বছর', 
+            width: '80px', 
+            fontMono: true, 
+            render: (val) => <span className="font-mono text-xs text-muted">{toBengaliNumber(val)}</span> 
+          },
           { 
             key: 'total_gpa', 
             label: 'GPA', 
             width: '90px', 
             fontMono: true,
-            render: (val) => <span className="font-bold text-primary">{val}</span>
+            render: (val) => <span className="font-bold text-primary text-sm font-mono">{val}</span>
           },
           {
             key: 'status',
@@ -252,10 +278,11 @@ export default function ResultManager() {
           {
             key: 'actions',
             label: 'অ্যাকশন',
-            width: '120px',
+            width: '130px',
             align: 'right',
+            noTruncate: true,
             render: (_, row) => (
-              <div className="flex items-center justify-end gap-1.5">
+              <div className="flex items-center justify-end gap-1.5 shrink-0">
                 <Button variant="secondary" size="sm" icon={Eye} onClick={() => setSelectedResult(row)}>
                   দেখুন
                 </Button>
@@ -266,7 +293,7 @@ export default function ResultManager() {
                     icon={Trash2}
                     title="মুছে ফেলুন"
                     onClick={() => setDeleteModalResult(row)}
-                    className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft"
+                    className="p-1.5 h-8 text-muted hover:text-danger hover:bg-danger-soft shrink-0"
                   />
                 )}
               </div>
@@ -274,7 +301,7 @@ export default function ResultManager() {
           }
         ]}
         data={results}
-        minWidth="840px"
+        minWidth="920px"
       />
 
       {/* ================= ADD RESULT MODAL ================= */}
