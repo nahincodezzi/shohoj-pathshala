@@ -21,6 +21,7 @@ const StudentManager = lazy(() => import('./pages/admin/modules/StudentManager')
 const AdmissionManager = lazy(() => import('./pages/admin/modules/AdmissionManager'));
 const ResultManager = lazy(() => import('./pages/admin/modules/ResultManager'));
 const FeeManager = lazy(() => import('./pages/admin/modules/FeeManager'));
+const CertificateManager = lazy(() => import('./pages/admin/modules/CertificateManager'));
 const TeacherManager = lazy(() => import('./pages/admin/modules/TeacherManager'));
 const CommitteeManager = lazy(() => import('./pages/admin/modules/CommitteeManager'));
 const RoutineManager = lazy(() => import('./pages/admin/modules/RoutineManager'));
@@ -29,6 +30,7 @@ const NoticeManager = lazy(() => import('./pages/admin/modules/NoticeManager'));
 const CmsManager = lazy(() => import('./pages/admin/modules/CmsManager'));
 const UserManager = lazy(() => import('./pages/admin/modules/UserManager'));
 const SchoolSettings = lazy(() => import('./pages/admin/modules/SchoolSettings'));
+const CertificateVerifyPage = lazy(() => import('./pages/CertificateVerifyPage'));
 
 /**
  * Helper component to scroll window to top on route change
@@ -73,6 +75,7 @@ export default function App() {
                   <Route path="admissions" element={<AdmissionManager />} />
                   <Route path="results" element={<ResultManager />} />
                   <Route path="fees" element={<FeeManager />} />
+                  <Route path="certificates" element={<CertificateManager />} />
                   <Route path="teachers" element={<TeacherManager />} />
                   <Route path="committee" element={<CommitteeManager />} />
                   <Route path="routines" element={<RoutineManager />} />
@@ -84,6 +87,8 @@ export default function App() {
                 </Route>
 
                 {/* 6. Individual School Public Portal */}
+                <Route path="/:slug/verify/:certCode" element={<CertificateVerifyPage />} />
+                <Route path="/verify/:certCode" element={<CertificateVerifyPage />} />
                 <Route path="/:slug" element={<SchoolPublicPage />} />
 
                 {/* 7. Dev-Only Seed Hub */}

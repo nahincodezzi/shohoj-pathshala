@@ -166,6 +166,7 @@ export default function AdminLayout({ activeModule = 'dashboard' }) {
         { key: 'admissions', label: 'ভর্তি আবেদন', icon: GraduationCap, path: `/${school.slug}/admin/admissions`, badge: pendingAdmissionCount },
         { key: 'results', label: 'রেজাল্ট ও মার্কস', icon: FileText, path: `/${school.slug}/admin/results` },
         { key: 'fees', label: 'ফি ও রসিদ', icon: CreditCard, path: `/${school.slug}/admin/fees`, hideForTeacher: true },
+        { key: 'certificates', label: 'সনদ ও প্রত্যয়নপত্র', icon: Award, path: `/${school.slug}/admin/certificates` },
         { key: 'teachers', label: 'শিক্ষক ও কর্মচারী', icon: UserCheck, path: `/${school.slug}/admin/teachers` },
       ]
     },

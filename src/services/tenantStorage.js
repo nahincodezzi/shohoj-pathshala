@@ -1267,6 +1267,69 @@ const SEED_AUDIT_LOGS = [
   }
 ];
 
+const SEED_CERTIFICATES = [
+  {
+    id: 'cert_1',
+    school_id: 'sch_bdhs',
+    certificate_no: 'BDHS-TEST-2026-001',
+    verification_code: 'BDHS-V-89214',
+    type: 'testimonial',
+    type_bn: 'প্রশংসাপত্র (Testimonial)',
+    student_id: 'BDHS-2026-1001',
+    student_name_bn: 'আব্দুর রহমান',
+    student_name_en: 'Abdur Rahman',
+    father_name_bn: 'মো. মজিবুর রহমান',
+    mother_name_bn: 'মোসাম্মৎ আয়েশা বেগম',
+    class: '10',
+    roll: 1,
+    section: 'A',
+    session: '২০২৫-২০২৬',
+    exam_name: 'মাধ্যমিক স্কুল সার্টিফিকেট (এসএসসি) পরীক্ষা',
+    exam_year: '২০২৬',
+    exam_roll: '৬৭৮১২৩',
+    exam_reg: '১৬১২৩৪৫৬৭৮',
+    gpa: '৫.০০',
+    board: 'কুমিল্লা',
+    conduct: 'উত্তম ও সন্তোষজনক',
+    remarks: 'তাহার নৈতিক চরিত্র প্রশংসনীয়। প্রতিষ্ঠান বা রাষ্ট্রবিরোধী কোনো কার্যকলাপে তাহার সংশ্লিষ্টতা ছিল না।',
+    status: 'issued',
+    issued_date: '2026-11-15',
+    issued_by: 'জনাব বাহার উদ্দিন ভূঁইয়া',
+    created_at: '2026-11-15 10:30 AM'
+  },
+  {
+    id: 'cert_2',
+    school_id: 'sch_bdhs',
+    certificate_no: 'BDHS-TC-2026-002',
+    verification_code: 'BDHS-V-65129',
+    type: 'tc',
+    type_bn: 'ছাড়পত্র (Transfer Certificate)',
+    student_id: 'BDHS-2026-1002',
+    student_name_bn: 'সুমাইয়া আক্তার',
+    student_name_en: 'Sumaiya Akter',
+    father_name_bn: 'মো. দেলোয়ার হোসেন',
+    mother_name_bn: 'ফাতেমা বেগম',
+    class: '10',
+    roll: 2,
+    section: 'A',
+    session: '২০২৫-২০২৬',
+    exam_name: '১০ম শ্রেণি বার্ষিক পরীক্ষা',
+    exam_year: '২০২৫',
+    exam_roll: '',
+    exam_reg: '',
+    gpa: '৪.৭৫',
+    board: 'কুমিল্লা',
+    conduct: 'সন্তোষজনক',
+    tc_reason: 'অভিভাবকের কর্মস্থল পরিবর্তন ও বদলিজনিত কারণে',
+    dues_cleared: true,
+    remarks: 'বিদ্যালয়ের যাবতীয় পাওনা পরিশোধিত। তাহার ভবিষ্যৎ সাফল্য কামনা করি।',
+    status: 'issued',
+    issued_date: '2026-11-16',
+    issued_by: 'জনাব বাহার উদ্দিন ভূঁইয়া',
+    created_at: '2026-11-16 11:15 AM'
+  }
+];
+
 // Safe Storage Fallback for Universal / Node environment
 const memoryStore = {};
 function getStorage() {
@@ -1433,6 +1496,7 @@ export function initTenantStorage() {
   getTable('results', SEED_RESULTS);
   getTable('receipts', SEED_RECEIPTS);
   getTable('admissions', SEED_ADMISSIONS);
+  getTable('certificates', SEED_CERTIFICATES);
   getTable('audit_logs', SEED_AUDIT_LOGS);
   getTable('contact_messages', []);
 }
@@ -2404,13 +2468,99 @@ export const TenantRepository = {
     return true;
   },
 
+  // Certificates & Testimonials Repository
+  getCertificates(schoolId) {
+    const certs = getTable('certificates', SEED_CERTIFICATES);
+    return certs.filter(c => c.school_id === schoolId);
+  },
+
+  getCertificateById(schoolId, certId) {
+    const certs = this.getCertificates(schoolId);
+    return certs.find(c => c.id === certId) || null;
+  },
+
+  getCertificateByCode(verificationCode) {
+    const certs = getTable('certificates', SEED_CERTIFICATES);
+    return certs.find(c => 
+      c.verification_code === verificationCode || 
+      c.certificate_no === verificationCode ||
+      c.id === verificationCode
+    ) || null;
+  },
+
+  createCertificate(schoolId, certData, creatorName) {
+    const certs = getTable('certificates', SEED_CERTIFICATES);
+    const school = this.getSchoolById(schoolId);
+    const year = new Date().getFullYear();
+    const rand = Math.floor(10000 + Math.random() * 90000);
+    const codePrefix = school ? (school.code_prefix || 'SCH') : 'SCH';
+    
+    const typeShort = certData.type === 'tc' ? 'TC' : certData.type === 'attestation' ? 'ATT' : 'TEST';
+    const certNo = `${codePrefix}-${typeShort}-${year}-${rand}`;
+    const verifyCode = `${codePrefix}-V-${rand}`;
+
+    const newCert = {
+      id: `cert_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      school_id: schoolId,
+      certificate_no: certNo,
+      verification_code: verifyCode,
+      type: certData.type || 'testimonial',
+      type_bn: certData.type === 'tc' ? 'ছাড়পত্র (Transfer Certificate)' : certData.type === 'attestation' ? 'প্রত্যয়নপত্র (Attestation)' : 'প্রশংসাপত্র (Testimonial)',
+      student_id: certData.student_id,
+      student_name_bn: certData.student_name_bn,
+      student_name_en: certData.student_name_en || '',
+      father_name_bn: certData.father_name_bn || '',
+      mother_name_bn: certData.mother_name_bn || '',
+      class: certData.class,
+      roll: certData.roll,
+      section: certData.section || '',
+      session: certData.session || `${year}`,
+      exam_name: certData.exam_name || '',
+      exam_year: certData.exam_year || `${year}`,
+      exam_roll: certData.exam_roll || '',
+      exam_reg: certData.exam_reg || '',
+      gpa: certData.gpa || '',
+      board: certData.board || school?.board || 'কুমিল্লা',
+      conduct: certData.conduct || 'উত্তম ও সন্তোষজনক',
+      tc_reason: certData.tc_reason || '',
+      dues_cleared: certData.dues_cleared ?? true,
+      remarks: certData.remarks || 'তাহার নৈতিক চরিত্র প্রশংসনীয়। প্রতিষ্ঠান বা রাষ্ট্রবিরোধী কোনো কার্যকলাপে তাহার সংশ্লিষ্টতা ছিল না।',
+      status: 'issued',
+      issued_date: certData.issued_date || new Date().toISOString().split('T')[0],
+      issued_by: creatorName || 'প্রধান শিক্ষক',
+      created_at: new Date().toLocaleString('en-US', { hour12: true })
+    };
+
+    certs.unshift(newCert);
+    saveTable('certificates', certs);
+
+    this.addAuditLog(
+      schoolId,
+      creatorName || 'admin',
+      'school_superadmin',
+      'সনদ ইস্যু করা হয়েছে',
+      'Certificate Issued',
+      'certificates',
+      `${newCert.type_bn} ইস্যু: ${newCert.certificate_no} (${newCert.student_name_bn})`
+    );
+
+    return newCert;
+  },
+
+  deleteCertificate(schoolId, certId) {
+    const certs = getTable('certificates', SEED_CERTIFICATES);
+    const updated = certs.filter(c => !(c.id === certId && c.school_id === schoolId));
+    saveTable('certificates', updated);
+    return true;
+  },
+
   // Factory Reset (Restricted to specific school only!)
   factoryResetSchool(schoolId, confirmCode) {
     if (confirmCode !== 'RESET') {
       throw new Error('ফ্যাক্টরি রিসেট করতে "RESET" কোডটি সঠিকভাবে লিখুন।');
     }
     // Delete all data associated with ONLY this school_id
-    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions', 'sliders', 'uniforms', 'committee', 'routines', 'gallery', 'videos', 'facilities'];
+    const tables = ['settings', 'students', 'teachers', 'notices', 'results', 'receipts', 'admissions', 'certificates', 'sliders', 'uniforms', 'committee', 'routines', 'gallery', 'videos', 'facilities'];
     tables.forEach(tableName => {
       const current = getTable(tableName, []);
       const remaining = current.filter(record => record.school_id !== schoolId);
