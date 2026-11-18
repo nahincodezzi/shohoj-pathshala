@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, GraduationCap, Clock, Phone, Mail, FileText, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Search, GraduationCap, Clock, Phone, Mail, FileText, ArrowRight, CheckCircle2, CreditCard } from 'lucide-react';
 import { Reveal } from '../../../shared/motion';
 import { toEnglishDigits } from '../../../shared/format/formatters';
 
@@ -261,23 +261,33 @@ export default function QuickAccess({
               </div>
             </div>
 
-            {/* Helpline Actions */}
-            <div className="pt-6 grid grid-cols-2 gap-2">
+            {/* Helpline Actions & Online Fees */}
+            <div className="pt-6 space-y-2">
               <a
-                href={`tel:${phone}`}
-                className="h-10 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--primary)] text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                href={`/${school?.slug || ''}/fees`}
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md text-xs font-bold transition-all flex items-center justify-center gap-2"
               >
-                <Phone className="w-3.5 h-3.5 text-[var(--primary)]" />
-                <span>{isBn ? 'সরাসরি কল' : 'Call'}</span>
+                <CreditCard className="w-4 h-4 text-emerald-200" />
+                <span>{isBn ? 'অনলাইন ফি পরিশোধ (bKash / Nagad)' : 'Pay Fees Online'}</span>
               </a>
 
-              <a
-                href="#contact"
-                className="h-10 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-              >
-                <Mail className="w-3.5 h-3.5 text-[var(--accent)]" />
-                <span>{isBn ? 'বার্তা পাঠান' : 'Message'}</span>
-              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`tel:${phone}`}
+                  className="h-9 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--primary)] text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Phone className="w-3.5 h-3.5 text-[var(--primary)]" />
+                  <span>{isBn ? 'সরাসরি কল' : 'Call'}</span>
+                </a>
+
+                <a
+                  href="#contact"
+                  className="h-9 rounded-xl bg-[var(--bg-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>{isBn ? 'বার্তা পাঠান' : 'Message'}</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>

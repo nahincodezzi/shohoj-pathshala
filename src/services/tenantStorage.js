@@ -2091,6 +2091,11 @@ export const TenantRepository = {
     return receipts.filter(r => r.school_id === schoolId);
   },
 
+  getReceiptByNo(receiptNo) {
+    const receipts = getTable('receipts', SEED_RECEIPTS);
+    return receipts.find(r => r.receipt_no === receiptNo || r.id === receiptNo) || null;
+  },
+
   createReceipt(schoolId, receiptData, creatorName) {
     const receipts = getTable('receipts', SEED_RECEIPTS);
     const school = this.getSchoolById(schoolId);

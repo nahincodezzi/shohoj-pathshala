@@ -236,6 +236,7 @@ export default function SchoolPublicPage() {
     features,
     sections,
     lang,
+    school,
     onNavigate: navigateToTab
   });
 

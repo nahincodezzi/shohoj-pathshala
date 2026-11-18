@@ -5,7 +5,7 @@ import { useMemo } from 'react';
  * School Footer, and Mobile Bottom Tab Bar.
  * Strictly respects feature gating: if a feature is disabled, it leaves no gap.
  */
-export function useNavItems({ features = {}, sections = {}, lang = 'bn' }) {
+export function useNavItems({ features = {}, sections = {}, lang = 'bn', school = {} }) {
   return useMemo(() => {
     const isBn = lang === 'bn';
 
@@ -35,6 +35,14 @@ export function useNavItems({ features = {}, sections = {}, lang = 'bn' }) {
         type: 'link'
       });
     }
+
+    // Online Fee Payment Link
+    items.push({
+      id: 'fees',
+      label: isBn ? 'অনলাইন ফি' : 'Pay Fees',
+      href: `/${school?.slug || ''}/fees`,
+      type: 'external'
+    });
 
     // Notices
     if (sections.notices) {

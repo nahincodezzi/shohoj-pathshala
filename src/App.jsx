@@ -31,6 +31,7 @@ const CmsManager = lazy(() => import('./pages/admin/modules/CmsManager'));
 const UserManager = lazy(() => import('./pages/admin/modules/UserManager'));
 const SchoolSettings = lazy(() => import('./pages/admin/modules/SchoolSettings'));
 const CertificateVerifyPage = lazy(() => import('./pages/CertificateVerifyPage'));
+const StudentFeePaymentPage = lazy(() => import('./pages/StudentFeePaymentPage'));
 
 /**
  * Helper component to scroll window to top on route change
@@ -86,9 +87,11 @@ export default function App() {
                   <Route path="settings" element={<SchoolSettings />} />
                 </Route>
 
-                {/* 6. Individual School Public Portal */}
+                {/* 6. Individual School Public Portal & Verification */}
                 <Route path="/:slug/verify/:certCode" element={<CertificateVerifyPage />} />
                 <Route path="/verify/:certCode" element={<CertificateVerifyPage />} />
+                <Route path="/:slug/fees" element={<StudentFeePaymentPage />} />
+                <Route path="/:slug/pay-fee" element={<StudentFeePaymentPage />} />
                 <Route path="/:slug" element={<SchoolPublicPage />} />
 
                 {/* 7. Dev-Only Seed Hub */}
